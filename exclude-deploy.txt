@@ -1,0 +1,7 @@
+exclude-deploy.txt
+.DS_Store
+.github
+.gitignore
+.git
+LICENSE
+README.md

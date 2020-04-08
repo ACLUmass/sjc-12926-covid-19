@@ -1,0 +1,75 @@
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Custom CSS for SJC 12926 COVID-19 Tracker Shiny App
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Thank you: https://shiny.rstudio.com/articles/css.html
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+/* Define GT America font */
+/* CSS modified from aclum.org: https://www.aclum.org/sites/default/files/css/css_EjcJzxzhvjcsFc2zO64tGCpzBzxgdDr78RRvkT__FRA.css */
+
+/* GT America Condensed Regular */
+@font-face {
+  font-family:'gtamcond';
+  src: url("fonts/gtamerica/GT-America-Condensed-Regular.woff2") format('woff2');
+  font-weight:400;
+}
+
+/* GT America Condensed Bold */
+@font-face {
+  font-family:'gtamcond';
+  src: url("fonts/gtamerica/GT-America-Condensed-Bold.woff2") format('woff2');
+  font-weight:600;
+}
+
+/* GT America Regular */
+@font-face {
+  font-family:'gtam';
+  src: url("fonts/gtamerica/GT-America-Standard-Regular.woff2") format('woff2');
+  font-weight:400;
+}
+
+/* GT America Bold */
+@font-face {
+  font-family:'gtam';
+  src: url("fonts/gtamerica/gtamerica/GT-America-Standard-Bold.woff2") format('woff2');
+  font-weight:600;
+}
+
+body {
+  font-family: 'gtam', sans-serif;
+  margin-left: 5%;
+  margin-right: 5%;
+}
+
+h2 {
+    font-weight: bold;
+}
+
+.tabbable {
+  max-width: 750px;
+}
+
+#dev-warning .well {
+  background-color: rgba(255, 212, 92, 0.3);
+  margin-top: 2rem;
+}
+
+#dev-warning p {
+  display: inline;
+}
+
+#dev-warning i {
+  color: goldenrod;
+  font-size: 20px;
+}
+
+/* Fix dropdown cutoff issue */
+.shiny-split-layout > div {
+  overflow: visible;
+}
+
+/* Make sure table filters are wide enough */
+#df_table input {
+    width: 100px !important;
+}
+
