@@ -113,7 +113,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     navlistPanel(widths = c(3, 9), id="panels",
                  
       tabPanel("About", 
-               h4("Explore Boston PD Incidents"),
+               h4("Explore Massachusetts Prisons and Jails' Reaction to SJC 12926"),
                p("View plots in the different tabs to track testing, positive",
                  "cases, and releases in prisons and jails across Massachusetts",
                  "during the COVID-19 pandemic after the Supreme Judicial Court (SJC)", 
