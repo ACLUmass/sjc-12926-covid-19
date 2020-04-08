@@ -21,7 +21,7 @@ theme_set(theme_minimal())
 sjc_dropbox_url <- "https://www.dropbox.com/s/xutf23fy40nwjb3/prison_data_SJC12926.xlsx?dl=1"
 
 # Download excel spreadsheet from URL and read as DF
-GET(url, write_disk(tf <- tempfile(fileext = ".xlsx")))
+GET(sjc_dropbox_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
 sjc_df <- read_excel(tf) %>%
   # Turn string "NA" to real NA
   mutate_if(is.character, ~na_if(., 'NA')) %>%
@@ -87,6 +87,17 @@ sum_sjc_num_df <- sjc_num_df %>%
   summarize(all_positive = sum(all_positive),
             all_tested = sum(all_tested),
             all_released = sum(all_released))
+
+all_df_all <- sjc_num_df %>%
+  group_by(Date) %>%
+  summarize(all_released = sum(all_released),
+            all_positive = sum(all_positive),
+            all_tested = sum(all_tested)) %>%
+  mutate(County = "All")
+
+df_by_county <- sjc_num_df %>%
+  dplyr::select(Date, County, all_released, all_positive, all_tested) %>%
+  rbind(all_df_all)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -305,31 +316,21 @@ server <- function(input, output, session) {
   })
   
   # Determine which variable to plot
-  y_to_plot <- reactive({ input$select_y_v_time })
+  y_to_plot_time <- reactive({ input$select_y_v_time })
+  
 
   # Plot
   output$releases_v_time_plot <- renderPlot({
-
-    all_df_all <- sjc_num_df %>%
-      group_by(Date) %>%
-      summarize(all_released = sum(all_released),
-                all_positive = sum(all_positive),
-                all_tested = sum(all_tested)) %>%
-      mutate(County = "All")
     
-    df_by_county <- sjc_num_df %>%
-      select(Date, County, all_released, all_positive, all_tested) %>%
-      rbind(all_df_all)
-    
-    if (y_to_plot() == "Releases") {
+    if (y_to_plot_time() == "Releases") {
       df_by_county <- df_by_county %>%
         mutate(value = all_released)
       y_axis_label <- "Number Released"
-    } else if (y_to_plot() == "Tests") {
+    } else if (y_to_plot_time() == "Tests") {
       df_by_county <- df_by_county %>%
         mutate(value = all_tested)
       y_axis_label <- "Number Tested"
-    } else if (y_to_plot() == "Positive Cases") {
+    } else if (y_to_plot_time() == "Positive Cases") {
       df_by_county <- df_by_county %>%
         mutate(value = all_positive)
       y_axis_label <- "Number Tested Positive"
@@ -341,7 +342,7 @@ server <- function(input, output, session) {
                  color=County)) +
       geom_path(size=1.3, show.legend = T, alpha=0.7) +
       labs(x = "", y = y_axis_label, color="",
-           title = paste(y_to_plot(), "Over Time")) +
+           title = paste(y_to_plot_time(), "Over Time")) +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
