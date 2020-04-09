@@ -147,7 +147,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                downloadButton("downloadData", "Download XLSX"))
       ),
     
-    em(paste("Latest data update:", latest_time_str), align="right", style="opacity: 0.6;")
+    em(paste("Latest data update:", textOutput("latest_time_str")), align="right", style="opacity: 0.6;")
     ),
   
   br(),
@@ -188,8 +188,10 @@ server <- function(input, output, session) {
   # users feel better)
   update_time <- file.info(tf)$mtime %>%
     as_datetime(tz="America/New_York")
-  latest_time_str <- update_time %>%
+  output$latest_time_str <- renderText({
+    update_time %>%
     format(format="%A %B %e, %Y at %I:%M %p %Z")
+  })
   
   # For plotting, replace NAs with 0s to allow arithmetic
   sjc_num_df <- sjc_df %>%
