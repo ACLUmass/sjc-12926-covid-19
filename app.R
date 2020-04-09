@@ -17,87 +17,20 @@ library(tigris)
 # Set ggplot settings
 theme_set(theme_minimal())
 
-# Define file locations
-sjc_dropbox_url <- "https://www.dropbox.com/s/xutf23fy40nwjb3/prison_data_SJC12926.xlsx?dl=1"
-
-# Download excel spreadsheet from URL and read as DF
-GET(sjc_dropbox_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
-sjc_df <- read_excel(tf) %>%
-  # Turn string "NA" to real NA
-  mutate_if(is.character, ~na_if(., 'NA')) %>%
-  # Make all count columns numeric
-  mutate_at(vars(starts_with("N ")), 
-            as.numeric) %>%
-  # Render dates as such
-  mutate(Date = as.Date(Date))
-
-# For plotting, replace NAs with 0s to allow arithmetic
-sjc_num_df <- sjc_df %>%
-  mutate_all(function(x) ifelse(is.na(x), 0, x)) %>%
-  # Render dates as such
-  mutate(Date = as.Date(Date, origin=lubridate::origin),
-         all_released = `N Released Pre-Trial` + `N Released Sentenced`,
-         all_positive = `N Positive - Detainees/Inmates` + 
-           `N Positive - COs` + 
-           `N Positive - Staff`,
-         all_tested = `N Tested - Detainees/Inmates` + 
-           `N Tested - COs` + 
-           `N Tested - Staff`)
-
-# Calculate total number of releases
-n_released <- sjc_num_df %>%
-  pull(all_released) %>%
-  sum()
-
-# Calculate total number of positives
-n_positive <- sjc_num_df %>%
-  pull(all_positive) %>%
-  sum()
-
-# Calculate total number of tests
-n_tests <- sjc_num_df %>%
-  pull(all_tested) %>%
-  sum()
-
-# Determine last update time (not sure how accurate this is, but it might make 
-# users feel better)
-update_time <- file.info(tf)$mtime %>%
-  as_datetime(tz="America/New_York")
-latest_time_str <- update_time %>%
-  format(format="%A %B %e, %Y at %I:%M %p %Z")
-
-last_date_to_plot <- date(max(sjc_df$Date, na.rm=T))
-
-# Define factor of all counties in order, with DOC first
-counties <- sjc_df %>%
-  pull(County) %>%
-  unique()
-counties <- c("DOC", counties[counties != "DOC"])
-
-# Make list for drop-downs
-county_choices <- c("--", "All", counties)
+# Load ggplot-friendly font using show_text
+font_add("gtam", "GT-America-Standard-Regular.ttf",
+         bold = "GT-America-Standard-Bold.ttf")
+showtext_auto()
 
 # Download county data
 mass_cntys <- counties(state="massachusetts", cb=T)
 
-# Calculate sums by county
-sum_sjc_num_df <- sjc_num_df %>%
-  filter(County != "DOC") %>%
-  group_by(County) %>%
-  summarize(all_positive = sum(all_positive),
-            all_tested = sum(all_tested),
-            all_released = sum(all_released))
-
-all_df_all <- sjc_num_df %>%
-  group_by(Date) %>%
-  summarize(all_released = sum(all_released),
-            all_positive = sum(all_positive),
-            all_tested = sum(all_tested)) %>%
-  mutate(County = "All")
-
-df_by_county <- sjc_num_df %>%
-  dplyr::select(Date, County, all_released, all_positive, all_tested) %>%
-  rbind(all_df_all)
+# Define list of counties
+counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex", 
+              "Franklin", "Hampden", "Hampshire", "Middlesex", "Norfolk", 
+              "Plymouth", "Suffolk", "Worcester")
+# Make list for drop-downs
+county_choices <- c("--", "All", counties)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -144,18 +77,18 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                ),
       
       tabPanel("Total Releases", 
-               h2(n_released, align="center"),
+               h2(textOutput("n_releases_str"), align="center"),
                p("Inmates and detainees released under SJC 12926 since April 5th", align="center"),
                withSpinner(plotOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Total Positives", 
-               h2(n_positive, align="center"),
+               h2(textOutput("n_positive_str"), align="center"),
                p("Inmates, detainees, correctional officers, and staff tested", strong("positive"),
                  "for COVID-19 since April 5th", align="center"),
                withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Total Tests", 
-               h2(n_tests, align="center"),
+               h2(textOutput("n_tests_str"), align="center"),
                p("Inmates, detainees, correctional officers, and staff tested for COVID-19 since April 5th", 
                  align="center"),
                withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
@@ -209,7 +142,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  "reports recieved from the counties and DOC into a single",
                  "spreadsheet. This spreadsheet is what we source for all",
                  "visualizations on this site."),
-               p(strong("Current file size: "), nrow(sjc_df), "entries"),
+               p(strong("Current file size: "), textOutput("n_rows", inline=T), "entries"),
                p("The accumulated database is available for download here:"),
                downloadButton("downloadData", "Download XLSX"))
       ),
@@ -231,10 +164,73 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 server <- function(input, output, session) {
 
-  # Load ggplot-friendly font using show_text
-  font_add("gtam", "GT-America-Standard-Regular.ttf",
-           bold = "GT-America-Standard-Bold.ttf")
-  showtext_auto()
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Load Data
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  # Define file locations
+  sjc_dropbox_url <- "https://www.dropbox.com/s/xutf23fy40nwjb3/prison_data_SJC12926.xlsx?dl=1"
+  
+  # Download excel spreadsheet from URL and read as DF
+  GET(sjc_dropbox_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
+  sjc_df <- read_excel(tf) %>%
+    # Turn string "NA" to real NA
+    mutate_if(is.character, ~na_if(., 'NA')) %>%
+    # Make all count columns numeric
+    mutate_at(vars(starts_with("N ")), 
+              as.numeric) %>%
+    # Render dates as such
+    mutate(Date = as.Date(Date))
+  
+  output$n_rows <- renderText({nrow(sjc_df)})
+  
+  # Determine last update time (not sure how accurate this is, but it might make 
+  # users feel better)
+  update_time <- file.info(tf)$mtime %>%
+    as_datetime(tz="America/New_York")
+  latest_time_str <- update_time %>%
+    format(format="%A %B %e, %Y at %I:%M %p %Z")
+  
+  # For plotting, replace NAs with 0s to allow arithmetic
+  sjc_num_df <- sjc_df %>%
+    mutate_all(function(x) ifelse(is.na(x), 0, x)) %>%
+    # Render dates as such
+    mutate(Date = as.Date(Date, origin=lubridate::origin),
+           # Calculate totals of released, positive, tested
+           all_released = `N Released Pre-Trial` + `N Released Sentenced`,
+           all_positive = `N Positive - Detainees/Inmates` + 
+             `N Positive - COs` + 
+             `N Positive - Staff`,
+           all_tested = `N Tested - Detainees/Inmates` + 
+             `N Tested - COs` + 
+             `N Tested - Staff`)
+  
+  # Calculate totals
+  n_released <- sum(sjc_num_df$all_released)
+  n_positive <- sum(sjc_num_df$all_positive)
+  n_tested <- sum(sjc_num_df$all_tested)
+  output$n_releases_str <- renderText({n_released})
+  output$n_positive_str <- renderText({n_positive})
+  output$n_tests_str <- renderText({n_tested})
+  
+  # Calculate sums by county
+  sum_sjc_num_df <- sjc_num_df %>%
+    filter(County != "DOC") %>%
+    group_by(County) %>%
+    summarize(all_positive = sum(all_positive),
+              all_tested = sum(all_tested),
+              all_released = sum(all_released))
+  
+  all_df_all <- sjc_num_df %>%
+    group_by(Date) %>%
+    summarize(all_released = sum(all_released),
+              all_positive = sum(all_positive),
+              all_tested = sum(all_tested)) %>%
+    mutate(County = "All")
+  
+  df_by_county <- sjc_num_df %>%
+    dplyr::select(Date, County, all_released, all_positive, all_tested) %>%
+    rbind(all_df_all)
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # All Releases
