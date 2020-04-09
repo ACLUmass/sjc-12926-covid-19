@@ -327,7 +327,6 @@ server <- function(input, output, session) {
   # Determine which variable to plot
   y_to_plot_time <- reactive({ input$select_y_v_time })
   
-
   # Plot
   output$releases_v_time_plot <- renderPlot({
     
@@ -347,11 +346,12 @@ server <- function(input, output, session) {
     
     df_by_county %>%
       filter(County %in% cnty_to_plot()) %>%
-      ggplot(aes(x=Date, y = value, 
-                 color=County)) +
+      ggplot(aes(x=Date, y = cumsum(value), color=County)) +
       geom_path(size=1.3, show.legend = T, alpha=0.7) +
-      labs(x = "", y = y_axis_label, color="",
-           title = paste(y_to_plot_time(), "Over Time")) +
+      geom_point() +
+      labs(x = "", y = paste("Total", y_axis_label), color="",
+           title = paste(y_to_plot_time(), "over Time"),
+           subtitle="Cumulative since April 5th, 2020") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
