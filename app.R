@@ -94,7 +94,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  align="center"),
                withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
       
-      tabPanel("Infection Rates",
+      tabPanel("Infection Rates", align="center",
                wellPanel(
                  p("Select up to three locations to plot versus time."),
                  splitLayout(
@@ -108,7 +108,11 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                choices = infection_choices,
                                selected = "DOC", multiple=FALSE)
                  )),
-               withSpinner(plotOutput("infections_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+               withSpinner(plotOutput("infections_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               em('Data on COVID-19 cases in Massachusetts ("MA Total") from', 
+                  a(href="https://www.mass.gov/info-details/covid-19-cases-quarantine-and-monitoring", 
+                    "mass.gov")
+                  )
       ),
       
       tabPanel("Trends Over Time by Location",
