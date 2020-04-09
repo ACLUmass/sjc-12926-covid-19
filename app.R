@@ -31,6 +31,7 @@ counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex",
               "Plymouth", "Suffolk", "Worcester")
 # Make list for drop-downs
 county_choices <- c("--", "All", counties)
+infection_choices <- c("--", "MA Total", "MA Inmate Total", counties)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -93,6 +94,22 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  align="center"),
                withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
       
+      tabPanel("Infection Rates",
+               wellPanel(
+                 p("Select up to three locations to plot versus time."),
+                 splitLayout(
+                   selectInput("select_county_inf1", label = NULL, 
+                               choices = infection_choices,
+                               selected = "MA Total", multiple=FALSE),
+                   selectInput("select_county_inf2", label = NULL, 
+                               choices = infection_choices,
+                               selected = "MA Inmate Total", multiple=FALSE),
+                   selectInput("select_county_inf3", label = NULL, 
+                               choices = infection_choices,
+                               selected = "DOC", multiple=FALSE)
+                 )),
+               withSpinner(plotOutput("infections_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+      ),
       
       tabPanel("Trends Over Time by Location",
                wellPanel(
@@ -178,7 +195,7 @@ server <- function(input, output, session) {
     # Turn string "NA" to real NA
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     # Make all count columns numeric
-    mutate_at(vars(starts_with("N ")), 
+    mutate_at(vars(starts_with("N "), matches("Population")), 
               as.numeric) %>%
     # Render dates as such
     mutate(Date = as.Date(Date))
@@ -234,6 +251,17 @@ server <- function(input, output, session) {
   df_by_county <- sjc_num_df %>%
     dplyr::select(Date, County, all_released, all_positive, all_tested) %>%
     rbind(all_df_all)
+  
+  # Calc MA rates
+  ma_dropbox_url = "https://www.dropbox.com/s/xwp85c0efmlgq5r/MA_infection_rates.xlsx?dl=1"
+  
+  # Download excel spreadsheet from URL and read as DF
+  GET(ma_dropbox_url, write_disk(tf_ma <- tempfile(fileext = ".xlsx")))
+  ma_df <- read_excel(tf_ma) %>% 
+    dplyr::select(Date, cumul_rate_10000) %>%
+    mutate(cumul_rate_10000 = as.numeric(cumul_rate_10000),
+           Date = as.Date(Date),
+           County = "MA Total")
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # All Releases
@@ -312,9 +340,65 @@ server <- function(input, output, session) {
     
   })
   
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # 😷 Infection Rates 😷
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  infection_df_all <- sjc_num_df %>%
+    group_by(Date) %>%
+    summarize(in_det_positive = sum(`N Positive - Detainees/Inmates`),
+              pop = sum(`Total Population`)) %>%
+    mutate(cumul_in_det_positive = cumsum(in_det_positive)) %>%
+    mutate(County = "MA Inmate Total",
+           cumul_rate_10000 = cumul_in_det_positive / pop * 10000) %>%
+    dplyr::select(Date, County, cumul_rate_10000)
+  
+  infection_df_by_county <- sjc_num_df %>%
+    mutate(in_det_positive = `N Positive - Detainees/Inmates`,
+           pop = `Total Population`) %>%
+    group_by(County) %>%
+    mutate(cumul_in_det_positive = cumsum(in_det_positive),
+           cumul_rate_10000 = cumul_in_det_positive / pop * 10000) %>%
+    dplyr::select(Date, County, cumul_rate_10000) %>%
+    bind_rows(infection_df_all) %>%
+    bind_rows(ma_df)
+  
+  # Determine which incidents to plot
+  cnty_to_plot_inf <- reactive({
+    c(input$select_county_inf1,
+      input$select_county_inf2,
+      input$select_county_inf3)
+  })
+  
+  # Plot
+  output$infections_v_time_plot <- renderPlot({
+    
+    infection_df_by_county %>%
+      filter(County %in% cnty_to_plot_inf()) %>%
+      ungroup() %>%
+      mutate(County = factor(County, levels=infection_choices)) %>%
+    ggplot(aes(x=Date, y = cumul_rate_10000, color = County)) +
+      geom_path(size=1.3, show.legend = T) +
+      geom_point() +
+      labs(x = "", y = "Infection Rate per 10,000", color="",
+           title = "Inmate/Detainee Infection Rate Over Time",
+           subtitle = "Postive Cases per 10,000 Inmates") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), legend.direction="horizontal",
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#ef404d", "#0055aa")) +
+      coord_cartesian(clip = 'off')
+    
+  })
+  
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Releases v. Time
+  # X v. Time
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   # Determine which incidents to plot
