@@ -147,7 +147,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                downloadButton("downloadData", "Download XLSX"))
       ),
     
-    em(paste("Latest data update:", textOutput("latest_time_str")), align="right", style="opacity: 0.6;")
+    em("Latest data update:", textOutput("latest_time_str", inline=T), 
+       align="right", style="opacity: 0.6;")
     ),
   
   br(),
