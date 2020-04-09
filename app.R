@@ -113,20 +113,30 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     navlistPanel(widths = c(3, 9), id="panels",
                  
       tabPanel("About", 
-               h4("Explore Massachusetts Prisons and Jails' Reaction to SJC 12926"),
+               h3("Explore Massachusetts Prisons and Jails' Reaction to SJC 12926"),
                p("View plots in the different tabs to track testing, positive",
                  "cases, and releases in prisons and jails across Massachusetts",
                  "during the COVID-19 pandemic after the Supreme Judicial Court (SJC)", 
                  a(href="https://www.mass.gov/doc/sjc-12926-opinion/download", "decision"), 
                  "in Case 12926, requiring daily reports from state and county facilities."),
                
-               h4("About the Data"),
+               h3("About the Data"),
                p("The data displayed here are compiled from daily reports sent",
                  "out by 13 county sheriffs, not including Nantucket County,",
                  "and by the State Department of Corrections (DOC). They contain",
                  "daily reporting data starting on April 5th, 2020."),
                p("The data sourced for all visualizations on this site are available for download",
-                 actionLink("link_to_download", "here."), style="margin-top: 1rem;")
+                 actionLink("link_to_download", "here."), style="margin-top: 1rem;"),
+               
+               div(id="dev-warning",
+                   wellPanel(
+                     icon('exclamation-triangle'),
+                     h4("Disclaimer"),
+                     em("All data and analysis presented here is subject to change",
+                       "based on updates and amendments received from the counties",
+                       "and the state.")
+                     )
+               )
                
                # h4("Source Code"),
                # p("Interested programmers can view the source code for this app, written in R, on", 

@@ -63,6 +63,16 @@ h2 {
   font-size: 20px;
 }
 
+#dev-warning h4 {
+  display: inline;
+  margin-left: 1rem;
+}
+
+#dev-warning em {
+  display: block;
+  margin-top: 1rem;
+}
+
 /* Fix dropdown cutoff issue */
 .shiny-split-layout > div {
   overflow: visible;
