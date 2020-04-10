@@ -83,3 +83,37 @@ h2 {
     width: 100px !important;
 }
 
+/* Update bar to match ACLUM website */
+.well.col-sm-3 {
+  background-color: #0055aa;
+  border-radius: 0px;
+}
+
+.nav-pills>li.active>a, 
+.nav-pills>li.active>a:focus, 
+.nav-pills>li.active>a:hover {
+  background-color: #fadf7c;
+  color: #423a38;
+}
+
+.nav-pills>li>a {
+  color: white;
+  border-radius: 0px;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-family: gtamcond;
+}
+
+.nav>li>a:focus, 
+.nav>li>a:hover {
+  text-decoration: none;
+  background-color: #eee;
+  color: #423a38;
+}
+
+h1, h2, h3, h4 {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-family: gtamcond;
+}
+
