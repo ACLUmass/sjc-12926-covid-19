@@ -556,13 +556,27 @@ server <- function(input, output, session) {
   # Plot
   output$positives_v_time_plot <- renderPlot({
     
-    df_by_county %>%
+    annotate_tests_df <- df_by_county %>%
       filter(County %in% cnty_to_plot_pos()) %>%
       group_by(County) %>%
-      mutate(cumul = cumsum(all_positive)) %>%
+      summarize(all_tests = sum(all_tested))
+    
+    annotate_tests <- paste0(paste0(annotate_tests_df$County, ": ", 
+                                    annotate_tests_df$all_tests, " tested"), 
+                             collapse="\n")
+    
+    pos_to_plot <- df_by_county %>%
+      filter(County %in% cnty_to_plot_pos()) %>%
+      group_by(County) %>%
+      mutate(cumul = cumsum(all_positive))
+      
+    pos_to_plot %>%
     ggplot(aes(x=Date, y = cumul, color=County)) +
       geom_path(size=2, show.legend = T, alpha=0.8) +
       geom_point(size=3) +
+      annotate("label", min(pos_to_plot$Date), Inf, label=annotate_tests,
+               vjust=2, hjust=0, fill="grey", alpha=0.5, 
+               label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
       labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
            title = paste("COVID-19 Cases over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
