@@ -142,34 +142,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(plotOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
       ),
       
-      tabPanel("Total Positives", 
-               wellPanel(id="internal_well",
-                 p("Select kind of individual:"),
-                 selectInput("select_positive", label = NULL, 
-                             choices = c("All", "Prisoners", "Staff", "Total"),
-                             selected = "All", multiple=FALSE)
-               ),
-               h2(textOutput("n_positive_str"), align="center"),
-               p("Reports of",
-                 textOutput("type_positive", inline=T),
-                 "tested", strong("positive"),
-                 "for COVID-19 pursuant to SJC 12926", align="center"),
-               withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
-      
-      tabPanel("Positives Over Time",
-               wellPanel(id="internal_well",
-                 p("Select up to three locations to plot versus time."),
-                 splitLayout(
-                   selectInput("select_county1_pos", label = NULL, choices = county_choices,
-                               selected = "All", multiple=FALSE),
-                   selectInput("select_county2_pos", label = NULL, choices = county_choices,
-                               selected = "DOC", multiple=FALSE),
-                   selectInput("select_county3_pos", label = NULL, choices = county_choices,
-                               selected = "Barnstable", multiple=FALSE)
-                 )),
-               withSpinner(plotOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
-      ),
-      
       tabPanel("Total Tests", 
                wellPanel(id="internal_well",
                  p("Select kind of individual:"),
@@ -196,6 +168,34 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                selected = "Barnstable", multiple=FALSE)
                  )),
                withSpinner(plotOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+      ),
+      
+      tabPanel("Total Positive Tests", 
+               wellPanel(id="internal_well",
+                         p("Select kind of individual:"),
+                         selectInput("select_positive", label = NULL, 
+                                     choices = c("All", "Prisoners", "Staff", "Total"),
+                                     selected = "All", multiple=FALSE)
+               ),
+               h2(textOutput("n_positive_str"), align="center"),
+               p("Reports of",
+                 textOutput("type_positive", inline=T),
+                 "tested", strong("positive"),
+                 "for COVID-19 pursuant to SJC 12926", align="center"),
+               withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
+      
+      tabPanel("Positive Tests Over Time",
+               wellPanel(id="internal_well",
+                         p("Select up to three locations to plot versus time."),
+                         splitLayout(
+                           selectInput("select_county1_pos", label = NULL, choices = county_choices,
+                                       selected = "All", multiple=FALSE),
+                           selectInput("select_county2_pos", label = NULL, choices = county_choices,
+                                       selected = "DOC", multiple=FALSE),
+                           selectInput("select_county3_pos", label = NULL, choices = county_choices,
+                                       selected = "Barnstable", multiple=FALSE)
+                         )),
+               withSpinner(plotOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
       ),
       
       # tabPanel("Infection Rates", align="center",
@@ -578,7 +578,7 @@ server <- function(input, output, session) {
                vjust=2, hjust=0, fill="grey", alpha=0.5, 
                label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
       labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
-           title = paste("COVID-19 Cases over Time"),
+           title = paste("Positive COVID-19 Test over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
