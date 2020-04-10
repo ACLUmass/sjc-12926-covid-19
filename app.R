@@ -156,6 +156,20 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  "for COVID-19 pursuant to SJC 12926", align="center"),
                withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
       
+      tabPanel("Positives Over Time",
+               wellPanel(
+                 p("Select up to three locations to plot versus time."),
+                 splitLayout(
+                   selectInput("select_county1_pos", label = NULL, choices = county_choices,
+                               selected = "All", multiple=FALSE),
+                   selectInput("select_county2_pos", label = NULL, choices = county_choices,
+                               selected = "DOC", multiple=FALSE),
+                   selectInput("select_county3_pos", label = NULL, choices = county_choices,
+                               selected = "Barnstable", multiple=FALSE)
+                 )),
+               withSpinner(plotOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+      ),
+      
       tabPanel("Total Tests", 
                wellPanel(
                  p("Select kind of individual:"),
@@ -443,8 +457,8 @@ server <- function(input, output, session) {
     df_by_county %>%
       filter(County %in% cnty_to_plot_rel()) %>%
       group_by(County) %>%
-      mutate(cumul_rel = cumsum(all_released)) %>%
-    ggplot(aes(x=Date, y = cumul_rel, color=County)) +
+      mutate(cumul = cumsum(all_released)) %>%
+    ggplot(aes(x=Date, y = cumul, color=County)) +
       geom_path(size=2, show.legend = T, alpha=0.8) +
       geom_point(size=3) +
       labs(x = "", y = "Total Prisoners Released", color="",
@@ -537,6 +551,43 @@ server <- function(input, output, session) {
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
       scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
+    
+  })
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Positives v. Time
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  # Determine which counties to plot
+  cnty_to_plot_pos <- reactive({
+    c(input$select_county1_pos,
+      input$select_county2_pos,
+      input$select_county3_pos)
+  })
+  
+  # Plot
+  output$positives_v_time_plot <- renderPlot({
+    
+    df_by_county %>%
+      filter(County %in% cnty_to_plot_pos()) %>%
+      group_by(County) %>%
+      mutate(cumul = cumsum(all_positive)) %>%
+    ggplot(aes(x=Date, y = cumul, color=County)) +
+      geom_path(size=2, show.legend = T, alpha=0.8) +
+      geom_point(size=3) +
+      labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
+           title = paste("COVID-19 Cases over Time"),
+           subtitle="Cumulative pursuant to SJC 12926") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), legend.direction="horizontal",
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#ef404d", "#0055aa")) +
+      coord_cartesian(clip = 'off')
     
   })
   
