@@ -198,6 +198,17 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       # 
       
       tabPanel("Explore Data",
+               div(id="dev-warning",
+                   wellPanel(
+                     fluidRow(
+                     column(1, icon('exclamation-triangle')),
+                     column(11, em("Please be aware that the data below is entered in a",
+                        "non-cumulative manner. Values in each row reflect not updated tallies of",
+                        "cases, tests, or releases on the noted day, but rather the number of", strong("new"),
+                        "cases, tests, or releases in a 24-hour period.", style="margin-top:0px"))
+                     )
+                   )
+               ),
                em("Note: Empty cells denote that the given county",
                   "did not report that value, while cells with value 0 mean 0 was reported."),
                br(), br(),
