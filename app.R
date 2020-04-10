@@ -782,8 +782,7 @@ server <- function(input, output, session) {
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200406),NA)) +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+      coord_cartesian(clip = 'off') 
     
   })
   
