@@ -174,13 +174,16 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(plotOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
                ),
 
-      tabPanel("Mapping County Trends",
+      tabPanel("Mapping County Trends", align="center",
                wellPanel(
                  p("Select value to plot."),
                  selectInput("select_y_plot", label = NULL, 
                              choices = c("Releases", "Tests", "Positive Cases"),
                              selected = "Releases", multiple=FALSE)
                  ),
+               em("All maps reflect data from county jails and HOCs alone,",
+                  "as the Massachsuetts DOC is reporting only state-level, not facility-level, data."),
+               em("Maps of tests and positive cases include both prisoner and staff data."),
                withSpinner(leafletOutput("county_maps"),
                            type=4, color="#b5b5b5", size=0.5)
                ),
