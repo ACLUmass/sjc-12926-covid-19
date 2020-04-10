@@ -79,10 +79,42 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                      h4("Disclaimer"),
                      em("All data and analysis presented here is subject to change",
                        "based on updates and amendments received from the counties",
-                       "and the state.")
-                     )
+                       "and the state. For more resources on dealing with inconsistencies",
+                       "in these data, visit our page on", 
+                       actionLink("link_to_external", "external resources."))
+                   )
                )
-               
+           ),
+      
+      tabPanel("External Resources", 
+               h3("Inconsistencies in Reporting"),
+               p("This site exists as a resource to document data which Massachusets",
+                 "prisons, jails, and houses of corrections report to the SJC",
+                 "amidst the COVID-19 crisis."),
+               p("However, it became evident in the first few days of reports that",
+                 "there were inconsistencies in data collection from the various",
+                 "institutions."),
+               h3("Recommended Resources"),
+               p("To gain additional perspectives on how the COVID-19 crisis is",
+                 "affecting incarcerated people in Massachusetts, we recommend",
+                 "the following resources:"),
+               HTML("<ul>
+                  <li><a href='https://www.middlesexsheriff.org/covid19' target='_blank'>Middlesex Sheriff's Office Daily COVID-19 Reports</a></li>
+                  <li><a href='https://twitter.com/BristolSheriff' target='_blank'>Bristol Sheriff's Office Twitter</a></li>
+                  <li>Various Reporting
+                      <ul>
+                        <li><a href='https://www.wbur.org/commonhealth/2020/04/01/mass-prisons-jails-coronavirus' target='_blank'>WBUR: DOC 4/1/2020</a></li>
+                        <li><a href='https://www.southcoasttoday.com/news/20200408/two-bristol-county-sheriffs-officers-test-positive-for-covid-19' target='_blank'>SouthCoast Today: Bristol 4/8/2020</a></li>
+                        <li><a href='https://www.wbur.org/news/2020/04/09/covid-19-sheriff-essex-county-jail-soars' target='_blank'>WBUR: Essex 4/9/2020</a></li>
+                      </ul>
+                  </li>
+                  <li>Tweets from Reporters
+                      <ul>
+                        <li><a href='https://twitter.com/jbmckim' target='_blank'>Jenifer Mckim, WGBH</a></li>
+                        <li><a href='https://twitter.com/sweetadelinevt' target='_blank'>Sarah Betancourt, Commonwealth Magazine</a></li>
+                      </ul>
+                  </li>
+                </ul>")
                ),
       
       tabPanel("Total Releases", 
@@ -606,6 +638,11 @@ server <- function(input, output, session) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # ⬇️ Download XLSX ⬇️
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  observeEvent(input$link_to_external, {
+    updateTabsetPanel(session, "panels", "External Resources")
+  })
+  
   observeEvent(input$link_to_download, {
     updateTabsetPanel(session, "panels", "Download Data")
   })
