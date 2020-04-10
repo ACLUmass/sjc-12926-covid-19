@@ -31,7 +31,7 @@ counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex",
               "Plymouth", "Suffolk", "Worcester")
 # Make list for drop-downs
 county_choices <- c("--", "All", counties)
-infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
+# infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -124,13 +124,13 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       
       tabPanel("Total Positives", 
                h2(textOutput("n_positive_str"), align="center"),
-               p("Reports of prisoners, correctional officers, and staff tested", strong("positive"),
+               p("Reports of prisoners and staff tested", strong("positive"),
                  "for COVID-19 pursuant to SJC 12926", align="center"),
                withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Total Tests", 
                h2(textOutput("n_tests_str"), align="center"),
-               p("Reports of prisoners, correctional officers, and staff tested",
+               p("Reports of prisoners and staff tested",
                  "for COVID-19  pursuant to SJC 12926", 
                  align="center"),
                withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
@@ -224,7 +224,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                downloadButton("downloadData", "Download XLSX"))
       ),
     
-    em("Latest data update:", textOutput("latest_time_str", inline=T), 
+    em("Data last downloaded:", textOutput("latest_time_str", inline=T), 
        align="right", style="opacity: 0.6;")
     ),
   
@@ -255,7 +255,8 @@ server <- function(input, output, session) {
     # Turn string "NA" to real NA
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     # Make all count columns numeric
-    mutate_at(vars(starts_with("N "), matches("Population")), 
+    mutate_at(vars(starts_with("N "), starts_with("Total"), 
+                   matches("Population")), 
               as.numeric) %>%
     # Render dates as such
     mutate(Date = as.Date(Date))
@@ -277,13 +278,11 @@ server <- function(input, output, session) {
     # Render dates as such
     mutate(Date = as.Date(Date, origin=lubridate::origin),
            # Calculate totals of released, positive, tested
-           all_released = `N Released Pre-Trial` + `N Released Sentenced`,
-           all_positive = `N Positive - Detainees/Inmates` + 
-             `N Positive - COs` + 
-             `N Positive - Staff`,
-           all_tested = `N Tested - Detainees/Inmates` + 
-             `N Tested - COs` + 
-             `N Tested - Staff`)
+           all_released = `N Released Pre-Trial` + 
+             `N Released Sentenced` + 
+             `N Released Parole`,
+           all_positive = `Total Positive`,
+           all_tested = `Total Tested`)
   
   # Calculate totals
   n_released <- sum(sjc_num_df$all_released)
@@ -330,7 +329,6 @@ server <- function(input, output, session) {
   output$all_releases_plot <- renderPlot({
     
     sjc_num_df %>%
-      mutate(all_released = `N Released Pre-Trial` + `N Released Sentenced`) %>%
       group_by(County) %>%
       summarize(all_released_cumul = sum(all_released)) %>%
     ggplot(aes(x=factor(County, levels=counties), 
