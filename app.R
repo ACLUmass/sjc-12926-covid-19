@@ -31,7 +31,7 @@ counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex",
               "Plymouth", "Suffolk", "Worcester")
 # Make list for drop-downs
 county_choices <- c("--", "All", counties)
-infection_choices <- c("--", "MA Total", "MA Inmate Total", counties)
+infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,18 +79,18 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       
       tabPanel("Total Releases", 
                h2(textOutput("n_releases_str"), align="center"),
-               p("Inmates and detainees released under SJC 12926 since April 5th", align="center"),
+               p("Prisoners released under SJC 12926 since April 5th", align="center"),
                withSpinner(plotOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Total Positives", 
                h2(textOutput("n_positive_str"), align="center"),
-               p("Inmates, detainees, correctional officers, and staff tested", strong("positive"),
+               p("Prisoners, correctional officers, and staff tested", strong("positive"),
                  "for COVID-19 since April 5th", align="center"),
                withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Total Tests", 
                h2(textOutput("n_tests_str"), align="center"),
-               p("Inmates, detainees, correctional officers, and staff tested for COVID-19 since April 5th", 
+               p("Prisoners, correctional officers, and staff tested for COVID-19 since April 5th", 
                  align="center"),
                withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
       
@@ -103,7 +103,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                selected = "MA Total", multiple=FALSE),
                    selectInput("select_county_inf2", label = NULL, 
                                choices = infection_choices,
-                               selected = "MA Inmate Total", multiple=FALSE),
+                               selected = "MA Prisoner Total", multiple=FALSE),
                    selectInput("select_county_inf3", label = NULL, 
                                choices = infection_choices,
                                selected = "DOC", multiple=FALSE)
@@ -353,7 +353,7 @@ server <- function(input, output, session) {
     summarize(in_det_positive = sum(`N Positive - Detainees/Inmates`),
               pop = sum(`Total Population`)) %>%
     mutate(cumul_in_det_positive = cumsum(in_det_positive)) %>%
-    mutate(County = "MA Inmate Total",
+    mutate(County = "MA Prisoner Total",
            cumul_rate_10000 = cumul_in_det_positive / pop * 10000) %>%
     dplyr::select(Date, County, cumul_rate_10000)
   
@@ -385,8 +385,8 @@ server <- function(input, output, session) {
       geom_path(size=1.3, show.legend = T) +
       geom_point() +
       labs(x = "", y = "Infection Rate per 10,000", color="",
-           title = "Inmate/Detainee Infection Rate Over Time",
-           subtitle = "Postive Cases per 10,000 Inmates") +
+           title = "Prisoner Infection Rate Over Time",
+           subtitle = "Postive Cases per 10,000 Prisoners") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
