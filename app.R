@@ -108,12 +108,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                         <li><a href='https://www.wbur.org/news/2020/04/09/covid-19-sheriff-essex-county-jail-soars' target='_blank'>WBUR: Essex 4/9/2020</a></li>
                       </ul>
                   </li>
-                  <li>Tweets from Reporters
-                      <ul>
-                        <li><a href='https://twitter.com/jbmckim' target='_blank'>Jenifer Mckim, WGBH</a></li>
-                        <li><a href='https://twitter.com/sweetadelinevt' target='_blank'>Sarah Betancourt, Commonwealth Magazine</a></li>
-                      </ul>
-                  </li>
                 </ul>")
                ),
       
