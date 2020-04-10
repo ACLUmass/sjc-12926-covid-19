@@ -129,8 +129,16 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(plotOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Total Positives", 
+               wellPanel(
+                 p("Select kind of individual:"),
+                 selectInput("select_positive", label = NULL, 
+                             choices = c("All", "Prisoners", "Staff", "Total"),
+                             selected = "All", multiple=FALSE)
+               ),
                h2(textOutput("n_positive_str"), align="center"),
-               p("Reports of prisoners and staff tested", strong("positive"),
+               p("Reports of",
+                 textOutput("type_positive", inline=T),
+                 "tested", strong("positive"),
                  "for COVID-19 pursuant to SJC 12926", align="center"),
                withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
       
@@ -400,24 +408,77 @@ server <- function(input, output, session) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # All Positives
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  positive_df <- sjc_num_df %>%
+    mutate(`N Positive - Staff` = `N Positive - COs` + 
+             `N Positive - Staff` + `N Positive - Contractor`) %>%
+    rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`) %>%
+    dplyr::select(-`N Positive - COs`, -`N Positive - Contractor`) %>%
+    pivot_longer(cols=matches("N Positive", ignore.case=F),
+                 names_to="positive_type",
+                 names_prefix="N Positive - ")
   
+  # Determine which variable to plot
+  select_positive <- reactive({ input$select_positive })
+
   output$all_positives_plot <- renderPlot({
     
-    sjc_num_df %>%
-      group_by(County) %>%
-      summarize(all_positive_cumul = sum(all_positive)) %>%
-    ggplot(aes(x=factor(County, levels=counties), 
-                 y=all_positive_cumul, 
-                 fill = all_positive_cumul > 0,
-                 label = all_positive_cumul)) +
-      geom_col(show.legend=F) +
-      geom_bar_text(contrast=T, family="gtam", size=16) +
-      labs(y = "", x="") +
+    if (select_positive() == "All") {
+      g <- positive_df %>%
+        group_by(County, positive_type) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=factor(County, levels=counties), 
+                   y=sum_value, 
+                   fill =positive_type, 
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = T) +
+        labs(fill = "") + 
+        theme(legend.position = "top",
+              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
+      
+      output$n_positive_str <- renderText({n_positive})
+      output$type_positive <- renderText({"prisoners and staff"})
+      
+    } else if (select_positive() %in% c("Prisoners", "Staff")) {
+      g <- positive_df %>%
+        filter(positive_type == select_positive()) %>%
+        group_by(County, positive_type) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=factor(County, levels=counties), 
+                   y=sum_value, fill = as.factor(1),
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = F) +
+        geom_bar_text(contrast=T, family="gtam")
+      
+      output$n_positive_str <- renderText({
+        positive_df %>%
+          filter(positive_type == select_positive()) %>%
+          pull(value) %>%
+          sum()
+      })
+      
+      output$type_positive <- renderText({tolower(select_positive())})
+      
+    } else if (select_positive() == "Total") {
+      g <- positive_df %>%
+        group_by(County) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=factor(County, levels=counties), 
+                   y=sum_value, fill = as.factor(1),
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = F) +
+        geom_bar_text(contrast=T, family="gtam")
+      
+      output$n_positive_str <- renderText({n_positive})
+      output$type_positive <- renderText({"prisoners and staff"})
+      
+    }
+    
+    g +
+      labs(y = "Tested Positive", x="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
-            axis.text.y = element_blank(),
             plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=16)) +
-      scale_fill_manual(values = c("white", "#0055aa"))
+            text = element_text(family="gtam", size=14)) +
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
   })
   
