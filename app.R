@@ -328,6 +328,22 @@ server <- function(input, output, session) {
            all_positive = `Total Positive`,
            all_tested = `Total Tested`)
   
+  # Determine whether to plot last day
+  last_date_entered <- max(sjc_num_df$Date, na.rm=T)
+  
+  all_reports_in <- sjc_num_df %>%
+    filter(Date == last_date_entered) %>%
+    nrow() > 12
+  
+  more_than_2_days_since <- as.Date(now()) - last_date_entered >= days(2)
+  
+  show_last_day <- all_reports_in | more_than_2_days_since
+  
+  if (!show_last_day) {
+    sjc_num_df <- sjc_num_df %>%
+      filter(Date < last_date_entered) 
+  }
+  
   # Calculate totals
   n_released <- sum(sjc_num_df$all_released)
   n_positive <- sum(sjc_num_df$all_positive)
@@ -358,13 +374,13 @@ server <- function(input, output, session) {
   # Calc MA rates
   ma_dropbox_url = "https://www.dropbox.com/s/xwp85c0efmlgq5r/MA_infection_rates.xlsx?dl=1"
   
-  # Download excel spreadsheet from URL and read as DF
-  GET(ma_dropbox_url, write_disk(tf_ma <- tempfile(fileext = ".xlsx")))
-  ma_df <- read_excel(tf_ma) %>% 
-    dplyr::select(Date, cumul_rate_10000) %>%
-    mutate(cumul_rate_10000 = as.numeric(cumul_rate_10000),
-           Date = as.Date(Date),
-           County = "MA Total")
+  # # Download excel spreadsheet from URL and read as DF
+  # GET(ma_dropbox_url, write_disk(tf_ma <- tempfile(fileext = ".xlsx")))
+  # ma_df <- read_excel(tf_ma) %>% 
+  #   dplyr::select(Date, cumul_rate_10000) %>%
+  #   mutate(cumul_rate_10000 = as.numeric(cumul_rate_10000),
+  #          Date = as.Date(Date),
+  #          County = "MA Total")
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # All Releases
