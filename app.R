@@ -79,18 +79,19 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       
       tabPanel("Total Releases", 
                h2(textOutput("n_releases_str"), align="center"),
-               p("Prisoners released under SJC 12926 since April 5th", align="center"),
+               p("Prisoners released pursuant to SJC 12926", align="center"),
                withSpinner(plotOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Total Positives", 
                h2(textOutput("n_positive_str"), align="center"),
-               p("Prisoners, correctional officers, and staff tested", strong("positive"),
-                 "for COVID-19 since April 5th", align="center"),
+               p("Reports of prisoners, correctional officers, and staff tested", strong("positive"),
+                 "for COVID-19 pursuant to SJC 12926", align="center"),
                withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Total Tests", 
                h2(textOutput("n_tests_str"), align="center"),
-               p("Prisoners, correctional officers, and staff tested for COVID-19 since April 5th", 
+               p("Reports of prisoners, correctional officers, and staff tested",
+                 "for COVID-19  pursuant to SJC 12926", 
                  align="center"),
                withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
       
@@ -439,7 +440,7 @@ server <- function(input, output, session) {
       geom_point() +
       labs(x = "", y = paste("Total", y_axis_label), color="",
            title = paste(y_to_plot_time(), "over Time"),
-           subtitle="Cumulative since April 5th, 2020") +
+           subtitle="Cumulative pursuant to SJC 12926") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
