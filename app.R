@@ -41,7 +41,7 @@ infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
 ui <- fluidPage(theme = "sjc_12926_app.css",
   
   # App title ----
-  titlePanel("SJC 12926: Tracking COVID-19 in Prisons"),
+  titlePanel("Tracking COVID-19 in Massachusetts Prison & Jails"),
   
   div(
     navlistPanel(widths = c(3, 9), id="panels",
