@@ -127,3 +127,17 @@ a[data-value="External Resources"]{
   margin-top: 2rem;
 }
 
+#internal_well {
+  border-radius: 0px;
+  padding-bottom:0px;
+}
+
+#internal_well .selectize-input {
+  border-radius: 0px;
+}
+
+#internal_well p {
+  font-weight: bold
+}
+
+    

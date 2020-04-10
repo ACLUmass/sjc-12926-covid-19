@@ -118,7 +118,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                ),
       
       tabPanel("Total Releases", 
-               wellPanel(
+               wellPanel(id="internal_well",
                  p("Select kind of prisoner:"),
                  selectInput("select_release", label = NULL, 
                            choices = c("All", "Pre-Trial", "Sentenced", "Parole", "Total"),
@@ -129,7 +129,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(plotOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Releases Over Time",
-               wellPanel(
+               wellPanel(id="internal_well",
                  p("Select up to three locations to plot versus time."),
                  splitLayout(
                    selectInput("select_county1_rel", label = NULL, choices = county_choices,
@@ -143,7 +143,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       ),
       
       tabPanel("Total Positives", 
-               wellPanel(
+               wellPanel(id="internal_well",
                  p("Select kind of individual:"),
                  selectInput("select_positive", label = NULL, 
                              choices = c("All", "Prisoners", "Staff", "Total"),
@@ -157,7 +157,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Positives Over Time",
-               wellPanel(
+               wellPanel(id="internal_well",
                  p("Select up to three locations to plot versus time."),
                  splitLayout(
                    selectInput("select_county1_pos", label = NULL, choices = county_choices,
@@ -171,7 +171,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       ),
       
       tabPanel("Total Tests", 
-               wellPanel(
+               wellPanel(id="internal_well",
                  p("Select kind of individual:"),
                  selectInput("select_tested", label = NULL, 
                              choices = c("All", "Prisoners", "Staff", "Total"),
@@ -185,7 +185,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Tests Over Time",
-               wellPanel(
+               wellPanel(id="internal_well",
                  p("Select up to three locations to plot versus time."),
                  splitLayout(
                    selectInput("select_county1_test", label = NULL, choices = county_choices,
@@ -219,8 +219,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       #             )
       # ),
       
-      tabPanel("Mapping County Trends", align="center",
-               wellPanel(
+      tabPanel("Mapping County Trends", 
+               wellPanel(id="internal_well",
                  p("Select value to plot."),
                  selectInput("select_y_plot", label = NULL, 
                              choices = c("Releases", "Tests", "Positive Cases"),
