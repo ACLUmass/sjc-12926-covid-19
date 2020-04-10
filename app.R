@@ -118,6 +118,12 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                ),
       
       tabPanel("Total Releases", 
+               wellPanel(
+                 p("Select kind of prisoner:"),
+                 selectInput("select_release", label = NULL, 
+                           choices = c("All", "Pre-Trial", "Sentenced", "Parole", "Total"),
+                           selected = "All", multiple=FALSE)
+                 ),
                h2(textOutput("n_releases_str"), align="center"),
                p("Prisoners released pursuant to SJC 12926", align="center"),
                withSpinner(plotOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5)),
@@ -325,24 +331,69 @@ server <- function(input, output, session) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # All Releases
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  released_df <- sjc_num_df %>%
+    pivot_longer(cols=matches("Released", ignore.case=F),
+                 names_to="release_type",
+                 names_prefix="N Released ")
   
+  # Determine which variable to plot
+  select_release <- reactive({ input$select_release })
+
   output$all_releases_plot <- renderPlot({
     
-    sjc_num_df %>%
-      group_by(County) %>%
-      summarize(all_released_cumul = sum(all_released)) %>%
-    ggplot(aes(x=factor(County, levels=counties), 
-               y=all_released_cumul, 
-               fill =all_released_cumul >0, 
-               label=all_released_cumul)) +
-      geom_col(show.legend = FALSE) +
-      geom_bar_text(contrast=T, family="gtam", size=16) +
-      labs(y = "", x="") +
+    if (select_release() == "All") {
+      g <- released_df %>%
+        group_by(County, release_type) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=factor(County, levels=counties), 
+                   y=sum_value, 
+                   fill =release_type, 
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = T) + 
+        labs(fill = "") + 
+        theme(legend.position = "top",
+              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
+    
+      output$n_releases_str <- renderText({n_released})
+      
+    } else if (select_release() %in% c("Parole", "Pre-Trial", "Sentenced")) {
+      g <- released_df %>%
+        filter(release_type == select_release()) %>%
+        group_by(County, release_type) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=factor(County, levels=counties), 
+                   y=sum_value, fill = as.factor(1),
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = F) +
+        geom_bar_text(contrast=T, family="gtam")
+      
+      output$n_releases_str <- renderText({
+        released_df %>%
+          filter(release_type == select_release()) %>%
+          pull(value) %>%
+          sum()
+        })
+      
+    } else if (select_release() == "Total") {
+      g <- released_df %>%
+        group_by(County) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=factor(County, levels=counties), 
+                   y=sum_value, fill = as.factor(1),
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = F) +
+        geom_bar_text(contrast=T, family="gtam")
+      
+      output$n_releases_str <- renderText({n_released})
+      
+    }
+    
+    g +
+      labs(y = "Prisoners Released", x="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
-            axis.text.y = element_blank(),
             plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=16)) +
-      scale_fill_manual(values = c("white", "#0055aa"))
+            text = element_text(family="gtam", size=14)) +
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
   })
   
