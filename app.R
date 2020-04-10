@@ -143,9 +143,16 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Total Tests", 
+               wellPanel(
+                 p("Select kind of individual:"),
+                 selectInput("select_tested", label = NULL, 
+                             choices = c("All", "Prisoners", "Staff", "Total"),
+                             selected = "All", multiple=FALSE)
+               ),
                h2(textOutput("n_tests_str"), align="center"),
-               p("Reports of prisoners and staff tested",
-                 "for COVID-19  pursuant to SJC 12926", 
+               p("Reports of",
+                 textOutput("type_tested", inline=T),
+                 "tested for COVID-19  pursuant to SJC 12926", 
                  align="center"),
                withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
       
@@ -474,7 +481,7 @@ server <- function(input, output, session) {
     }
     
     g +
-      labs(y = "Tested Positive", x="") +
+      labs(y = "Tested Positive for COVID-19", x="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
@@ -486,27 +493,77 @@ server <- function(input, output, session) {
   # All Tests
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
+  tested_df <- sjc_num_df %>%
+    mutate(`N Tested - Staff` = `N Tested - COs` + 
+             `N Tested - Staff` + `N Tested - Contractors`) %>%
+    rename(`N Tested - Prisoners`=`N Tested - Detainees/Inmates`) %>%
+    dplyr::select(-`N Tested - COs`, -`N Tested - Contractors`) %>%
+    pivot_longer(cols=matches("N Tested", ignore.case=F),
+                 names_to="tested_type",
+                 names_prefix="N Tested - ")
+  
+  # Determine which variable to plot
+  select_tested <- reactive({ input$select_tested })
+  
   output$all_tests_plot <- renderPlot({
     
-    sjc_num_df %>%
-      group_by(County) %>%
-      summarize(Tested = sum(all_tested)) %>%
-      ggplot(aes(x=factor(County, levels=counties), 
-                 y=Tested, 
-                 fill = Tested > 0, 
-                 label = Tested)) +
-      geom_col(show.legend=F) +
-      geom_bar_text(contrast=T, family="gtam", size=16) +
-      labs(y = "", x="") +
+    if (select_tested() == "All") {
+      g <- tested_df %>%
+        group_by(County, tested_type) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=factor(County, levels=counties), 
+                   y=sum_value, 
+                   fill =tested_type, 
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = T) +
+        labs(fill = "") + 
+        theme(legend.position = "top",
+              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
+      
+      output$n_tests_str <- renderText({n_tested})
+      output$type_tested <- renderText({"prisoners and staff"})
+      
+    } else if (select_tested() %in% c("Prisoners", "Staff")) {
+      g <- tested_df %>%
+        filter(tested_type == select_tested()) %>%
+        group_by(County, tested_type) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=factor(County, levels=counties), 
+                   y=sum_value, fill = as.factor(1),
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = F) +
+        geom_bar_text(contrast=T, family="gtam")
+      
+      output$n_tests_str <- renderText({
+        tested_df %>%
+          filter(tested_type == select_tested()) %>%
+          pull(value) %>%
+          sum()
+      })
+      
+      output$type_tested <- renderText({tolower(select_tested())})
+      
+    } else if (select_tested() == "Total") {
+      g <- tested_df %>%
+        group_by(County) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=factor(County, levels=counties), 
+                   y=sum_value, fill = as.factor(1),
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = F) +
+        geom_bar_text(contrast=T, family="gtam")
+      
+      output$n_tests_str <- renderText({n_tested})
+      output$type_tested <- renderText({"prisoners and staff"})
+      
+    }
+    
+    g +
+      labs(y = "Tested for COVID-19", x="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
-            axis.text.y = element_blank(),
             plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=16),
-            legend.title = element_blank(),
-            legend.position=c(.9, .8),
-            legend.justification="right",
-            legend.background = element_rect(fill="white", color=NA)) +
-      scale_fill_manual(values = c("white", "#0055aa"))
+            text = element_text(family="gtam", size=14)) +
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
   })
   
