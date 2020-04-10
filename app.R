@@ -192,6 +192,20 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(plotOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
       ),
       
+      tabPanel("Prison Populations Over Time",
+               wellPanel(id="internal_well",
+                         p("Select up to three locations to plot versus time."),
+                         splitLayout(
+                           selectInput("select_county1_pop", label = NULL, choices = county_choices,
+                                       selected = "All", multiple=FALSE),
+                           selectInput("select_county2_pop", label = NULL, choices = county_choices,
+                                       selected = "DOC", multiple=FALSE),
+                           selectInput("select_county3_pop", label = NULL, choices = county_choices,
+                                       selected = "Barnstable", multiple=FALSE)
+                         )),
+               withSpinner(plotOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+      ),
+      
       # tabPanel("Infection Rates", align="center",
       #          wellPanel(
       #            p("Select up to three locations to plot versus time."),
@@ -698,6 +712,54 @@ server <- function(input, output, session) {
             legend.key.width = unit(1, "cm"),
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') +
+      ylim(0, NA)
+    
+  })
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Populations v. Time
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  # Determine which counties to plot
+  cnty_to_plot_pop <- reactive({
+    c(input$select_county1_pop,
+      input$select_county2_pop,
+      input$select_county3_pop)
+  })
+  
+  all_pop_df <- sjc_num_df %>%
+    mutate(pop = `Total Population`) %>%
+    group_by(Date) %>%
+    summarize(pop = sum(pop)) %>%
+    mutate(County = "All")
+  
+  pop_df <-  sjc_num_df %>%
+    mutate(pop = `Total Population`) %>%
+    group_by(Date, County) %>%
+    summarize(pop = sum(pop)) %>%
+    bind_rows(all_pop_df)
+  
+  # Plot
+  output$pop_v_time_plot <- renderPlot({
+    
+    pop_df %>%
+      filter(Date >= ymd(20200406)) %>%
+      filter(County %in% cnty_to_plot_pop()) %>%
+      ggplot(aes(x=Date, y = pop, color=County)) +
+      geom_path(size=2, show.legend = T, alpha=0.8) +
+      geom_point(size=3) +
+      labs(x = "", y = "Total Prisoners", color="",
+           title = paste("Prisoner Populations over Time")) +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), legend.direction="horizontal",
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200406),NA)) +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
