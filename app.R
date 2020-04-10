@@ -120,7 +120,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  ),
                h2(textOutput("n_releases_str"), align="center"),
                p("Prisoners released pursuant to SJC 12926", align="center"),
-               withSpinner(plotOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5)),
+               withSpinner(plotOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Releases Over Time",
                wellPanel(id="internal_well",
@@ -133,7 +134,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    selectInput("select_county3_rel", label = NULL, choices = county_choices,
                                selected = "Barnstable", multiple=FALSE)
                  )),
-               withSpinner(plotOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+               withSpinner(plotOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
       tabPanel("Total Tests", 
@@ -148,7 +150,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  textOutput("type_tested", inline=T),
                  "tested for COVID-19  pursuant to SJC 12926", 
                  align="center"),
-               withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
+               withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Tests Over Time",
                wellPanel(id="internal_well",
@@ -161,7 +164,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    selectInput("select_county3_test", label = NULL, choices = county_choices,
                                selected = "Barnstable", multiple=FALSE)
                  )),
-               withSpinner(plotOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+               withSpinner(plotOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
       tabPanel("Total Positive Tests", 
@@ -176,7 +180,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  textOutput("type_positive", inline=T),
                  "tested", strong("positive"),
                  "for COVID-19 pursuant to SJC 12926", align="center"),
-               withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5)),
+               withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Positive Tests Over Time",
                wellPanel(id="internal_well",
@@ -189,7 +194,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county3_pos", label = NULL, choices = county_choices,
                                        selected = "Barnstable", multiple=FALSE)
                          )),
-               withSpinner(plotOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+               withSpinner(plotOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
       tabPanel("Incarcerated Population Over Time",
@@ -203,7 +209,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county3_pop", label = NULL, choices = county_choices,
                                        selected = "Barnstable", multiple=FALSE)
                          )),
-               withSpinner(plotOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+               withSpinner(plotOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
       # tabPanel("Infection Rates", align="center",
@@ -237,6 +244,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("All maps reflect data from county jails and HOCs alone,",
                   "as the Massachsuetts DOC is reporting only state-level, not facility-level, data."),
                em("Maps of tests and positive cases include both prisoner and staff data."),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data."),
                withSpinner(leafletOutput("county_maps"),
                            type=4, color="#b5b5b5", size=0.5)
                ),
@@ -255,6 +263,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                ),
                em("Note: Empty cells denote that the given county",
                   "did not report that value, while cells with value 0 mean 0 was reported."),
+               em("Additionally, please note that prisoner deaths due to COVID-19 are not included in these data."),
                br(), br(),
                withSpinner(dataTableOutput("df_table"), type=4, color="#b5b5b5", size=0.5)),
       
