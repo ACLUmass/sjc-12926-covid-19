@@ -184,6 +184,20 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  align="center"),
                withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
       
+      tabPanel("Tests Over Time",
+               wellPanel(
+                 p("Select up to three locations to plot versus time."),
+                 splitLayout(
+                   selectInput("select_county1_test", label = NULL, choices = county_choices,
+                               selected = "All", multiple=FALSE),
+                   selectInput("select_county2_test", label = NULL, choices = county_choices,
+                               selected = "DOC", multiple=FALSE),
+                   selectInput("select_county3_test", label = NULL, choices = county_choices,
+                               selected = "Barnstable", multiple=FALSE)
+                 )),
+               withSpinner(plotOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+      ),
+      
       # tabPanel("Infection Rates", align="center",
       #          wellPanel(
       #            p("Select up to three locations to plot versus time."),
@@ -205,24 +219,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       #             )
       # ),
       
-      # tabPanel("Trends Over Time by Location",
-      #          wellPanel(
-      #            p("Select value to plot versus time."),
-      #            selectInput("select_y_v_time", label = NULL, 
-      #                        choices = c("Releases", "Tests", "Positive Cases"),
-      #                          selected = "Releases", multiple=FALSE),
-      #            p("Select up to three locations to plot versus time."),
-      #            splitLayout(
-      #              selectInput("select_county1", label = NULL, choices = county_choices,
-      #                          selected = "All", multiple=FALSE),
-      #              selectInput("select_county2", label = NULL, choices = county_choices,
-      #                          selected = "DOC", multiple=FALSE),
-      #              selectInput("select_county3", label = NULL, choices = county_choices,
-      #                          selected = "Barnstable", multiple=FALSE)
-      #            )),
-      #          withSpinner(plotOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
-      #          # ),
-
       tabPanel("Mapping County Trends", align="center",
                wellPanel(
                  p("Select value to plot."),
@@ -236,15 +232,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(leafletOutput("county_maps"),
                            type=4, color="#b5b5b5", size=0.5)
                ),
-      # 
-      # tabPanel("Major & Minor Incidents Comparison", 
-      #          withSpinner(plotOutput("major_minor_plot"), 
-      #                      type=4, color="#b5b5b5", size=0.5)),
-      # 
-      # tabPanel("Incidents Over Time", 
-      #          withSpinner(plotOutput("incidents_v_time_plot"), 
-      #                      type=4, color="#b5b5b5", size=0.5)),
-      # 
       
       tabPanel("Explore Data",
                div(id="dev-warning",
@@ -472,8 +459,9 @@ server <- function(input, output, session) {
             legend.key.width = unit(1, "cm"),
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
-      scale_color_manual(values=c("black", "#ef404d", "#0055aa")) +
-      coord_cartesian(clip = 'off')
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') +
+      ylim(0, NA)
     
   })
   
@@ -586,8 +574,9 @@ server <- function(input, output, session) {
             legend.key.width = unit(1, "cm"),
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
-      scale_color_manual(values=c("black", "#ef404d", "#0055aa")) +
-      coord_cartesian(clip = 'off')
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') +
+      ylim(0, NA)
     
   })
   
@@ -669,6 +658,44 @@ server <- function(input, output, session) {
     
   })
   
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Tests v. Time
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  # Determine which counties to plot
+  cnty_to_plot_test <- reactive({
+    c(input$select_county1_test,
+      input$select_county2_test,
+      input$select_county3_test)
+  })
+  
+  # Plot
+  output$tests_v_time_plot <- renderPlot({
+    
+    df_by_county %>%
+      filter(County %in% cnty_to_plot_test()) %>%
+      group_by(County) %>%
+      mutate(cumul = cumsum(all_tested)) %>%
+    ggplot(aes(x=Date, y = cumul, color=County)) +
+      geom_path(size=2, show.legend = T, alpha=0.8) +
+      geom_point(size=3) +
+      labs(x = "", y = "Total Prisoners & Staff Tested", color="",
+           title = paste("COVID-19 Tests over Time"),
+           subtitle="Cumulative pursuant to SJC 12926") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), legend.direction="horizontal",
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') +
+      ylim(0, NA)
+    
+  })
+  
   # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # # 😷 Infection Rates 😷
   # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -723,59 +750,6 @@ server <- function(input, output, session) {
   #     scale_color_manual(values=c("black", "#ef404d", "#0055aa")) +
   #     coord_cartesian(clip = 'off')
   #   
-  # })
-  
-  
-  # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # # X v. Time
-  # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # 
-  # # Determine which incidents to plot
-  # cnty_to_plot <- reactive({
-  #   c(input$select_county1,
-  #     input$select_county2,
-  #     input$select_county3)
-  # })
-  # 
-  # # Determine which variable to plot
-  # y_to_plot_time <- reactive({ input$select_y_v_time })
-  # 
-  # # Plot
-  # output$releases_v_time_plot <- renderPlot({
-  #   
-  #   if (y_to_plot_time() == "Releases") {
-  #     df_by_county <- df_by_county %>%
-  #       mutate(value = all_released)
-  #     y_axis_label <- "Number Released"
-  #   } else if (y_to_plot_time() == "Tests") {
-  #     df_by_county <- df_by_county %>%
-  #       mutate(value = all_tested)
-  #     y_axis_label <- "Number Tested"
-  #   } else if (y_to_plot_time() == "Positive Cases") {
-  #     df_by_county <- df_by_county %>%
-  #       mutate(value = all_positive)
-  #     y_axis_label <- "Number Tested Positive"
-  #   }
-  #   
-  #   df_by_county %>%
-  #     filter(County %in% cnty_to_plot()) %>%
-  #     ggplot(aes(x=Date, y = cumsum(value), color=County)) +
-  #     geom_path(size=1.3, show.legend = T, alpha=0.7) +
-  #     geom_point() +
-  #     labs(x = "", y = paste("Total", y_axis_label), color="",
-  #          title = paste(y_to_plot_time(), "over Time"),
-  #          subtitle="Cumulative pursuant to SJC 12926") +
-  #     theme(plot.title= element_text(family="gtam", face='bold'),
-  #           text = element_text(family="gtam", size = 16),
-  #           plot.margin = unit(c(1,1,4,1), "lines"),
-  #           legend.position = c(.5, -.22), legend.direction="horizontal",
-  #           legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
-  #           legend.key.width = unit(1, "cm"),
-  #           legend.text = element_text(size=16)) +
-  #     scale_x_date(date_labels = "%b %e ") +
-  #     scale_color_manual(values=c("black", "#ef404d", "#0055aa")) +
-  #     coord_cartesian(clip = 'off')
-  # 
   # })
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
