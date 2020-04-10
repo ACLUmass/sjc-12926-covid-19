@@ -192,7 +192,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(plotOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
       ),
       
-      tabPanel("Prison Populations Over Time",
+      tabPanel("Incarcerated Population Over Time",
                wellPanel(id="internal_well",
                          p("Select up to three locations to plot versus time."),
                          splitLayout(
@@ -772,7 +772,7 @@ server <- function(input, output, session) {
       geom_path(size=2, show.legend = T, alpha=0.8) +
       geom_point(size=3) +
       labs(x = "", y = "Total Prisoners", color="",
-           title = paste("Prisoner Populations over Time")) +
+           title = paste("Incarcerated Populations over Time")) +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
