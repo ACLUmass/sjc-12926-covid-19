@@ -274,8 +274,13 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
   
   br(),
   hr(),
-  img(src="OneLineLogo_RGB_Massachusetts.png", width="300px", 
-      style="opacity: 0.5; display: block; margin-left: auto; margin-right: auto;"),
+  div(align="center",
+    a(href="https://www.aclum.org/", target="_blank",
+      img(src="Logo_CMYK_Massachusetts_Massachusetts.png", height="50px", 
+          style="display: inline; margin: 10px;")),
+    a(href="https://www.data.aclum.org/",  target="_blank",
+      img(src="D4J-logo.png", height="50px", 
+          style="display: inline; margin: 10px;"))),
   p("Please contact lchambers@aclum.org with questions.", align="center", style="opacity: 0.6;")
 )
 
