@@ -49,18 +49,23 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     navlistPanel(widths = c(3, 9), id="panels",
                  
       tabPanel("About", 
-               h3("Explore Massachusetts Prisons and Jails' Reaction to SJC 12926"),
+               h3("Explore Massachusetts Prisons and Jails' Response to COVID-19"),
                p("View plots in the different tabs to track testing, positive",
-                 "cases, and releases in prisons and jails across Massachusetts",
-                 "during the COVID-19 pandemic after the Supreme Judicial Court (SJC)", 
-                 a(href="https://www.mass.gov/doc/sjc-12926-opinion/download", "decision"), 
-                 "in Case 12926, requiring daily reports from state and county facilities."),
+                 "cases, and releases in prisons and jail during the COVID-19",
+                 "pandemic, as documented in reports made by Massachusetts",
+                 "prisons and jails to the Supreme Judicial Court (SJC)."),
                
                h3("About the Data"),
-               p("The data displayed here are compiled from daily reports sent",
-                 "out by 13 county sheriffs, not including Nantucket County,",
-                 "and by the State Department of Corrections (DOC). They contain",
-                 "daily reporting data starting on April 5th, 2020."),
+               p("The data displayed here are compiled from reports sent to the Court",
+                 "by 13 county sheriffs, not including Nantucket County,",
+                 "and by the State Department of Corrections (DOC), starting on",
+                 "March 27th, 2020. Daily reports are required as a result of the SJC",
+                 a(href="https://www.mass.gov/doc/sjc-12926-opinion/download", "ruling"),
+                 "in case 12926."),
+               p("Learn more about the history, details, and outcomes of the ",
+                 "case at the ACLU of Massachusetts website:",
+                 a(href="https://www.aclum.org/en/cases/committee-public-counsel-services-v-chief-justice-trial-court",
+                   "Committee for Public Counsel Services (CPCS) v. Chief Justice of the Trial Court.")),
                p("The data sourced for all visualizations on this site are available for download",
                  actionLink("link_to_download", "here."), style="margin-top: 1rem;"),
                
@@ -156,6 +161,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       #          withSpinner(plotOutput("incidents_v_time_plot"), 
       #                      type=4, color="#b5b5b5", size=0.5)),
       # 
+      
       tabPanel("Explore Data",
                em("Note: Empty cells denote that the given county",
                   "did not report that value, while cells with value 0 mean 0 was reported."),
@@ -592,8 +598,7 @@ server <- function(input, output, session) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
   output$df_table <- renderDataTable(
-    {sjc_df },
-    
+    {sjc_df},
     options = list(scrollX = TRUE), 
     filter = 'top'
     )

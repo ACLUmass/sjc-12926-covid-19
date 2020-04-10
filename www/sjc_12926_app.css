@@ -50,8 +50,9 @@ h2 {
 }
 
 #dev-warning .well {
-  background-color: rgba(255, 212, 92, 0.3);
+  border-radius: 0px;
   margin-top: 2rem;
+  background-color: #fadf7c;
 }
 
 #dev-warning p {
