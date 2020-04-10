@@ -135,26 +135,26 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  align="center"),
                withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5)),
       
-      tabPanel("Infection Rates", align="center",
-               wellPanel(
-                 p("Select up to three locations to plot versus time."),
-                 splitLayout(
-                   selectInput("select_county_inf1", label = NULL, 
-                               choices = infection_choices,
-                               selected = "MA Total", multiple=FALSE),
-                   selectInput("select_county_inf2", label = NULL, 
-                               choices = infection_choices,
-                               selected = "MA Prisoner Total", multiple=FALSE),
-                   selectInput("select_county_inf3", label = NULL, 
-                               choices = infection_choices,
-                               selected = "DOC", multiple=FALSE)
-                 )),
-               withSpinner(plotOutput("infections_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-               em('Data on COVID-19 cases in Massachusetts ("MA Total") from', 
-                  a(href="https://www.mass.gov/info-details/covid-19-cases-quarantine-and-monitoring", 
-                    "mass.gov")
-                  )
-      ),
+      # tabPanel("Infection Rates", align="center",
+      #          wellPanel(
+      #            p("Select up to three locations to plot versus time."),
+      #            splitLayout(
+      #              selectInput("select_county_inf1", label = NULL, 
+      #                          choices = infection_choices,
+      #                          selected = "MA Total", multiple=FALSE),
+      #              selectInput("select_county_inf2", label = NULL, 
+      #                          choices = infection_choices,
+      #                          selected = "MA Prisoner Total", multiple=FALSE),
+      #              selectInput("select_county_inf3", label = NULL, 
+      #                          choices = infection_choices,
+      #                          selected = "DOC", multiple=FALSE)
+      #            )),
+      #          withSpinner(plotOutput("infections_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+      #          em('Data on COVID-19 cases in Massachusetts ("MA Total") from', 
+      #             a(href="https://www.mass.gov/info-details/covid-19-cases-quarantine-and-monitoring", 
+      #               "mass.gov")
+      #             )
+      # ),
       
       tabPanel("Trends Over Time by Location",
                wellPanel(
@@ -386,61 +386,61 @@ server <- function(input, output, session) {
     
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # 😷 Infection Rates 😷
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
-  infection_df_all <- sjc_num_df %>%
-    group_by(Date) %>%
-    summarize(in_det_positive = sum(`N Positive - Detainees/Inmates`),
-              pop = sum(`Total Population`)) %>%
-    mutate(cumul_in_det_positive = cumsum(in_det_positive)) %>%
-    mutate(County = "MA Prisoner Total",
-           cumul_rate_10000 = cumul_in_det_positive / pop * 10000) %>%
-    dplyr::select(Date, County, cumul_rate_10000)
-  
-  infection_df_by_county <- sjc_num_df %>%
-    mutate(in_det_positive = `N Positive - Detainees/Inmates`,
-           pop = `Total Population`) %>%
-    group_by(County) %>%
-    mutate(cumul_in_det_positive = cumsum(in_det_positive),
-           cumul_rate_10000 = cumul_in_det_positive / pop * 10000) %>%
-    dplyr::select(Date, County, cumul_rate_10000) %>%
-    bind_rows(infection_df_all) %>%
-    bind_rows(ma_df)
-  
-  # Determine which incidents to plot
-  cnty_to_plot_inf <- reactive({
-    c(input$select_county_inf1,
-      input$select_county_inf2,
-      input$select_county_inf3)
-  })
-  
-  # Plot
-  output$infections_v_time_plot <- renderPlot({
-    
-    infection_df_by_county %>%
-      filter(County %in% cnty_to_plot_inf()) %>%
-      ungroup() %>%
-      mutate(County = factor(County, levels=infection_choices)) %>%
-    ggplot(aes(x=Date, y = cumul_rate_10000, color = County)) +
-      geom_path(size=1.3, show.legend = T) +
-      geom_point() +
-      labs(x = "", y = "Infection Rate per 10,000", color="",
-           title = "Prisoner Infection Rate Over Time",
-           subtitle = "Postive Cases per 10,000 Prisoners") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
-            plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22), legend.direction="horizontal",
-            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
-            legend.key.width = unit(1, "cm"),
-            legend.text = element_text(size=16)) +
-      scale_x_date(date_labels = "%b %e ") +
-      scale_color_manual(values=c("black", "#ef404d", "#0055aa")) +
-      coord_cartesian(clip = 'off')
-    
-  })
+  # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # # 😷 Infection Rates 😷
+  # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # 
+  # infection_df_all <- sjc_num_df %>%
+  #   group_by(Date) %>%
+  #   summarize(in_det_positive = sum(`N Positive - Detainees/Inmates`),
+  #             pop = sum(`Total Population`)) %>%
+  #   mutate(cumul_in_det_positive = cumsum(in_det_positive)) %>%
+  #   mutate(County = "MA Prisoner Total",
+  #          cumul_rate_10000 = cumul_in_det_positive / pop * 10000) %>%
+  #   dplyr::select(Date, County, cumul_rate_10000)
+  # 
+  # infection_df_by_county <- sjc_num_df %>%
+  #   mutate(in_det_positive = `N Positive - Detainees/Inmates`,
+  #          pop = `Total Population`) %>%
+  #   group_by(County) %>%
+  #   mutate(cumul_in_det_positive = cumsum(in_det_positive),
+  #          cumul_rate_10000 = cumul_in_det_positive / pop * 10000) %>%
+  #   dplyr::select(Date, County, cumul_rate_10000) %>%
+  #   bind_rows(infection_df_all) %>%
+  #   bind_rows(ma_df)
+  # 
+  # # Determine which incidents to plot
+  # cnty_to_plot_inf <- reactive({
+  #   c(input$select_county_inf1,
+  #     input$select_county_inf2,
+  #     input$select_county_inf3)
+  # })
+  # 
+  # # Plot
+  # output$infections_v_time_plot <- renderPlot({
+  #   
+  #   infection_df_by_county %>%
+  #     filter(County %in% cnty_to_plot_inf()) %>%
+  #     ungroup() %>%
+  #     mutate(County = factor(County, levels=infection_choices)) %>%
+  #   ggplot(aes(x=Date, y = cumul_rate_10000, color = County)) +
+  #     geom_path(size=1.3, show.legend = T) +
+  #     geom_point() +
+  #     labs(x = "", y = "Infection Rate per 10,000", color="",
+  #          title = "Prisoner Infection Rate Over Time",
+  #          subtitle = "Postive Cases per 10,000 Prisoners") +
+  #     theme(plot.title= element_text(family="gtam", face='bold'),
+  #           text = element_text(family="gtam", size = 16),
+  #           plot.margin = unit(c(1,1,4,1), "lines"),
+  #           legend.position = c(.5, -.22), legend.direction="horizontal",
+  #           legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+  #           legend.key.width = unit(1, "cm"),
+  #           legend.text = element_text(size=16)) +
+  #     scale_x_date(date_labels = "%b %e ") +
+  #     scale_color_manual(values=c("black", "#ef404d", "#0055aa")) +
+  #     coord_cartesian(clip = 'off')
+  #   
+  # })
   
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
