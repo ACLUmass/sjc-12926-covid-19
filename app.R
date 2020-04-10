@@ -62,6 +62,10 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                p("The data sourced for all visualizations on this site are available for download",
                  actionLink("link_to_download", "here."), style="margin-top: 1rem;"),
                
+               h3("Source Code"),
+               p("Interested programmers can view the source code for this app, written in R, on",
+                 a("GitHub.", href="https://github.com/ACLUmass/sjc-12926-covid-19")),
+               
                div(id="dev-warning",
                    wellPanel(
                      icon('exclamation-triangle'),
@@ -72,9 +76,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                      )
                )
                
-               # h4("Source Code"),
-               # p("Interested programmers can view the source code for this app, written in R, on", 
-               #   a("GitHub.", href="https://github.com/ACLUmass/bpd-covid-19-tracker"))
                ),
       
       tabPanel("Total Releases", 
