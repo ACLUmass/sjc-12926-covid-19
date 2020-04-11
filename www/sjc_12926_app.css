@@ -129,7 +129,10 @@ a[data-value="External Resources"]{
 
 #internal_well {
   border-radius: 0px;
-  padding-bottom:0px;
+}
+
+#internal_well .form-group {
+  margin-bottom: -5px;
 }
 
 #internal_well .selectize-input {

@@ -116,7 +116,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  p("Select kind of prisoner:"),
                  selectInput("select_release", label = NULL, 
                            choices = c("All", "Pre-Trial", "Sentenced", "Parole", "Total"),
-                           selected = "All", multiple=FALSE)
+                           selected = "All", multiple=FALSE),
+                 em('Exact number of releases per county annotated in',
+                    '"Pre-Trial", "Sentenced", "Parole", and "Total" plots.')
                  ),
                h2(textOutput("n_releases_str"), align="center"),
                p("Prisoners released pursuant to SJC 12926", align="center"),
@@ -143,7 +145,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  p("Select kind of individual:"),
                  selectInput("select_tested", label = NULL, 
                              choices = c("All", "Prisoners", "Staff", "Total"),
-                             selected = "All", multiple=FALSE)
+                             selected = "All", multiple=FALSE),
+                 em('Exact number of tests per county annotated in "Prisoners",',
+                    '"Staff", and "Total" plots.')
                ),
                h2(textOutput("n_tests_str"), align="center"),
                p("Reports of",
@@ -173,7 +177,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                          p("Select kind of individual:"),
                          selectInput("select_positive", label = NULL, 
                                      choices = c("All", "Prisoners", "Staff", "Total"),
-                                     selected = "All", multiple=FALSE)
+                                     selected = "All", multiple=FALSE),
+                         em('Exact number of positive tests per county annotated in',
+                            '"Prisoners", "Staff", and "Total" plots.')
                ),
                h2(textOutput("n_positive_str"), align="center"),
                p("Reports of",
