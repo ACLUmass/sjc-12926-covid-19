@@ -39,6 +39,12 @@ county_choices <- c("--", "All", counties)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ui <- fluidPage(theme = "sjc_12926_app.css",
+      
+  # Add favicon          
+  tags$head(
+    tags$link(rel = "shortcut icon", href = "favicon.ico"),
+    tags$link(rel = "icon", type = "image/png", sizes = "512x512", href = "favicon.png")
+  ),
   
   # App title ----
   div(id="title",
