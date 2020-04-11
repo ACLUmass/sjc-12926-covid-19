@@ -281,22 +281,23 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                p(strong("Current file size: "), textOutput("n_rows", inline=T), "entries"),
                p("The accumulated database is available for download here:"),
                downloadButton("downloadData", "Download XLSX"))
-      ),
-    
-    em("Data last downloaded:", textOutput("latest_time_str", inline=T), 
-       align="right", style="opacity: 0.6;")
+      )
     ),
   
-  br(),
-  hr(),
-  div(align="center",
-    a(href="https://www.aclum.org/", target="_blank",
-      img(src="Logo_CMYK_Massachusetts_Massachusetts.png", height="50px", 
-          style="display: inline; margin: 10px;")),
-    a(href="https://www.data.aclum.org/",  target="_blank",
-      img(src="D4J-logo.png", height="50px", 
-          style="display: inline; margin: 10px;"))),
-  p("Please contact lchambers@aclum.org with questions.", align="center", style="opacity: 0.6;")
+  div(id="footer",
+    em("\n\nData last downloaded:", textOutput("latest_time_str", inline=T), 
+         align="right", style="opacity: 0.6;"),
+    br(),
+    hr(),
+    div(align="center",
+      a(href="https://www.aclum.org/", target="_blank",
+        img(src="Logo_CMYK_Massachusetts_Massachusetts.png", height="50px", 
+            style="display: inline; margin: 10px;")),
+      a(href="https://www.data.aclum.org/",  target="_blank",
+        img(src="D4J-logo.png", height="50px", 
+            style="display: inline; margin: 10px;"))),
+    p("Please contact lchambers@aclum.org with questions.", align="center", style="opacity: 0.6;")
+  )
 )
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
