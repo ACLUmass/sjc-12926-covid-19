@@ -669,7 +669,7 @@ server <- function(input, output, session) {
                vjust=2, hjust=0, fill="grey", alpha=0.5, 
                label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
       labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
-           title = paste("Positive COVID-19 Test over Time"),
+           title = paste("Positive COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
