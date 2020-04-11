@@ -55,7 +55,7 @@ h2 {
   background-color: #fadf7c;
 }
 
-#dev-warning p {
+#dev-warning p, #dev-info p {
   display: inline;
 }
 
@@ -64,14 +64,25 @@ h2 {
   font-size: 20px;
 }
 
-#dev-warning h4 {
+#dev-warning h4, #dev-info h4 {
   display: inline;
   margin-left: 1rem;
 }
 
-#dev-warning em {
+#dev-warning em, #dev-info em {
   display: block;
   margin-top: 1rem;
+}
+
+#dev-info .well {
+  border-radius: 0px;
+  margin-top: 2rem;
+  background-color: #bbe9f0;
+}
+
+#dev-info i {
+  color: LightSeaGreen;
+  font-size: 20px;
 }
 
 /* Fix dropdown cutoff issue */

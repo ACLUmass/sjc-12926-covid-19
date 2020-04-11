@@ -132,6 +132,20 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Releases Over Time",
+               conditionalPanel(
+                 condition = "input.select_county1_rel == 'Hampshire'|input.select_county2_rel == 'Hampshire'|input.select_county3_rel == 'Hampshire'",
+                 div(id="dev-warning",
+                     wellPanel(
+                       fluidRow(
+                         column(1, icon('exclamation-triangle')),
+                         column(11, h4("Hampshire County Releases"),
+                                em("We are awaiting verification from Hampshire County",
+                                   "that might lead to changes in their daily reports of releases.", 
+                                   style="margin-top:0px"))
+                       )
+                     )
+                 )
+               ),
                wellPanel(id="internal_well",
                  p("Select up to three locations to plot versus time."),
                  splitLayout(
@@ -265,7 +279,18 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                div(id="dev-warning",
                    wellPanel(
                      fluidRow(
-                     column(1, icon('exclamation-triangle')),
+                       column(1, icon('exclamation-triangle')),
+                       column(11, h4("Hampshire County Releases"),
+                              em("We are awaiting verification from Hampshire County",
+                                 "that might lead to changes in their daily reports of releases.", 
+                                 style="margin-top:0px"))
+                     )
+                   )
+               ),
+               div(id="dev-info",
+                   wellPanel(
+                     fluidRow(
+                     column(1, icon('info-circle')),
                      column(11, em("Please be aware that the data below is entered in a",
                         "non-cumulative manner. Values in each row reflect not updated tallies of",
                         "cases, tests, or releases on the noted day, but rather the number of", strong("new"),
