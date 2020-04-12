@@ -1065,8 +1065,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       withProgress(message = 'Downloading...', value = 1, {
-        GET(url, write_disk(file))
-        # write.csv(df_all, file)
+        GET(sjc_dropbox_url, write_disk(file))
       })
     }
   )
