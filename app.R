@@ -32,6 +32,10 @@ counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex",
 # Make list for drop-downs
 county_choices <- c("--", "All", counties)
 # infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
+fac_choices <- c("--", "DOC Total", "All DOC Facilities", 'Boston Pre', 'BSH', 
+                 'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
+                 'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
+                 'SBCC', 'SMCC')
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -289,6 +293,34 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(leafletOutput("county_maps"),
                            type=4, color="#b5b5b5", size=0.5)
                ),
+      
+      tabPanel("DOC Facilities: Positive Test Totals", 
+               div(align="center",
+                 h2(textOutput("n_positive_DOC_str")),
+                 p("Reports of prisoners tested", strong("positive"),
+                   "for COVID-19 at individual DOC facilities pursuant to SJC 12926"),
+                 em("*The DOC only began reporting facility-level data on April 13.",
+                    "See the Total Positive Tests page for longer-term totals.")
+                 ),
+               withSpinner(plotOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+      
+      tabPanel("DOC Facilities: Positive Tests v. Time", 
+               wellPanel(id="internal_well",
+                         p("Select up to three facilities to plot versus time.*"),
+                         splitLayout(
+                           selectInput("select_fac1", label = NULL, choices = fac_choices,
+                                       selected = "All DOC Facilities", multiple=FALSE),
+                           selectInput("select_fac2", label = NULL, choices = fac_choices,
+                                       selected = "MTC", multiple=FALSE),
+                           selectInput("select_fac3", label = NULL, choices = fac_choices,
+                                       selected = "MCI-F", multiple=FALSE) 
+                         ),
+                         em("*The DOC only began reporting facility-level data on April 13.",
+                            "See the Positive Tests Over Time page for longer-term DOC tracking")
+                         ),
+               withSpinner(plotOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Explore Data",
                div(id="dev-warning",
@@ -960,83 +992,95 @@ server <- function(input, output, session) {
            }")))
 
   })
-
-  # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # # 🙅🏽 Major & Minor Incidents v. Time 🤷🏽
-  # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # output$major_minor_plot <- renderPlot({
-  #   
-  #   last_date_value_major <- df_all %>%
-  #     filter(date(OCCURRED_ON_DATE) == last_date_to_plot,
-  #            Lauren_says_minor == FALSE) %>%
-  #     count() %>%
-  #     pull()
-  #   
-  #   last_date_value_minor <- df_all %>%
-  #     filter(date(OCCURRED_ON_DATE) == last_date_to_plot,
-  #            Lauren_says_minor == TRUE) %>%
-  #     count() %>%
-  #     pull()
-  #   
-  #   df_all %>%
-  #     filter(OCCURRED_ON_DATE >= last_date_to_plot - months(2)) %>%
-  #     group_by(date = date(OCCURRED_ON_DATE), Lauren_says_minor) %>%
-  #     summarize(n = n()) %>%
-  #     ggplot(aes(x=date, y = n, alpha = date >= ymd(20200310))) +
-  #     geom_vline(aes(xintercept=ymd(20200310)), 
-  #                linetype="dashed", color = "#fbb416", size=1.2, alpha=0.5) +
-  #     geom_path(aes(color = Lauren_says_minor, group=Lauren_says_minor), 
-  #               size=1.3, show.legend = FALSE) +
-  #     ylim(0, 200) +
-  #     labs(x = "", y = "Number of Incidents", color="") +
-  #     theme(plot.title= element_text(family="gtam", face='bold'),
-  #           text = element_text(family="gtam", size = axis_label_fontsize),
-  #           plot.margin = unit(c(1,5,1,1), "lines")) +
-  #     scale_x_date(date_labels = "%b %e ", 
-  #                  limits = c(last_date_to_plot - months(2), last_date_to_plot)) +
-  #     scale_color_manual(values=c("#ef404d", "#0055aa")) +
-  #     scale_alpha_manual(values=c(0.3, 1)) +
-  #     annotate("text", x=ymd(20200310)-2.5, y = 60, angle=90, hjust=0.5,
-  #              color="#fbb416", family="gtam", size = MA_label_fontsize,
-  #              lineheight = MA_label_lineheight,
-  #              label = "State of Emergency\ndeclared in MA") +
-  #     annotate("text", x = last_date_to_plot, y = last_date_value_major, hjust=-.1, vjust = 0.5,
-  #              family="gtam", size = year_label_fontsize, color="#ef404d", fontface="bold",
-  #              label = "Major\nincidents") +
-  #     annotate("text", x = last_date_to_plot, y = last_date_value_minor, hjust=-.1, vjust = -0.5,
-  #              family="gtam", size = year_label_fontsize, fontface="bold", color="#0055aa",
-  #              label = "Minor\nincidents") +
-  #     coord_cartesian(clip = 'off')
-  #   
-  # })
-  # 
-  # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # # 📉 Incidents v. Time 📉
-  # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # output$incidents_v_time_plot <- renderPlot({
-  #   
-  #   df_all %>%
-  #     filter(OCCURRED_ON_DATE >= last_date_to_plot - months(2)) %>%
-  #     group_by(date = date(OCCURRED_ON_DATE)) %>%
-  #     summarize(n = n()) %>%
-  #   ggplot(aes(x=date, y = n, color = date >= ymd(20200310))) +
-  #     geom_vline(aes(xintercept=ymd(20200310)), 
-  #                linetype="dashed", color = "#fbb416", size=1.2, alpha=0.5) +
-  #     geom_path(aes(group = 1), size=1.3, show.legend = FALSE) +
-  #     geom_point(size=.6, show.legend = FALSE) +
-  #     ylim(0, 350) +
-  #     labs(x = "", y = "Daily Number of Incidents", color="") +
-  #     theme(plot.title= element_text(family="gtam", face='bold'),
-  #           text = element_text(family="gtam", size = axis_label_fontsize)) +
-  #     scale_color_manual(values=c("black", "#fbb416")) +
-  #     annotate("text", x=ymd(20200310)-2.5, y = 100, angle=90, hjust=0.5,
-  #              color="#fbb416", family="gtam", size = MA_label_fontsize,
-  #              lineheight = MA_label_lineheight,
-  #              label = "State of Emergency\ndeclared in MA") +
-  #     scale_x_date(date_labels = "%b %e ", 
-  #                  limits = c(last_date_to_plot - months(2), last_date_to_plot))
-  #   
-  # })
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # DOC Facility Totals
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  GET(sjc_dropbox_url, write_disk(tf_DOC <- tempfile(fileext = ".xlsx")))
+  
+  sjc_DOC_df <- read_excel(tf_DOC, sheet=2) %>%
+    mutate_if(is.character, ~na_if(., 'NA')) %>%
+    mutate(Date = as.Date(Date))
+  
+  sjc_DOC_num_df <- sjc_DOC_df %>%
+    rename(all_positive = `N Positive - Detainees/Inmates`,
+           fac = `DOC Facility`) %>%
+    select(-Notes)
+  
+  output$n_positive_DOC_str <- renderText({
+    paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
+    })
+  
+  # Plot
+  output$DOC_positives_plot <- renderPlot({
+    
+    sjc_DOC_num_df %>%
+      group_by(fac) %>%
+      summarize(all_positive_cumul = sum(all_positive)) %>%
+      ggplot(aes(x=fac, 
+                 y=all_positive_cumul, 
+                 fill = all_positive_cumul > 0,
+                 label = all_positive_cumul)) +
+      geom_col(show.legend=F) +
+      geom_bar_text(contrast=T, family="gtam") +
+      labs(y = "", x="") +
+      theme(axis.text.x = element_text(angle=45, hjust=1),
+            axis.text.y = element_blank(),
+            plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size=14)) +
+      scale_fill_manual(values = c("white", "#0055aa"))
+  })
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # DOC Facilities v. Time
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  # Determine which facilities to plot
+  fac_to_plot <- reactive({
+    c(input$select_fac1,
+      input$select_fac2,
+      input$select_fac3)
+  })
+  
+  DOC_total_df <- sjc_num_df %>%
+    select(-all_positive) %>%
+    rename(all_positive = `N Positive - Detainees/Inmates`) %>%
+    filter(County == "DOC") %>%
+    rename(fac = County) %>%
+    mutate(fac = "All DOC Facilities") %>%
+    dplyr::select(Date, fac, all_positive)
+  
+  df_by_fac <- sjc_DOC_num_df %>%
+    dplyr::select(Date, fac, all_positive) %>%
+    rbind(DOC_total_df)
+  
+  # Plot
+  output$DOC_time_plot <- renderPlot({
+    
+    df_by_fac %>%
+      filter(fac %in% fac_to_plot()) %>%
+      group_by(fac) %>%
+      mutate(cumul_pos = cumsum(all_positive)) %>%
+    ggplot(aes(x=Date, y = cumul_pos, 
+                 color=fac)) +
+      geom_path(size=1.3, show.legend = T, alpha=0.7) +
+      geom_point(size = 3) +
+      labs(x = "", y = "Total Prisoners Tested Positive", color="",
+           title = paste("Prisoners with Positive COVID-19 Tests over Time"),
+           subtitle="Cumulative pursuant to SJC 12926") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), legend.direction="horizontal",
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off')
+  })
+  
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Explore Data w/ Table

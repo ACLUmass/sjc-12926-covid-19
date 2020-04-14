@@ -130,7 +130,9 @@ h1, h2, h3, h4 {
 }
 
 a[data-value="Mapping County Trends"],
-a[data-value="External Resources"]{
+a[data-value="External Resources"],
+a[data-value="DOC Facilities: Positive Tests v. Time"]
+{
   border-bottom: 1px solid #eee;
 }
 
