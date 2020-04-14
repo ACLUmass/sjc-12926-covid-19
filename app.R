@@ -104,6 +104,24 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                        "in these data, visit our page on", 
                        actionLink("link_to_external", "external resources."))
                    )
+               ),
+               
+               div(id="dev-info",
+                   wellPanel(
+                     fluidRow(
+                       column(1, icon('info-circle')),
+                       column(11, em("The Special Master in", style="display:inline; margin-top:0px"), 
+                              "CPCS v. Chief Justice of the Trial Court", 
+                              em("released a",
+                                     a(href="https://www.mass.gov/doc/sjc-12926-special-masters-weekly-report-4132020/download", "report"),
+                                     "on April 14th publishing data that conflict",
+                                     "with data reported here.",
+                                     "The ACLU of Massachusetts is aware of the",
+                                     "disparities, generally understands their causes, and is",
+                                     "in the process of communicating with the",
+                                     "Special Master to resolve the issue.", style="margin-top:0px"))
+                     )
+                   )
                )
            ),
       
