@@ -349,7 +349,13 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                   "did not report that value, while cells with value 0 mean 0 was reported."),
                em("Additionally, please note that prisoner deaths due to COVID-19 are not included in these data."),
                br(), br(),
-               withSpinner(dataTableOutput("df_table"), type=4, color="#b5b5b5", size=0.5)),
+               tabsetPanel(type = "tabs",
+                           tabPanel("Counties and DOC", 
+                                    withSpinner(dataTableOutput("df_table"), type=4, color="#b5b5b5", size=0.5)),
+                           tabPanel("DOC Facilities", 
+                                    withSpinner(dataTableOutput("DOC_df_table"), type=4, color="#b5b5b5", size=0.5))
+                           )
+      ),
       
       tabPanel("Download Data",
                p("Data analysts at the ACLU of Massachusetts compile the daily",
@@ -1091,6 +1097,12 @@ server <- function(input, output, session) {
     options = list(scrollX = TRUE), 
     filter = 'top'
     )
+  
+  output$DOC_df_table <- renderDataTable(
+    {sjc_DOC_df},
+    options = list(scrollX = TRUE), 
+    filter = 'top'
+  )
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # ⬇️ Download XLSX ⬇️
