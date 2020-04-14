@@ -417,13 +417,14 @@ server <- function(input, output, session) {
   
   # For plotting, replace NAs with 0s to allow arithmetic
   sjc_num_df <- sjc_df %>%
-    mutate_all(function(x) ifelse(is.na(x), 0, x)) %>%
+    # mutate_all(function(x) ifelse(is.na(x), 0, x)) %>%
     # Render dates as such
+    rowwise() %>%
     mutate(Date = as.Date(Date, origin=lubridate::origin),
            # Calculate totals of released, positive, tested
-           all_released = `N Released Pre-Trial` + 
-             `N Released Sentenced` + 
-             `N Released Parole`,
+           all_released = sum(`N Released Pre-Trial`,
+                              `N Released Sentenced`,
+                              `N Released Parole`, na.rm=T),
            all_positive = `Total Positive`,
            all_tested = `Total Tested`)
   
@@ -444,34 +445,35 @@ server <- function(input, output, session) {
   }
   
   # Calculate totals
-  n_released <- sum(sjc_num_df$all_released)
-  n_positive <- sum(sjc_num_df$all_positive)
-  n_tested <- sum(sjc_num_df$all_tested)
+  n_released <- sum(sjc_num_df$all_released, na.rm=T)
+  n_positive <- sum(sjc_num_df$all_positive, na.rm=T)
+  n_tested <- sum(sjc_num_df$all_tested, na.rm=T)
   output$n_releases_str <- renderText({n_released})
   output$n_positive_str <- renderText({n_positive})
   output$n_tests_str <- renderText({n_tested})
   
-  # Calculate sums by county
+  # Calculate sums by county for map
   sum_sjc_num_df <- sjc_num_df %>%
     filter(County != "DOC") %>%
     group_by(County) %>%
-    summarize(all_positive = sum(all_positive),
-              all_tested = sum(all_tested),
-              all_released = sum(all_released))
+    summarize(all_positive = sum(all_positive, na.rm=T),
+              all_tested = sum(all_tested, na.rm=T),
+              all_released = sum(all_released, na.rm=T))
   
+  # Calculate totals for all counties and overall
   all_df_all <- sjc_num_df %>%
     group_by(Date) %>%
-    summarize(all_released = sum(all_released),
-              all_positive = sum(all_positive),
-              all_tested = sum(all_tested)) %>%
+    summarize(all_released = sum(all_released, na.rm=T),
+              all_positive = sum(all_positive, na.rm=T),
+              all_tested = sum(all_tested, na.rm=T)) %>%
     mutate(County = "All")
   
   df_by_county <- sjc_num_df %>%
     dplyr::select(Date, County, all_released, all_positive, all_tested) %>%
     rbind(all_df_all)
   
-  # Calc MA rates
-  ma_dropbox_url = "https://www.dropbox.com/s/xwp85c0efmlgq5r/MA_infection_rates.xlsx?dl=1"
+  # # Calc MA rates
+  # ma_dropbox_url = "https://www.dropbox.com/s/xwp85c0efmlgq5r/MA_infection_rates.xlsx?dl=1"
   
   # # Download excel spreadsheet from URL and read as DF
   # GET(ma_dropbox_url, write_disk(tf_ma <- tempfile(fileext = ".xlsx")))
@@ -487,7 +489,8 @@ server <- function(input, output, session) {
   released_df <- sjc_num_df %>%
     pivot_longer(cols=matches("Released", ignore.case=F),
                  names_to="release_type",
-                 names_prefix="N Released ")
+                 names_prefix="N Released ") %>%
+    filter(!is.na(value))
   
   # Determine which variable to plot
   select_release <- reactive({ input$select_release })
@@ -498,7 +501,7 @@ server <- function(input, output, session) {
       g <- released_df %>%
         group_by(County, release_type) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
+      ggplot(aes(x=factor(County, levels=counties), 
                    y=sum_value, 
                    fill =release_type, 
                    label=sum_value)) +
@@ -514,7 +517,7 @@ server <- function(input, output, session) {
         filter(release_type == select_release()) %>%
         group_by(County, release_type) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
+      ggplot(aes(x=factor(County, levels=counties), 
                    y=sum_value, fill = as.factor(1),
                    label=sum_value)) +
         geom_col(position = "stack", show.legend = F) +
@@ -531,7 +534,7 @@ server <- function(input, output, session) {
       g <- released_df %>%
         group_by(County) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
+      ggplot(aes(x=factor(County, levels=counties), 
                    y=sum_value, fill = as.factor(1),
                    label=sum_value)) +
         geom_col(position = "stack", show.legend = F) +
@@ -565,7 +568,8 @@ server <- function(input, output, session) {
   output$releases_v_time_plot <- renderPlot({
     
     df_by_county %>%
-      filter(County %in% cnty_to_plot_rel()) %>%
+      filter(County %in% cnty_to_plot_rel(),
+             !is.na(all_released)) %>%
       group_by(County) %>%
       mutate(cumul = cumsum(all_released)) %>%
     ggplot(aes(x=Date, y = cumul, color=County)) +
@@ -598,7 +602,8 @@ server <- function(input, output, session) {
     dplyr::select(-`N Positive - COs`, -`N Positive - Contractor`) %>%
     pivot_longer(cols=matches("N Positive", ignore.case=F),
                  names_to="positive_type",
-                 names_prefix="N Positive - ")
+                 names_prefix="N Positive - ") %>%
+    filter(!is.na(value))
   
   # Determine which variable to plot
   select_positive <- reactive({ input$select_positive })
@@ -680,7 +685,8 @@ server <- function(input, output, session) {
   output$positives_v_time_plot <- renderPlot({
     
     annotate_tests_df <- df_by_county %>%
-      filter(County %in% cnty_to_plot_pos()) %>%
+      filter(County %in% cnty_to_plot_pos(),
+             !is.na(all_tested)) %>%
       group_by(County) %>%
       summarize(all_tests = sum(all_tested))
     
@@ -689,7 +695,8 @@ server <- function(input, output, session) {
                              collapse="\n")
     
     pos_to_plot <- df_by_county %>%
-      filter(County %in% cnty_to_plot_pos()) %>%
+      filter(County %in% cnty_to_plot_pos(),
+             !is.na(all_positive)) %>%
       group_by(County) %>%
       mutate(cumul = cumsum(all_positive))
       
@@ -728,7 +735,8 @@ server <- function(input, output, session) {
     dplyr::select(-`N Tested - COs`, -`N Tested - Contractors`) %>%
     pivot_longer(cols=matches("N Tested", ignore.case=F),
                  names_to="tested_type",
-                 names_prefix="N Tested - ")
+                 names_prefix="N Tested - ") %>%
+    filter(!is.na(value))
   
   # Determine which variable to plot
   select_tested <- reactive({ input$select_tested })
@@ -810,7 +818,8 @@ server <- function(input, output, session) {
   output$tests_v_time_plot <- renderPlot({
     
     df_by_county %>%
-      filter(County %in% cnty_to_plot_test()) %>%
+      filter(County %in% cnty_to_plot_test(),
+             !is.na(all_tested)) %>%
       group_by(County) %>%
       mutate(cumul = cumsum(all_tested)) %>%
     ggplot(aes(x=Date, y = cumul, color=County)) +
@@ -846,7 +855,7 @@ server <- function(input, output, session) {
   
   all_pop_df <- sjc_num_df %>%
     mutate(pop = `Total Population`) %>%
-    filter(pop != 0) %>%
+    filter(pop != 0, !is.na(pop)) %>%
     group_by(Date) %>%
     filter(n() == 14) %>%
     summarize(pop = sum(pop)) %>%
@@ -854,6 +863,7 @@ server <- function(input, output, session) {
   
   pop_df <-  sjc_num_df %>%
     mutate(pop = `Total Population`) %>%
+    filter(!is.na(pop)) %>%
     group_by(Date, County) %>%
     summarize(pop = sum(pop)) %>%
     bind_rows(all_pop_df)
@@ -1016,9 +1026,10 @@ server <- function(input, output, session) {
   output$DOC_positives_plot <- renderPlot({
     
     sjc_DOC_num_df %>%
+      filter(!is.na(all_positive)) %>%
       group_by(fac) %>%
       summarize(all_positive_cumul = sum(all_positive)) %>%
-      ggplot(aes(x=fac, 
+    ggplot(aes(x=fac, 
                  y=all_positive_cumul, 
                  fill = all_positive_cumul > 0,
                  label = all_positive_cumul)) +
@@ -1059,7 +1070,8 @@ server <- function(input, output, session) {
   output$DOC_time_plot <- renderPlot({
     
     df_by_fac %>%
-      filter(fac %in% fac_to_plot()) %>%
+      filter(fac %in% fac_to_plot(),
+             !is.na(fac)) %>%
       group_by(fac) %>%
       mutate(cumul_pos = cumsum(all_positive)) %>%
     ggplot(aes(x=Date, y = cumul_pos, 
