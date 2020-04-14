@@ -246,9 +246,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county1_pop", label = NULL, choices = county_choices,
                                        selected = "All", multiple=FALSE),
                            selectInput("select_county2_pop", label = NULL, choices = county_choices,
-                                       selected = "DOC", multiple=FALSE),
+                                       selected = "--", multiple=FALSE),
                            selectInput("select_county3_pop", label = NULL, choices = county_choices,
-                                       selected = "Barnstable", multiple=FALSE)
+                                       selected = "--", multiple=FALSE)
                          )),
                withSpinner(plotOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
@@ -814,7 +814,9 @@ server <- function(input, output, session) {
   
   all_pop_df <- sjc_num_df %>%
     mutate(pop = `Total Population`) %>%
+    filter(pop != 0) %>%
     group_by(Date) %>%
+    filter(n() == 14) %>%
     summarize(pop = sum(pop)) %>%
     mutate(County = "All")
   
@@ -828,8 +830,10 @@ server <- function(input, output, session) {
   output$pop_v_time_plot <- renderPlot({
     
     pop_df %>%
-      filter(Date >= ymd(20200406)) %>%
-      filter(County %in% cnty_to_plot_pop()) %>%
+      mutate(pop = na_if(pop, 0)) %>%
+      filter(Date >= ymd(20200407),
+             County %in% cnty_to_plot_pop(),
+             !is.na(pop)) %>%
       ggplot(aes(x=Date, y = pop, color=County)) +
       geom_path(size=2, show.legend = T, alpha=0.8) +
       geom_point(size=3) +
@@ -842,7 +846,7 @@ server <- function(input, output, session) {
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
             legend.key.width = unit(1, "cm"),
             legend.text = element_text(size=16)) +
-      scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200406),NA)) +
+      scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200407),NA)) +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off') 
     
