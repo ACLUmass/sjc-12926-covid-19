@@ -431,7 +431,8 @@ server <- function(input, output, session) {
              `N Released Sentenced` + 
              `N Released Parole`,
            all_positive = `Total Positive`,
-           all_tested = `Total Tested`)
+           all_tested = `Total Tested`,
+           County = factor(County, levels=counties))
   
   # Determine whether to plot last day
   last_date_entered <- max(sjc_num_df$Date, na.rm=T)
@@ -504,10 +505,9 @@ server <- function(input, output, session) {
       g <- released_df %>%
         group_by(County, release_type) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
+        ggplot(aes(x=County, 
                    y=sum_value, 
-                   fill =release_type, 
-                   label=sum_value)) +
+                   fill =release_type)) +
         geom_col(position = "stack", show.legend = T) + 
         labs(fill = "") + 
         theme(legend.position = "top",
@@ -520,9 +520,8 @@ server <- function(input, output, session) {
         filter(release_type == select_release()) %>%
         group_by(County, release_type) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
+        ggplot(aes(x=County, 
+                   y=sum_value, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
         geom_bar_text(contrast=T, family="gtam")
       
@@ -537,9 +536,8 @@ server <- function(input, output, session) {
       g <- released_df %>%
         group_by(County) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
+        ggplot(aes(x=County, 
+                   y=sum_value, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
         geom_bar_text(contrast=T, family="gtam")
       
@@ -615,10 +613,9 @@ server <- function(input, output, session) {
       g <- positive_df %>%
         group_by(County, positive_type) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
+        ggplot(aes(x=County, 
                    y=sum_value, 
-                   fill =positive_type, 
-                   label=sum_value)) +
+                   fill =positive_type)) +
         geom_col(position = "stack", show.legend = T) +
         labs(fill = "") + 
         theme(legend.position = "top",
@@ -632,9 +629,8 @@ server <- function(input, output, session) {
         filter(positive_type == select_positive()) %>%
         group_by(County, positive_type) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
+        ggplot(aes(x=County, 
+                   y=sum_value, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
         geom_bar_text(contrast=T, family="gtam")
       
@@ -651,9 +647,8 @@ server <- function(input, output, session) {
       g <- positive_df %>%
         group_by(County) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
+        ggplot(aes(x=County, 
+                   y=sum_value, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
         geom_bar_text(contrast=T, family="gtam")
       
@@ -745,10 +740,9 @@ server <- function(input, output, session) {
       g <- tested_df %>%
         group_by(County, tested_type) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
+        ggplot(aes(x=County, 
                    y=sum_value, 
-                   fill =tested_type, 
-                   label=sum_value)) +
+                   fill =tested_type)) +
         geom_col(position = "stack", show.legend = T) +
         labs(fill = "") + 
         theme(legend.position = "top",
@@ -762,9 +756,8 @@ server <- function(input, output, session) {
         filter(tested_type == select_tested()) %>%
         group_by(County, tested_type) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
+        ggplot(aes(x=County, 
+                   y=sum_value, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
         geom_bar_text(contrast=T, family="gtam")
       
@@ -781,9 +774,8 @@ server <- function(input, output, session) {
       g <- tested_df %>%
         group_by(County) %>%
         summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
+        ggplot(aes(x=County, 
+                   y=sum_value, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
         geom_bar_text(contrast=T, family="gtam")
       
