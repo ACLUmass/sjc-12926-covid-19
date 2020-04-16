@@ -37,6 +37,23 @@ fac_choices <- c("--", "DOC Total", "All DOC Facilities", 'Boston Pre', 'BSH',
                  'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
                  'SBCC', 'SMCC')
 
+# ggplotly settings
+label <- list(
+  bordercolor = "white",
+  font = list(
+    family = "GT America",
+    size = 15,
+    color="black"
+  )
+)
+modeBarButtonsToRemove <- c("zoomIn2d", "zoomOut2d", "zoom2d", "pan2d", 
+                            "select2d", "lasso2d", "autoScale2d",
+                            "resetScale2d", "hoverClosestCartesian",
+                            "hoverCompareCartesian", "toggleSpikelines")
+legend_layout_top <- list(orientation = "h", 
+                          x = 0.5, y=1.2,
+                          xanchor="center")
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # UI
@@ -147,7 +164,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  ),
                h2(textOutput("n_releases_str"), align="center"),
                p("Prisoners released pursuant to SJC 12926", align="center"),
-               withSpinner(plotOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Releases Over Time",
@@ -175,7 +192,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    selectInput("select_county3_rel", label = NULL, choices = county_choices,
                                selected = "Barnstable", multiple=FALSE)
                  )),
-               withSpinner(plotOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
@@ -193,7 +210,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  textOutput("type_tested", inline=T),
                  "tested for COVID-19  pursuant to SJC 12926", 
                  align="center"),
-               withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Tests Over Time",
@@ -207,7 +224,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    selectInput("select_county3_test", label = NULL, choices = county_choices,
                                selected = "Barnstable", multiple=FALSE)
                  )),
-               withSpinner(plotOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
@@ -225,7 +242,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  textOutput("type_positive", inline=T),
                  "tested", strong("positive"),
                  "for COVID-19 pursuant to SJC 12926", align="center"),
-               withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Positive Tests Over Time",
@@ -239,7 +256,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county3_pos", label = NULL, choices = county_choices,
                                        selected = "Barnstable", multiple=FALSE)
                          )),
-               withSpinner(plotOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
@@ -254,7 +271,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county3_pop", label = NULL, choices = county_choices,
                                        selected = "--", multiple=FALSE)
                          )),
-               withSpinner(plotOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
@@ -272,7 +289,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       #                          choices = infection_choices,
       #                          selected = "DOC", multiple=FALSE)
       #            )),
-      #          withSpinner(plotOutput("infections_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+      #          withSpinner(plotlyOutput("infections_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
       #          em('Data on COVID-19 cases in Massachusetts ("MA Total") from', 
       #             a(href="https://www.mass.gov/info-details/covid-19-cases-quarantine-and-monitoring", 
       #               "mass.gov")
@@ -302,7 +319,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  em("*The DOC only began reporting facility-level data on April 13.",
                     "See the Total Positive Tests page for longer-term totals.")
                  ),
-               withSpinner(plotOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("DOC Facilities: Positive Tests v. Time", 
@@ -319,7 +336,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                          em("*The DOC only began reporting facility-level data on April 13.",
                             "See the Positive Tests Over Time page for longer-term DOC tracking")
                          ),
-               withSpinner(plotOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Explore Data",
@@ -499,14 +516,14 @@ server <- function(input, output, session) {
   # Determine which variable to plot
   select_release <- reactive({ input$select_release })
 
-  output$all_releases_plot <- renderPlot({
+  output$all_releases_plot <- renderPlotly({
     
     if (select_release() == "All") {
       g <- released_df %>%
         group_by(County, release_type) %>%
-        summarize(sum_value = sum(value)) %>%
+        summarize(`Number Released` = sum(value)) %>%
         ggplot(aes(x=County, 
-                   y=sum_value, 
+                   y=`Number Released`, 
                    fill =release_type)) +
         geom_col(position = "stack", show.legend = T) + 
         labs(fill = "") + 
@@ -519,11 +536,18 @@ server <- function(input, output, session) {
       g <- released_df %>%
         filter(release_type == select_release()) %>%
         group_by(County, release_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=County, 
-                   y=sum_value, fill = as.factor(1))) +
+        summarize(`Number Released` = sum(value)) %>%
+        mutate(label_vjust = ifelse(`Number Released` < 3, 
+                                    `Number Released` * 1.025, 
+                                    `Number Released` * 0.9625),
+               label_color = ifelse(`Number Released` <3, "black", "white")) %>%
+      ggplot(aes(x=County, 
+                   y=`Number Released`, 
+                   fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+        geom_text(aes(label=`Number Released`, color=label_color, y = label_vjust), 
+                  family="GT America") +
+        theme(legend.position = "none")
       
       output$n_releases_str <- renderText({
         released_df %>%
@@ -535,22 +559,34 @@ server <- function(input, output, session) {
     } else if (select_release() == "Total") {
       g <- released_df %>%
         group_by(County) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=County, 
-                   y=sum_value, fill = as.factor(1))) +
+        summarize(`Number Released` = sum(value)) %>%
+        mutate(label_vjust = ifelse(`Number Released` <3, `Number Released` + 1, `Number Released`-1.5),
+               label_color = ifelse(`Number Released` <3, "black", "white")) %>%
+      ggplot(aes(x=County, 
+                   y=`Number Released`, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+        geom_text(aes(label=`Number Released`, color=label_color, y = label_vjust), 
+                  family="GT America") +
+        theme(legend.position = "none")
       
       output$n_releases_str <- renderText({n_released})
       
     }
     
-    g +
+    g <- g +
       labs(y = "Prisoners Released", x="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3")) + 
+      scale_color_manual(values = c("black", "white"))
+    
+    # ggplotly(g, tooltip=c("x", "y")) %>%
+    plotly_build(g) %>%
+      config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
+      style(hoverlabel = label) %>%
+      # style(hoverinfo = "none", traces = c(4)) %>%
+      layout(legend = legend_layout_top)
     
   })
   
@@ -566,7 +602,7 @@ server <- function(input, output, session) {
   })
   
   # Plot
-  output$releases_v_time_plot <- renderPlot({
+  output$releases_v_time_plot <- renderPlotly({
     
     df_by_county %>%
       filter(County %in% cnty_to_plot_rel()) %>%
@@ -607,7 +643,7 @@ server <- function(input, output, session) {
   # Determine which variable to plot
   select_positive <- reactive({ input$select_positive })
 
-  output$all_positives_plot <- renderPlot({
+  output$all_positives_plot <- renderPlotly({
     
     if (select_positive() == "All") {
       g <- positive_df %>%
@@ -632,7 +668,8 @@ server <- function(input, output, session) {
         ggplot(aes(x=County, 
                    y=sum_value, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+        geom_bar_text(contrast=T, family="gtam") + 
+        theme(legend.position = "none")
       
       output$n_positive_str <- renderText({
         positive_df %>%
@@ -650,7 +687,8 @@ server <- function(input, output, session) {
         ggplot(aes(x=County, 
                    y=sum_value, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+        geom_bar_text(contrast=T, family="gtam") + 
+        theme(legend.position = "none")
       
       output$n_positive_str <- renderText({n_positive})
       output$type_positive <- renderText({"prisoners and staff"})
@@ -678,7 +716,7 @@ server <- function(input, output, session) {
   })
   
   # Plot
-  output$positives_v_time_plot <- renderPlot({
+  output$positives_v_time_plot <- renderPlotly({
     
     annotate_tests_df <- df_by_county %>%
       filter(County %in% cnty_to_plot_pos()) %>%
@@ -734,7 +772,7 @@ server <- function(input, output, session) {
   # Determine which variable to plot
   select_tested <- reactive({ input$select_tested })
   
-  output$all_tests_plot <- renderPlot({
+  output$all_tests_plot <- renderPlotly({
     
     if (select_tested() == "All") {
       g <- tested_df %>%
@@ -759,7 +797,8 @@ server <- function(input, output, session) {
         ggplot(aes(x=County, 
                    y=sum_value, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+        geom_bar_text(contrast=T, family="gtam") + 
+        theme(legend.position = "none")
       
       output$n_tests_str <- renderText({
         tested_df %>%
@@ -777,7 +816,8 @@ server <- function(input, output, session) {
         ggplot(aes(x=County, 
                    y=sum_value, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+        geom_bar_text(contrast=T, family="gtam") + 
+        theme(legend.position = "none")
       
       output$n_tests_str <- renderText({n_tested})
       output$type_tested <- renderText({"prisoners and staff"})
@@ -805,7 +845,7 @@ server <- function(input, output, session) {
   })
   
   # Plot
-  output$tests_v_time_plot <- renderPlot({
+  output$tests_v_time_plot <- renderPlotly({
     
     df_by_county %>%
       filter(County %in% cnty_to_plot_test()) %>%
@@ -857,7 +897,7 @@ server <- function(input, output, session) {
     bind_rows(all_pop_df)
   
   # Plot
-  output$pop_v_time_plot <- renderPlot({
+  output$pop_v_time_plot <- renderPlotly({
     
     pop_df %>%
       mutate(pop = na_if(pop, 0)) %>%
@@ -913,7 +953,7 @@ server <- function(input, output, session) {
   # })
   # 
   # # Plot
-  # output$infections_v_time_plot <- renderPlot({
+  # output$infections_v_time_plot <- renderPlotly({
   #   
   #   infection_df_by_county %>%
   #     filter(County %in% cnty_to_plot_inf()) %>%
@@ -1011,7 +1051,7 @@ server <- function(input, output, session) {
     })
   
   # Plot
-  output$DOC_positives_plot <- renderPlot({
+  output$DOC_positives_plot <- renderPlotly({
     
     sjc_DOC_num_df %>%
       group_by(fac) %>%
@@ -1026,7 +1066,8 @@ server <- function(input, output, session) {
       theme(axis.text.x = element_text(angle=45, hjust=1),
             axis.text.y = element_blank(),
             plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=14)) +
+            text = element_text(family="gtam", size=14),
+            legend.position = "none") +
       scale_fill_manual(values = c("white", "#0055aa"))
   })
   
@@ -1054,7 +1095,7 @@ server <- function(input, output, session) {
     rbind(DOC_total_df)
   
   # Plot
-  output$DOC_time_plot <- renderPlot({
+  output$DOC_time_plot <- renderPlotly({
     
     df_by_fac %>%
       filter(fac %in% fac_to_plot()) %>%
