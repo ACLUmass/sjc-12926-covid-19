@@ -32,7 +32,7 @@ counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex",
 # Make list for drop-downs
 county_choices <- c("--", "All", counties)
 # infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
-fac_choices <- c("--", "DOC Total", "All DOC Facilities", 'Boston Pre', 'BSH', 
+fac_choices <- c("--", "DOC Total**", "All DOC Facilities", 'Boston Pre', 'BSH', 
                  'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
                  'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
                  'SBCC', 'SMCC')
@@ -320,14 +320,19 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                          p("Select up to three facilities to plot versus time.*"),
                          splitLayout(
                            selectInput("select_fac1", label = NULL, choices = fac_choices,
-                                       selected = "All DOC Facilities", multiple=FALSE),
+                                       selected = "DOC Total**", multiple=FALSE),
                            selectInput("select_fac2", label = NULL, choices = fac_choices,
-                                       selected = "MTC", multiple=FALSE),
+                                       selected = "All DOC Facilities", multiple=FALSE),
                            selectInput("select_fac3", label = NULL, choices = fac_choices,
-                                       selected = "MCI-F", multiple=FALSE) 
+                                       selected = "MTC", multiple=FALSE) 
                          ),
-                         em("*The DOC only began reporting facility-level data on April 13.",
-                            "See the Positive Tests Over Time page for longer-term DOC tracking")
+                         em("*The DOC only began reporting facility-level prisoner data on April 13,",
+                            "and facility-level staff data on April 15.",
+                            "See the Positive Tests Over Time page for longer-term DOC tracking"),
+                         em('**DOC Total includes staff categorized as "Other"',
+                            'while the facility total does not. Additionally,',
+                            'some DOC staff are not assigned to a particular facility.',
+                            style="display: block; margin-top: 1rem;")
                          ),
                withSpinner(plotOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
@@ -1014,9 +1019,7 @@ server <- function(input, output, session) {
   # DOC Data
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
-  GET(sjc_dropbox_url, write_disk(tf_DOC <- tempfile(fileext = ".xlsx")))
-  
-  sjc_DOC_df <- read_excel(tf_DOC, sheet=2) %>%
+  sjc_DOC_df <- read_excel(tf, sheet=2) %>%
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     mutate(Date = as.Date(Date)) %>%
     mutate_at(vars(starts_with("N "), starts_with("Total")),
@@ -1126,16 +1129,20 @@ server <- function(input, output, session) {
   })
   
   DOC_total_df <- sjc_num_df %>%
-    select(-all_positive) %>%
-    rename(all_positive = `N Positive - Detainees/Inmates`) %>%
     filter(County == "DOC") %>%
     rename(fac = County) %>%
-    mutate(fac = "All DOC Facilities") %>%
+    mutate(fac = "DOC Total**") %>%
     dplyr::select(Date, fac, all_positive)
+  
+  DOC_fac_total_df <- sjc_DOC_num_df %>%
+    group_by(Date) %>%
+    summarize(all_positive = sum(all_positive)) %>%
+    mutate(fac = "All DOC Facilities")
   
   df_by_fac <- sjc_DOC_num_df %>%
     dplyr::select(Date, fac, all_positive) %>%
-    rbind(DOC_total_df)
+    rbind(DOC_total_df) %>%
+    rbind(DOC_fac_total_df)
   
   # Plot
   output$DOC_time_plot <- renderPlot({
@@ -1144,12 +1151,13 @@ server <- function(input, output, session) {
       filter(fac %in% fac_to_plot()) %>%
       group_by(fac) %>%
       mutate(cumul_pos = cumsum(all_positive)) %>%
+      filter(fac == "DOC Total**" | (fac != "DOC Total**" & Date >= ymd(20200415))) %>%
     ggplot(aes(x=Date, y = cumul_pos, 
                  color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.7) +
       geom_point(size = 3) +
-      labs(x = "", y = "Total Prisoners Tested Positive", color="",
-           title = paste("Prisoners with Positive COVID-19 Tests over Time"),
+      labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
+           title = paste("Positive COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
