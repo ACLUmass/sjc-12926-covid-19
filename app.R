@@ -140,10 +140,10 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                wellPanel(id="internal_well",
                  p("Select kind of prisoner:"),
                  selectInput("select_release", label = NULL, 
-                           choices = c("All", "Pre-Trial", "Sentenced", "Parole", "Total"),
+                           choices = c("All", "Pre-Trial", "Sentenced", "Total"),
                            selected = "All", multiple=FALSE),
                  em('Exact number of releases per county annotated in',
-                    '"Pre-Trial", "Sentenced", "Parole", and "Total" plots.')
+                    '"Pre-Trial", "Sentenced", and "Total" plots.')
                  ),
                h2(textOutput("n_releases_str"), align="center"),
                p("Prisoners released pursuant to SJC 12926", align="center"),
@@ -430,8 +430,7 @@ server <- function(input, output, session) {
     mutate(Date = as.Date(Date, origin=lubridate::origin),
            # Calculate totals of released, positive, tested
            all_released = `N Released Pre-Trial` + 
-             `N Released Sentenced` + 
-             `N Released Parole`,
+             `N Released Sentenced`,
            all_positive = `Total Positive`,
            all_tested = `Total Tested`)
   
@@ -517,7 +516,7 @@ server <- function(input, output, session) {
     
       output$n_releases_str <- renderText({n_released})
       
-    } else if (select_release() %in% c("Parole", "Pre-Trial", "Sentenced")) {
+    } else if (select_release() %in% c("Pre-Trial", "Sentenced")) {
       g <- released_df %>%
         filter(release_type == select_release()) %>%
         group_by(County, release_type) %>%
