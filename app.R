@@ -408,7 +408,9 @@ server <- function(input, output, session) {
                    matches("Population")), 
               as.numeric) %>%
     # Render dates as such
-    mutate(Date = as.Date(Date))
+    mutate(Date = as.Date(Date)) %>%
+    # Protect against empty cells messing things up
+    filter(Date >= ymd(20200327))
   
   output$n_rows <- renderText({nrow(sjc_df)})
   
