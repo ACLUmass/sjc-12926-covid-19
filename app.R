@@ -295,10 +295,20 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                ),
       
       tabPanel("DOC Facilities: Positive Test Totals", 
+               wellPanel(id="internal_well",
+                         p("Select kind of individual:"),
+                         selectInput("select_positive_fac", label = NULL, 
+                                     choices = c("All", "Prisoners", "Staff", "Total"),
+                                     selected = "All", multiple=FALSE),
+                         em('Exact number of positive tests per facility annotated in',
+                            '"Prisoners", "Staff", and "Total" plots.')
+               ),
                div(align="center",
                  h2(textOutput("n_positive_DOC_str")),
-                 p("Reports of prisoners tested", strong("positive"),
-                   "for COVID-19 at individual DOC facilities pursuant to SJC 12926"),
+                 p("Reports of",
+                   textOutput("type_positive_fac", inline=T),
+                   "tested", strong("positive"),
+                   "for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
                  em("*The DOC only began reporting facility-level data on April 13.",
                     "See the Total Positive Tests page for longer-term totals.")
                  ),
@@ -1001,42 +1011,107 @@ server <- function(input, output, session) {
   })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Facility Totals
+  # DOC Data
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
   GET(sjc_dropbox_url, write_disk(tf_DOC <- tempfile(fileext = ".xlsx")))
   
   sjc_DOC_df <- read_excel(tf_DOC, sheet=2) %>%
     mutate_if(is.character, ~na_if(., 'NA')) %>%
-    mutate(Date = as.Date(Date))
+    mutate(Date = as.Date(Date)) %>%
+    mutate_at(vars(starts_with("N "), starts_with("Total")),
+              as.numeric)
   
   sjc_DOC_num_df <- sjc_DOC_df %>%
-    rename(all_positive = `N Positive - Detainees/Inmates`,
-           fac = `DOC Facility`) %>%
+    rename(fac = `DOC Facility`,
+           all_positive = `Total Positive`) %>%
     select(-Notes)
   
-  output$n_positive_DOC_str <- renderText({
-    paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
-    })
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # DOC Facility Totals
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  fac_positive_df <- sjc_DOC_num_df %>%
+    rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`) %>%
+    pivot_longer(cols=matches("N Positive", ignore.case=F),
+                 names_to="positive_type",
+                 names_prefix="N Positive - ")
+  
+  # Determine which variable to plot
+  select_positive_fac <- reactive({ input$select_positive_fac })
   
   # Plot
   output$DOC_positives_plot <- renderPlot({
     
-    sjc_DOC_num_df %>%
-      group_by(fac) %>%
-      summarize(all_positive_cumul = sum(all_positive)) %>%
-      ggplot(aes(x=fac, 
-                 y=all_positive_cumul, 
-                 fill = all_positive_cumul > 0,
-                 label = all_positive_cumul)) +
-      geom_col(show.legend=F) +
-      geom_bar_text(contrast=T, family="gtam") +
-      labs(y = "", x="") +
+    if (select_positive_fac() == "All") {
+      g <- fac_positive_df %>%
+        filter(!is.na(value)) %>%
+        group_by(fac, positive_type) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=fac, 
+                   y=sum_value, 
+                   fill =positive_type, 
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = T) +
+        labs(fill = "") + 
+        theme(legend.position = "top",
+              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
+      
+      output$n_positive_DOC_str <- renderText({
+        paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
+      })
+      
+      output$type_positive_fac <- renderText({"prisoners and staff"})
+      
+    } else if (select_positive_fac() %in% c("Prisoners", "Staff")) {
+      g <- fac_positive_df %>%
+        filter(!is.na(value)) %>%
+        filter(positive_type == select_positive_fac()) %>%
+        group_by(fac, positive_type) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=fac, 
+                   y=sum_value, fill = as.factor(1),
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = F) +
+        geom_bar_text(contrast=T, family="gtam")
+      
+      
+      output$n_positive_DOC_str <- renderText({
+        fac_positive_df %>%
+          filter(positive_type == select_positive_fac()) %>%
+          pull(value) %>%
+          sum(na.rm=T) %>%
+          as.character() %>%
+          paste0("*")
+      })
+      
+      output$type_positive_fac <- renderText({tolower(select_positive_fac())})
+      
+    } else if (select_positive_fac() == "Total") {
+      g <- fac_positive_df %>%
+        filter(!is.na(value)) %>%
+        group_by(fac) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=fac, 
+                   y=sum_value, fill = as.factor(1),
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = F) +
+        geom_bar_text(contrast=T, family="gtam")
+      
+      output$n_positive_DOC_str <- renderText({
+        paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
+      })
+      
+      output$type_positive_fac <- renderText({"prisoners and staff"})
+    }
+    
+    g +
+      labs(y = "Tested Positive", x="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
-            axis.text.y = element_blank(),
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("white", "#0055aa"))
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
+    
   })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
