@@ -710,7 +710,7 @@ server <- function(input, output, session) {
     rename(`N Tested - Prisoners`=`N Tested - Detainees/Inmates`) %>%
     dplyr::select(-`N Tested - COs`, -`N Tested - Contractors`) %>%
     pivot_longer(cols=matches("N Tested", ignore.case=F),
-                 names_to="tested_type",
+                 names_to="type",
                  names_prefix="N Tested - ")
   
   # Determine which variable to plot
@@ -719,61 +719,35 @@ server <- function(input, output, session) {
   output$all_tests_plot <- renderPlotly({
     
     if (select_tested() == "All") {
-      g <- tested_df %>%
-        group_by(County, tested_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=County, 
-                   y=sum_value, 
-                   fill =tested_type)) +
-        geom_col(position = "stack", show.legend = T) +
-        labs(fill = "") + 
-        theme(legend.position = "top",
-              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
       
       output$n_tests_str <- renderText({n_tested})
       output$type_tested <- renderText({"prisoners and staff"})
       
-    } else if (select_tested() %in% c("Prisoners", "Staff")) {
-      g <- tested_df %>%
-        filter(tested_type == select_tested()) %>%
-        group_by(County, tested_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=County, 
-                   y=sum_value, fill = as.factor(1))) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam") + 
-        theme(legend.position = "none")
+      stacked_bar_plot(tested_df, 
+                       "Tested")
       
+    } else if (select_tested() %in% c("Prisoners", "Staff")) {
       output$n_tests_str <- renderText({
         tested_df %>%
-          filter(tested_type == select_tested()) %>%
+          filter(type == select_tested()) %>%
           pull(value) %>%
           sum()
       })
-      
       output$type_tested <- renderText({tolower(select_tested())})
       
-    } else if (select_tested() == "Total") {
-      g <- tested_df %>%
-        group_by(County) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=County, 
-                   y=sum_value, fill = as.factor(1))) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam") + 
-        theme(legend.position = "none")
+      single_bar_plot(tested_df, 
+                      select_tested(), 
+                      paste(select_tested(), "Tested"))
       
+    } else if (select_tested() == "Total") {
       output$n_tests_str <- renderText({n_tested})
       output$type_tested <- renderText({"prisoners and staff"})
       
+      single_bar_plot(tested_df, 
+                      select_tested(),
+                      "Prisoners & Staff Tested")
+      
     }
-    
-    g +
-      labs(y = "Tested for COVID-19", x="") +
-      theme(axis.text.x = element_text(angle=45, hjust=1),
-            plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
   })
   
