@@ -180,6 +180,19 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       ),
       
       tabPanel("Total Tests", 
+               conditionalPanel(
+                 condition = "input.select_tested == 'All'|input.select_tested == 'Staff'|input.select_tested == 'Total'",
+                 div(id="dev-info",
+                     wellPanel(
+                       fluidRow(
+                         column(1, icon('info-circle')),
+                         column(11, h4("DOC Staff Testing"),
+                                em("Please note the DOC is not reporting tests of staff.", 
+                                   style="margin-top:0px"))
+                       )
+                     )
+                 )
+               ),
                wellPanel(id="internal_well",
                  p("Select kind of individual:"),
                  selectInput("select_tested", label = NULL, 
