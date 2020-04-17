@@ -525,7 +525,7 @@ server <- function(input, output, session) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   released_df <- sjc_num_df %>%
     pivot_longer(cols=matches("Released", ignore.case=F),
-                 names_to="release_type",
+                 names_to="type",
                  names_prefix="N Released ")
   
   # Determine which variable to plot
@@ -537,26 +537,27 @@ server <- function(input, output, session) {
       
       output$n_releases_str <- renderText({n_released})
       
-      stacked_bar_plot(released_df %>% rename(type=release_type), 
+      stacked_bar_plot(released_df, 
                       "Prisoners Released")
       
     } else if (select_release() %in% c("Pre-Trial", "Sentenced")) {
       
       output$n_releases_str <- renderText({
         released_df %>%
-          filter(release_type == select_release()) %>%
+          filter(type == select_release()) %>%
           pull(value) %>%
           sum()
       })
       
-      single_bar_plot(released_df %>% rename(type=release_type), 
-                      select_release(), "Prisoners Released")
+      single_bar_plot(released_df, 
+                      select_release(), 
+                      paste(select_release(), "Prisoners Released"))
       
     } else if (select_release() == "Total") {
       
       output$n_releases_str <- renderText({n_released})
       
-      single_bar_plot(released_df %>% rename(type=release_type), 
+      single_bar_plot(released_df, 
                       select_release(), "Prisoners Released")
       
     }
@@ -610,7 +611,7 @@ server <- function(input, output, session) {
     rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`) %>%
     dplyr::select(-`N Positive - COs`, -`N Positive - Contractor`) %>%
     pivot_longer(cols=matches("N Positive", ignore.case=F),
-                 names_to="positive_type",
+                 names_to="type",
                  names_prefix="N Positive - ")
   
   # Determine which variable to plot
@@ -619,62 +620,32 @@ server <- function(input, output, session) {
   output$all_positives_plot <- renderPlotly({
     
     if (select_positive() == "All") {
-      g <- positive_df %>%
-        group_by(County, positive_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=County, 
-                   y=sum_value, 
-                   fill =positive_type)) +
-        geom_col(position = "stack", show.legend = T) +
-        labs(fill = "") + 
-        theme(legend.position = "top",
-              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
-      
       output$n_positive_str <- renderText({n_positive})
       output$type_positive <- renderText({"prisoners and staff"})
       
-    } else if (select_positive() %in% c("Prisoners", "Staff")) {
-      g <- positive_df %>%
-        filter(positive_type == select_positive()) %>%
-        group_by(County, positive_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=County, 
-                   y=sum_value, fill = as.factor(1))) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam") + 
-        theme(legend.position = "none")
+      stacked_bar_plot(positive_df, 
+                       "Tested Positive")
       
+    } else if (select_positive() %in% c("Prisoners", "Staff")) {
       output$n_positive_str <- renderText({
         positive_df %>%
-          filter(positive_type == select_positive()) %>%
+          filter(type == select_positive()) %>%
           pull(value) %>%
           sum()
       })
-      
       output$type_positive <- renderText({tolower(select_positive())})
       
+      single_bar_plot(positive_df, 
+                      select_positive(), 
+                      paste(select_positive(), "Tested Positive"))
+
     } else if (select_positive() == "Total") {
-      g <- positive_df %>%
-        group_by(County) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=County, 
-                   y=sum_value, fill = as.factor(1))) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam") + 
-        theme(legend.position = "none")
-      
       output$n_positive_str <- renderText({n_positive})
       output$type_positive <- renderText({"prisoners and staff"})
       
+      single_bar_plot(positive_df, 
+                      select_positive(), "Prisoners & Staff Tested Positive")
     }
-    
-    g +
-      labs(y = "Tested Positive for COVID-19", x="") +
-      theme(axis.text.x = element_text(angle=45, hjust=1),
-            plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
-    
   })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

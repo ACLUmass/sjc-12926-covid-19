@@ -28,7 +28,8 @@ modeBarButtonsToRemove <- c("zoomIn2d", "zoomOut2d", "zoom2d", "pan2d",
                             "hoverCompareCartesian", "toggleSpikelines")
 legend_layout_top <- list(orientation = "h", 
                           x = 0.5, y=1.2,
-                          xanchor="center")
+                          xanchor="center",
+                          bgcolor = alpha('lightgray', 0.4))
 
 # Function for plots with one kind of bar
 single_bar_plot <- function(data, filter_value, y_label) {
@@ -54,7 +55,6 @@ single_bar_plot <- function(data, filter_value, y_label) {
         theme(legend.position = "none") +
         scale_color_manual(values = c("black", "white"))
       
-      traces_to_fix_hover <- 1
       traces_to_hide <- 2:3
       traces_lightback <- 0
       traces_darkback <- 1
@@ -74,7 +74,7 @@ single_bar_plot <- function(data, filter_value, y_label) {
     text_y <- paste0(y_label, ": ", g$x$data[[1]]$y)
     
     g %>%
-      style(text = paste0(text_x, "</br></br>", text_y), traces=traces_to_fix_hover) %>%
+      style(text = paste0(text_x, "</br></br>", text_y), traces=1) %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
 }
@@ -93,7 +93,6 @@ stacked_bar_plot <- function(data, y_label) {
         theme(legend.position = "top",
               legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
       
-    traces_to_fix_hover <- 1:2
     traces_to_hide <- 0
     traces_lightback <- 2
     traces_darkback <- 1
@@ -110,11 +109,14 @@ stacked_bar_plot <- function(data, y_label) {
       style(hoverinfo = "none", traces = traces_to_hide) %>%
       layout(legend = legend_layout_top)  
 
-    text_x <- paste0("County: ", counties[g$x$data[[1]]$x])
-    text_y <- paste0(y_label, ": ", g$x$data[[1]]$y)
+    text_x1 <- paste0("County: ", counties[g$x$data[[1]]$x])
+    text_y1 <- paste0(g$x$data[[1]]$name, " ", y_label, ": ", g$x$data[[1]]$y)
+    text_x2 <- paste0("County: ", counties[g$x$data[[2]]$x])
+    text_y2 <- paste0(g$x$data[[2]]$name, " ", y_label, ": ", g$x$data[[2]]$y)
     
     g %>%
-      style(text = paste0(text_x, "</br></br>", text_y), traces=traces_to_fix_hover) %>%
+      style(text = paste0(text_x1, "</br></br>", text_y1), traces=1) %>%
+      style(text = paste0(text_x2, "</br></br>", text_y2), traces=2) %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
 }
