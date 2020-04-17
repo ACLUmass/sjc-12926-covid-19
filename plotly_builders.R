@@ -89,7 +89,7 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       style(hoverinfo = "none", traces = traces_to_hide)
 
-    text_x <- paste0(location_to_plot, ": ", label_source[g$x$data[[1]]$x])
+    text_x <- paste0(as.character(location_to_plot), ": ", label_source[g$x$data[[1]]$x])
     text_y <- paste0(y_label, ": ", g$x$data[[1]]$y)
     
     g %>%
@@ -135,9 +135,9 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
       style(hoverinfo = "none", traces = traces_to_hide) %>%
       layout(legend = legend_layout_top)  
 
-    text_x1 <- paste0(location_to_plot, ": ", label_source[g$x$data[[1]]$x])
+    text_x1 <- paste0(as.character(location_to_plot), ": ", label_source[g$x$data[[1]]$x])
     text_y1 <- paste0(g$x$data[[1]]$name, " ", y_label, ": ", g$x$data[[1]]$y)
-    text_x2 <- paste0(location_to_plot, ": ", label_source[g$x$data[[2]]$x])
+    text_x2 <- paste0(as.character(location_to_plot), ": ", label_source[g$x$data[[2]]$x])
     text_y2 <- paste0(g$x$data[[2]]$name, " ", y_label, ": ", g$x$data[[2]]$y)
     
     g %>%
