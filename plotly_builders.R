@@ -183,13 +183,14 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
               traces=i)
     }
 
+    
     if (length(g$x$data) == 1) {
       traces_lightback <- 0
       traces_darkback <- 1
     } else if (length(g$x$data) == 2) {
       traces_lightback <- 0
       traces_darkback <- 1:2
-    } else if (length(g$x$data) == 3) {
+    } else if (length(g$x$data) >= 3) {
       traces_lightback <- 3
       traces_darkback <- 1:2
     }
