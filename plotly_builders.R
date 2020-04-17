@@ -135,10 +135,9 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
       style(hoverinfo = "none", traces = traces_to_hide) %>%
       layout(legend = legend_layout_top)  
     
-    cat(location_to_plot)
-    cat(type_of(location_to_plot))
-    cat(as.character(location_to_plot))
-    cat(g$x$data)
+    cat("\n", file=stderr(), "location:", location_to_plot)
+    cat("\n", file=stderr(), "location type:", typeof(location_to_plot))
+    cat("\n", file=stderr(), "ggplotly data:", paste0(g$x$data, collapse=" "))
     
 
     text_x1 <- paste0(as.character(location_to_plot), ": ", label_source[g$x$data[[1]]$x])
