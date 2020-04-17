@@ -89,11 +89,16 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       style(hoverinfo = "none", traces = traces_to_hide)
 
-    text_x <- paste0(as.character(location_to_plot), ": ", label_source[g$x$data[[1]]$x])
-    text_y <- paste0(y_label, ": ", g$x$data[[1]]$y)
+    text_rep <- g$x$data[[1]]$text %>%
+      gsub("loc", location_to_plot, .) %>%
+      gsub("sum_value", y_label, .)
+    
+    # text_x <- paste0(as.character(location_to_plot), ": ", label_source[g$x$data[[1]]$x])
+    # text_y <- paste0(y_label, ": ", g$x$data[[1]]$y)
     
     g %>%
-      style(text = paste0(text_x, "</br></br>", text_y), traces=1) %>%
+      # style(text = paste0(text_x, "</br></br>", text_y), traces=1) %>%
+      style(text = text_rep, traces = 1) %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
 }
