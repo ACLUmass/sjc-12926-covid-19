@@ -36,20 +36,20 @@ legend_layout_bottom <- list(orientation = "h",
                           bgcolor = alpha('lightgray', 0.4))
 
 # Function for plots with one kind of bar
-single_bar_plot <- function(data, filter_value, y_label, location) {
+single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
   if (filter_value != "Total") {
     data <- data %>%
         filter(type == filter_value) 
   }
 
-  if (location == "County") {
+  if (location_to_plot == "County") {
     label_source = counties
-  } else if (location == "Facility") {
+  } else if (location_to_plot == "Facility") {
     label_source = data$Facility %>% unique() %>% sort()
   }
 
   data <- data %>%
-    rename(loc = location)
+    rename(loc = location_to_plot)
 
   label_threshold <- data %>%
     group_by(loc) %>%
@@ -89,7 +89,7 @@ single_bar_plot <- function(data, filter_value, y_label, location) {
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       style(hoverinfo = "none", traces = traces_to_hide)
 
-    text_x <- paste0(location, ": ", label_source[g$x$data[[1]]$x])
+    text_x <- paste0(location_to_plot, ": ", label_source[g$x$data[[1]]$x])
     text_y <- paste0(y_label, ": ", g$x$data[[1]]$y)
     
     g %>%
@@ -99,16 +99,16 @@ single_bar_plot <- function(data, filter_value, y_label, location) {
 }
 
 # Function for plots with multiple bars stacked
-stacked_bar_plot <- function(data, y_label, location) {
+stacked_bar_plot <- function(data, y_label, location_to_plot) {
 
-  if (location == "County") {
-    label_source = counties
-  } else if (location == "Facility") {
-    label_source = data$Facility %>% unique() %>% sort()
+  if (location_to_plot == "County") {
+    label_source <- counties
+  } else if (location_to_plot == "Facility") {
+    label_source <- data$Facility %>% unique() %>% sort()
   }
 
   g <- data%>%
-        rename(loc = location) %>%
+        rename(loc = location_to_plot) %>%
         group_by(loc, type) %>%
         summarize(sum_value = sum(value)) %>%
       ggplot(aes(x=loc,
@@ -135,9 +135,9 @@ stacked_bar_plot <- function(data, y_label, location) {
       style(hoverinfo = "none", traces = traces_to_hide) %>%
       layout(legend = legend_layout_top)  
 
-    text_x1 <- paste0(location, ": ", label_source[g$x$data[[1]]$x])
+    text_x1 <- paste0(location_to_plot, ": ", label_source[g$x$data[[1]]$x])
     text_y1 <- paste0(g$x$data[[1]]$name, " ", y_label, ": ", g$x$data[[1]]$y)
-    text_x2 <- paste0(location, ": ", label_source[g$x$data[[2]]$x])
+    text_x2 <- paste0(location_to_plot, ": ", label_source[g$x$data[[2]]$x])
     text_y2 <- paste0(g$x$data[[2]]$name, " ", y_label, ": ", g$x$data[[2]]$y)
     
     g %>%
@@ -148,7 +148,7 @@ stacked_bar_plot <- function(data, y_label, location) {
 }
 
 # Convert lines to ggplotly
-lines_plotly_style <- function(gg_plot, y_label, location, 
+lines_plotly_style <- function(gg_plot, y_label, location_to_plot, 
   annotation=FALSE, subtitle=TRUE) {
 
   title_html <- paste0("<b>", y_label, "</b>")
@@ -173,7 +173,7 @@ lines_plotly_style <- function(gg_plot, y_label, location,
     for (i in 1:n_traces) {
       text_x <- as.Date(g$x$data[[i]]$x, origin=lubridate::origin) # Date
       text_y <- paste0(y_label, ": ", g$x$data[[i]]$y)
-      text_name <- paste0(location, ": ", g$x$data[[i]]$name)
+      text_name <- paste0(location_to_plot, ": ", g$x$data[[i]]$name)
       
       g <- g %>%
         style(text = paste0(text_x, "</br></br>", text_name,"</br>", text_y), 
