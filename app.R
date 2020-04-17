@@ -13,6 +13,7 @@ library(tidyr)
 library(ggfittext)
 library(DT)
 library(tigris)
+library(jsonlite)
 
 # Set ggplot settings
 theme_set(theme_minimal())
@@ -38,12 +39,20 @@ fac_choices <- c("--", "DOC Total**", "All DOC Facilities", 'Boston Pre', 'BSH',
                  'SBCC', 'SMCC')
 
 # ggplotly settings
-label <- list(
+label_lightback <- list(
   bordercolor = "white",
   font = list(
     family = "GT America",
     size = 15,
     color="black"
+  )
+)
+label_darkback <- list(
+  bordercolor = "white",
+  font = list(
+    family = "GT America",
+    size = 15,
+    color="white"
   )
 )
 modeBarButtonsToRemove <- c("zoomIn2d", "zoomOut2d", "zoom2d", "pan2d", 
@@ -551,32 +560,38 @@ server <- function(input, output, session) {
       g <- released_df %>%
         group_by(County, release_type) %>%
         summarize(`Number Released` = sum(value)) %>%
-        ggplot(aes(x=County, 
+      ggplot(aes(x=County, 
                    y=`Number Released`, 
-                   fill =release_type)) +
-        geom_col(position = "stack", show.legend = T) + 
+                   fill = release_type)) +
+        geom_col(position = "stack") + 
         labs(fill = "") + 
         theme(legend.position = "top",
               legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
     
       output$n_releases_str <- renderText({n_released})
       
+      traces_to_hide <- 0
+      traces_lightback <- 2
+      traces_darkback <- 1
+      
     } else if (select_release() %in% c("Pre-Trial", "Sentenced")) {
       g <- released_df %>%
         filter(release_type == select_release()) %>%
         group_by(County, release_type) %>%
         summarize(`Number Released` = sum(value)) %>%
+        ungroup() %>%
         mutate(label_vjust = ifelse(`Number Released` < 3, 
-                                    `Number Released` * 1.025, 
-                                    `Number Released` * 0.9625),
+                                    `Number Released` + max(`Number Released`) * .025, 
+                                    `Number Released` - max(`Number Released`) * .0375),
                label_color = ifelse(`Number Released` <3, "black", "white")) %>%
-      ggplot(aes(x=County, 
-                   y=`Number Released`, 
+      ggplot(aes(x=County,
+                   y=`Number Released`,
                    fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
-        geom_text(aes(label=`Number Released`, color=label_color, y = label_vjust), 
+        geom_text(aes(label=`Number Released`, color=label_color, y = label_vjust),
                   family="GT America") +
-        theme(legend.position = "none")
+        theme(legend.position = "none") +
+        scale_color_manual(values = c("black", "white"))
       
       output$n_releases_str <- renderText({
         released_df %>%
@@ -585,20 +600,32 @@ server <- function(input, output, session) {
           sum()
         })
       
+      traces_to_hide <- 2:3
+      traces_lightback <- 0
+      traces_darkback <- 1
+      
     } else if (select_release() == "Total") {
       g <- released_df %>%
         group_by(County) %>%
         summarize(`Number Released` = sum(value)) %>%
-        mutate(label_vjust = ifelse(`Number Released` <3, `Number Released` + 1, `Number Released`-1.5),
+        ungroup() %>%
+        mutate(label_vjust = ifelse(`Number Released` < 3, 
+                                    `Number Released` + max(`Number Released`) * .025, 
+                                    `Number Released` - max(`Number Released`) * .0375),
                label_color = ifelse(`Number Released` <3, "black", "white")) %>%
       ggplot(aes(x=County, 
                    y=`Number Released`, fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
         geom_text(aes(label=`Number Released`, color=label_color, y = label_vjust), 
                   family="GT America") +
-        theme(legend.position = "none")
+        theme(legend.position = "none") + 
+        scale_color_manual(values = c("black", "white"))
       
       output$n_releases_str <- renderText({n_released})
+      
+      traces_to_hide <- 2:3
+      traces_lightback <- 0
+      traces_darkback <- 1
       
     }
     
@@ -607,15 +634,17 @@ server <- function(input, output, session) {
       theme(axis.text.x = element_text(angle=45, hjust=1),
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3")) + 
-      scale_color_manual(values = c("black", "white"))
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
-    # ggplotly(g, tooltip=c("x", "y")) %>%
-    plotly_build(g) %>%
+    g <- ggplotly(g, tooltip=c("x", "y")) %>%
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
-      style(hoverlabel = label) %>%
-      # style(hoverinfo = "none", traces = c(4)) %>%
+      style(hoverlabel = label_lightback, traces = traces_lightback) %>%
+      style(hoverlabel = label_darkback, traces = traces_darkback) %>%
+      style(hoverinfo = "none", traces = traces_to_hide) %>%
       layout(legend = legend_layout_top)
+    
+    g
+    
     
   })
   
