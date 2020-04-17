@@ -538,7 +538,8 @@ server <- function(input, output, session) {
       output$n_releases_str <- renderText({n_released})
       
       stacked_bar_plot(released_df, 
-                      "Prisoners Released")
+                      "Prisoners Released",
+                      "County")
       
     } else if (select_release() %in% c("Pre-Trial", "Sentenced")) {
       
@@ -551,14 +552,16 @@ server <- function(input, output, session) {
       
       single_bar_plot(released_df, 
                       select_release(), 
-                      paste(select_release(), "Prisoners Released"))
+                      paste(select_release(), "Prisoners Released"),
+                      "County")
       
     } else if (select_release() == "Total") {
       
       output$n_releases_str <- renderText({n_released})
       
       single_bar_plot(released_df, 
-                      select_release(), "Prisoners Released")
+                      select_release(), "Prisoners Released",
+                      "County")
       
     }
     
@@ -624,7 +627,8 @@ server <- function(input, output, session) {
       output$type_positive <- renderText({"prisoners and staff"})
       
       stacked_bar_plot(positive_df, 
-                       "Tested Positive")
+                       "Tested Positive",
+                       "County")
       
     } else if (select_positive() %in% c("Prisoners", "Staff")) {
       output$n_positive_str <- renderText({
@@ -637,14 +641,16 @@ server <- function(input, output, session) {
       
       single_bar_plot(positive_df, 
                       select_positive(), 
-                      paste(select_positive(), "Tested Positive"))
+                      paste(select_positive(), "Tested Positive"),
+                      "County")
 
     } else if (select_positive() == "Total") {
       output$n_positive_str <- renderText({n_positive})
       output$type_positive <- renderText({"prisoners and staff"})
       
       single_bar_plot(positive_df, 
-                      select_positive(), "Prisoners & Staff Tested Positive")
+                      select_positive(), "Prisoners & Staff Tested Positive",
+                      "County")
     }
   })
   
@@ -724,7 +730,8 @@ server <- function(input, output, session) {
       output$type_tested <- renderText({"prisoners and staff"})
       
       stacked_bar_plot(tested_df, 
-                       "Tested")
+                       "Tested",
+                       "County")
       
     } else if (select_tested() %in% c("Prisoners", "Staff")) {
       output$n_tests_str <- renderText({
@@ -737,7 +744,8 @@ server <- function(input, output, session) {
       
       single_bar_plot(tested_df, 
                       select_tested(), 
-                      paste(select_tested(), "Tested"))
+                      paste(select_tested(), "Tested"),
+                      "County")
       
     } else if (select_tested() == "Total") {
       output$n_tests_str <- renderText({n_tested})
@@ -745,7 +753,8 @@ server <- function(input, output, session) {
       
       single_bar_plot(tested_df, 
                       select_tested(),
-                      "Prisoners & Staff Tested")
+                      "Prisoners & Staff Tested",
+                      "County")
       
     }
     
@@ -969,10 +978,13 @@ server <- function(input, output, session) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
   fac_positive_df <- sjc_DOC_num_df %>%
-    rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`) %>%
+    rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`,
+           Facility = fac) %>%
     pivot_longer(cols=matches("N Positive", ignore.case=F),
-                 names_to="positive_type",
-                 names_prefix="N Positive - ")
+                 names_to="type",
+                 names_prefix="N Positive - ") %>%
+    filter(!is.na(value))
+    
   
   # Determine which variable to plot
   select_positive_fac <- reactive({ input$select_positive_fac })
@@ -981,18 +993,6 @@ server <- function(input, output, session) {
   output$DOC_positives_plot <- renderPlotly({
     
     if (select_positive_fac() == "All") {
-      g <- fac_positive_df %>%
-        filter(!is.na(value)) %>%
-        group_by(fac, positive_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=fac, 
-                   y=sum_value, 
-                   fill =positive_type, 
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = T) +
-        labs(fill = "") + 
-        theme(legend.position = "top",
-              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
       
       output$n_positive_DOC_str <- renderText({
         paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
@@ -1000,55 +1000,39 @@ server <- function(input, output, session) {
       
       output$type_positive_fac <- renderText({"prisoners and staff"})
       
-    } else if (select_positive_fac() %in% c("Prisoners", "Staff")) {
-      g <- fac_positive_df %>%
-        filter(!is.na(value)) %>%
-        filter(positive_type == select_positive_fac()) %>%
-        group_by(fac, positive_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=fac, 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+      stacked_bar_plot(fac_positive_df, 
+                       "Tested Positive",
+                       "Facility")
       
+    } else if (select_positive_fac() %in% c("Prisoners", "Staff")) {
       
       output$n_positive_DOC_str <- renderText({
         fac_positive_df %>%
-          filter(positive_type == select_positive_fac()) %>%
+          filter(type == select_positive_fac()) %>%
           pull(value) %>%
           sum(na.rm=T) %>%
           as.character() %>%
           paste0("*")
       })
-      
       output$type_positive_fac <- renderText({tolower(select_positive_fac())})
       
+      single_bar_plot(fac_positive_df, 
+                      select_positive_fac(), 
+                      paste(select_positive_fac(), "Tested Positive"),
+                      "Facility")
+      
     } else if (select_positive_fac() == "Total") {
-      g <- fac_positive_df %>%
-        filter(!is.na(value)) %>%
-        group_by(fac) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=fac, 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
       
       output$n_positive_DOC_str <- renderText({
         paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
       })
-      
       output$type_positive_fac <- renderText({"prisoners and staff"})
+      
+      single_bar_plot(fac_positive_df, 
+                      select_positive_fac(),
+                      "Prisoners & Staff Tested Positive",
+                      "Facility")
     }
-    
-    g +
-      labs(y = "Tested Positive", x="") +
-      theme(axis.text.x = element_text(angle=45, hjust=1),
-            plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=14),
-            legend.position = "none") +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
   })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

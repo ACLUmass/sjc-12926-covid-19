@@ -32,27 +32,36 @@ legend_layout_top <- list(orientation = "h",
                           bgcolor = alpha('lightgray', 0.4))
 
 # Function for plots with one kind of bar
-single_bar_plot <- function(data, filter_value, y_label) {
+single_bar_plot <- function(data, filter_value, y_label, location) {
   if (filter_value != "Total") {
     data <- data %>%
         filter(type == filter_value) 
   }
 
+  if (location == "County") {
+    label_source = counties
+  } else if (location == "Facility") {
+    label_source = data$Facility %>% unique() %>% sort()
+  }
+
+  data <- data %>%
+    rename(loc = location)
+
   label_threshold <- data %>%
-    group_by(County) %>%
+    group_by(loc) %>%
     summarize(sum_value = sum(value)) %>%
     pull(sum_value) %>%
     max() * .07
 
   g <- data%>%
-        group_by(County) %>%
+        group_by(loc) %>%
         summarize(sum_value = sum(value)) %>%
         ungroup() %>%
         mutate(label_vjust = ifelse(sum_value < label_threshold, 
                                     sum_value + max(sum_value) * .025, 
                                     sum_value - max(sum_value) * .0375),
                label_color = ifelse(sum_value < label_threshold, "black", "white")) %>%
-      ggplot(aes(x=County,
+      ggplot(aes(x=loc,
                    y=sum_value,
                    fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
@@ -76,7 +85,7 @@ single_bar_plot <- function(data, filter_value, y_label) {
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       style(hoverinfo = "none", traces = traces_to_hide)
 
-    text_x <- paste0("County: ", counties[g$x$data[[1]]$x])
+    text_x <- paste0(location, ": ", label_source[g$x$data[[1]]$x])
     text_y <- paste0(y_label, ": ", g$x$data[[1]]$y)
     
     g %>%
@@ -86,12 +95,19 @@ single_bar_plot <- function(data, filter_value, y_label) {
 }
 
 # Function for plots with multiple bars stacked
-stacked_bar_plot <- function(data, y_label) {
+stacked_bar_plot <- function(data, y_label, location) {
+
+  if (location == "County") {
+    label_source = counties
+  } else if (location == "Facility") {
+    label_source = data$Facility %>% unique() %>% sort()
+  }
 
   g <- data%>%
-        group_by(County, type) %>%
+        rename(loc = location) %>%
+        group_by(loc, type) %>%
         summarize(sum_value = sum(value)) %>%
-      ggplot(aes(x=County,
+      ggplot(aes(x=loc,
                    y=sum_value,
                    fill = type)) +
         geom_col(position = "stack") 
@@ -115,9 +131,9 @@ stacked_bar_plot <- function(data, y_label) {
       style(hoverinfo = "none", traces = traces_to_hide) %>%
       layout(legend = legend_layout_top)  
 
-    text_x1 <- paste0("County: ", counties[g$x$data[[1]]$x])
+    text_x1 <- paste0(location, ": ", label_source[g$x$data[[1]]$x])
     text_y1 <- paste0(g$x$data[[1]]$name, " ", y_label, ": ", g$x$data[[1]]$y)
-    text_x2 <- paste0("County: ", counties[g$x$data[[2]]$x])
+    text_x2 <- paste0(location, ": ", label_source[g$x$data[[2]]$x])
     text_y2 <- paste0(g$x$data[[2]]$name, " ", y_label, ": ", g$x$data[[2]]$y)
     
     g %>%
