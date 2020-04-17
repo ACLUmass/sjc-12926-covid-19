@@ -169,14 +169,18 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       layout(legend = legend_layout_bottom) %>%
       layout(title = list(text = title_html))
+  
     if (annotation) {
       n_traces <- length(g$x$data) - 1
     } else {
       n_traces <- length(g$x$data)
     }
+  
     for (i in 1:n_traces) {
-      text_rep <- g$x$data[[i]]$text %>%
-        gsub("cumul", y_label, .)
+        text_rep <- g$x$data[[i]]$text %>%
+          gsub("pop", y_label, .) %>%
+          gsub("cumul", y_label, .) %>%
+          gsub("fac", location_to_plot, .)
 
       g <- g %>%
         style(text = text_rep,
