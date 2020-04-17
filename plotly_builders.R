@@ -24,10 +24,10 @@ label_darkback <- list(
 )
 modeBarButtonsToRemove <- c("zoomIn2d", "zoomOut2d", "zoom2d", "pan2d", 
                             "select2d", "lasso2d", "autoScale2d",
-                            "resetScale2d", "hoverClosestCartesian",
+                            "hoverClosestCartesian",
                             "hoverCompareCartesian", "toggleSpikelines")
 modeBarButtonsToRemove_time <- c("select2d","zoom2d","lasso2d", 
-                                 "hoverClosestCartesian",
+                                 "hoverClosestCartesian","autoScale2d",
                             "hoverCompareCartesian", "toggleSpikelines")
 legend_layout_top <- list(orientation = "h", 
                           x = 0.5, y=1.2,
