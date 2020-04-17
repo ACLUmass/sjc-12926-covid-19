@@ -30,6 +30,10 @@ legend_layout_top <- list(orientation = "h",
                           x = 0.5, y=1.2,
                           xanchor="center",
                           bgcolor = alpha('lightgray', 0.4))
+legend_layout_bottom <- list(orientation = "h", 
+                          x = 0.5, y=-.2,
+                          xanchor="center",
+                          bgcolor = alpha('lightgray', 0.4))
 
 # Function for plots with one kind of bar
 single_bar_plot <- function(data, filter_value, y_label, location) {
@@ -141,4 +145,43 @@ stacked_bar_plot <- function(data, y_label, location) {
       style(text = paste0(text_x2, "</br></br>", text_y2), traces=2) %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
+}
+
+# Convert lines to ggplotly
+lines_plotly_style <- function(gg_plot) {
+
+  g <- ggplotly(gg_plot) %>%
+      config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
+      layout(legend = legend_layout_bottom) %>%
+      layout(title = list(text = paste0("<b>Prisoners Released over Time</b>",
+                                        '<br>',
+                                        '<sup>',
+                                        "Cumulative pursuant to SJC 12926",
+                                        '</sup>')))
+    
+    for (i in 1:length(g$x$data)) {
+      text_x <- as.Date(g$x$data[[i]]$x, origin=lubridate::origin) # Date
+      text_y <- paste0("Prisoners Released: ", g$x$data[[i]]$y)
+      text_name <- paste0("County: ", g$x$data[[i]]$name)
+      
+      g <- g %>%
+        style(text = paste0(text_x, "</br></br>", text_name,"</br>", text_y), 
+              traces=i)
+    }
+
+    if (length(g$x$data) == 1) {
+      traces_lightback <- 0
+      traces_darkback <- 1
+    } else if (length(g$x$data) == 2) {
+      traces_lightback <- 0
+      traces_darkback <- 1:2
+    } else if (length(g$x$data) == 3) {
+      traces_lightback <- 3
+      traces_darkback <- 1:2
+    }
+       
+    g %>%
+      style(hoverlabel = label_lightback, traces = traces_lightback) %>%
+      style(hoverlabel = label_darkback, traces = traces_darkback)
+
 }

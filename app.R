@@ -13,7 +13,6 @@ library(tidyr)
 library(ggfittext)
 library(DT)
 library(tigris)
-library(jsonlite)
 
 source("plotly_builders.R")
 
@@ -581,7 +580,7 @@ server <- function(input, output, session) {
   # Plot
   output$releases_v_time_plot <- renderPlotly({
     
-    df_by_county %>%
+    g <- df_by_county %>%
       filter(County %in% cnty_to_plot_rel()) %>%
       group_by(County) %>%
       mutate(cumul = cumsum(all_released)) %>%
@@ -591,8 +590,8 @@ server <- function(input, output, session) {
       labs(x = "", y = "Total Prisoners Released", color="",
            title = paste("Prisoners Released over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family="GT America", face='bold'),
+            text = element_text(family="GT America", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -602,6 +601,8 @@ server <- function(input, output, session) {
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
+    
+    lines_plotly_style(g)
     
   })
   
