@@ -26,6 +26,8 @@ modeBarButtonsToRemove <- c("zoomIn2d", "zoomOut2d", "zoom2d", "pan2d",
                             "select2d", "lasso2d", "autoScale2d",
                             "resetScale2d", "hoverClosestCartesian",
                             "hoverCompareCartesian", "toggleSpikelines")
+modeBarButtonsToRemove_time <- c("lasso2d", "hoverClosestCartesian",
+                            "hoverCompareCartesian", "toggleSpikelines")
 legend_layout_top <- list(orientation = "h", 
                           x = 0.5, y=1.2,
                           xanchor="center",
@@ -166,7 +168,7 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
   }
 
   g <- ggplotly(gg_plot) %>%
-      config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
+      config(modeBarButtonsToRemove = modeBarButtonsToRemove_time) %>%
       layout(legend = legend_layout_bottom) %>%
       layout(title = list(text = title_html))
   

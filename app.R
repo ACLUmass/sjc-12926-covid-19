@@ -1079,9 +1079,9 @@ server <- function(input, output, session) {
     g <- df_by_fac %>%
       filter(fac %in% fac_to_plot()) %>%
       group_by(fac) %>%
-      mutate(cumul_pos = cumsum(all_positive)) %>%
+      mutate(cumul = cumsum(all_positive)) %>%
       filter(fac == "DOC Total**" | (fac != "DOC Total**" & Date >= ymd(20200415))) %>%
-    ggplot(aes(x=Date, y = cumul_pos, 
+    ggplot(aes(x=Date, y = cumul, 
                  color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.7) +
       geom_point(size = 3) +
