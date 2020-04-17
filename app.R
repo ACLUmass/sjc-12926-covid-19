@@ -602,7 +602,7 @@ server <- function(input, output, session) {
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
     
-    lines_plotly_style(g)
+    lines_plotly_style(g, "Prisoners Released", "County")
     
   })
   
@@ -683,27 +683,30 @@ server <- function(input, output, session) {
       group_by(County) %>%
       mutate(cumul = cumsum(all_positive))
       
-    pos_to_plot %>%
-    ggplot(aes(x=Date, y = cumul, color=County)) +
-      geom_path(size=2, show.legend = T, alpha=0.8) +
-      geom_point(size=3) +
-      annotate("label", min(pos_to_plot$Date), Inf, label=annotate_tests,
-               vjust=2, hjust=0, fill="grey", alpha=0.5, 
-               label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
-      labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
-           title = paste("Positive COVID-19 Tests over Time"),
-           subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
-            plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22), legend.direction="horizontal",
-            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
-            legend.key.width = unit(1, "cm"),
-            legend.text = element_text(size=16)) +
-      scale_x_date(date_labels = "%b %e ") +
-      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+    g <- pos_to_plot %>%
+      ggplot(aes(x=Date, y = cumul, color=County)) +
+        geom_path(size=2, show.legend = T, alpha=0.8) +
+        geom_point(size=3) +
+        annotate("label", min(pos_to_plot$Date), Inf, label=annotate_tests,
+                 vjust=2, hjust=0, fill="grey", alpha=0.5, 
+                 label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
+        labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
+             title = paste("Positive COVID-19 Tests over Time"),
+             subtitle="Cumulative pursuant to SJC 12926") +
+        theme(plot.title= element_text(family="GT America", face='bold'),
+              text = element_text(family="GT America", size = 16),
+              plot.margin = unit(c(1,1,4,1), "lines"),
+              legend.position = c(.5, -.22), legend.direction="horizontal",
+              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+              legend.key.width = unit(1, "cm"),
+              legend.text = element_text(size=16)) +
+        scale_x_date(date_labels = "%b %e ") +
+        scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+        coord_cartesian(clip = 'off') +
+        ylim(0, NA)
+    
+    lines_plotly_style(g, "Prisoners & Staff Tested Positive", "County", 
+                       annotation=TRUE)
     
   })
   
@@ -785,8 +788,8 @@ server <- function(input, output, session) {
       labs(x = "", y = "Total Prisoners & Staff Tested", color="",
            title = paste("COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family="GT America", face='bold'),
+            text = element_text(family="GT America", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -837,8 +840,8 @@ server <- function(input, output, session) {
       geom_point(size=3) +
       labs(x = "", y = "Total Prisoners", color="",
            title = paste("Incarcerated Populations over Time")) +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family="GT America", face='bold'),
+            text = element_text(family="GT America", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),

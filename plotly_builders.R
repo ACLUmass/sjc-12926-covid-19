@@ -148,21 +148,25 @@ stacked_bar_plot <- function(data, y_label, location) {
 }
 
 # Convert lines to ggplotly
-lines_plotly_style <- function(gg_plot) {
+lines_plotly_style <- function(gg_plot, y_label, location, annotation=FALSE) {
 
   g <- ggplotly(gg_plot) %>%
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       layout(legend = legend_layout_bottom) %>%
-      layout(title = list(text = paste0("<b>Prisoners Released over Time</b>",
+      layout(title = list(text = paste0("<b>", y_label, " over Time</b>",
                                         '<br>',
                                         '<sup>',
                                         "Cumulative pursuant to SJC 12926",
                                         '</sup>')))
-    
-    for (i in 1:length(g$x$data)) {
+    if (annotation) {
+      n_traces <- length(g$x$data) - 1
+    } else {
+      n_traces <- length(g$x$data)
+    }
+    for (i in 1:n_traces) {
       text_x <- as.Date(g$x$data[[i]]$x, origin=lubridate::origin) # Date
-      text_y <- paste0("Prisoners Released: ", g$x$data[[i]]$y)
-      text_name <- paste0("County: ", g$x$data[[i]]$name)
+      text_y <- paste0(y_label, ": ", g$x$data[[i]]$y)
+      text_name <- paste0(location, ": ", g$x$data[[i]]$name)
       
       g <- g %>%
         style(text = paste0(text_x, "</br></br>", text_name,"</br>", text_y), 
