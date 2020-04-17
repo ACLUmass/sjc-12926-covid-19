@@ -32,7 +32,7 @@ counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex",
 # Make list for drop-downs
 county_choices <- c("--", "All", counties)
 # infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
-fac_choices <- c("--", "DOC Total", "All DOC Facilities", 'Boston Pre', 'BSH', 
+fac_choices <- c("--", "DOC Total**", "All DOC Facilities", 'Boston Pre', 'BSH', 
                  'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
                  'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
                  'SBCC', 'SMCC')
@@ -157,10 +157,10 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                wellPanel(id="internal_well",
                  p("Select kind of prisoner:"),
                  selectInput("select_release", label = NULL, 
-                           choices = c("All", "Pre-Trial", "Sentenced", "Parole", "Total"),
+                           choices = c("All", "Pre-Trial", "Sentenced", "Total"),
                            selected = "All", multiple=FALSE),
                  em('Exact number of releases per county annotated in',
-                    '"Pre-Trial", "Sentenced", "Parole", and "Total" plots.')
+                    '"Pre-Trial", "Sentenced", and "Total" plots.')
                  ),
                h2(textOutput("n_releases_str"), align="center"),
                p("Prisoners released pursuant to SJC 12926", align="center"),
@@ -197,6 +197,19 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       ),
       
       tabPanel("Total Tests", 
+               conditionalPanel(
+                 condition = "input.select_tested == 'All'|input.select_tested == 'Staff'|input.select_tested == 'Total'",
+                 div(id="dev-info",
+                     wellPanel(
+                       fluidRow(
+                         column(1, icon('info-circle')),
+                         column(11, h4("DOC Staff Testing"),
+                                em("Please note the DOC is not reporting tests of staff.", 
+                                   style="margin-top:0px"))
+                       )
+                     )
+                 )
+               ),
                wellPanel(id="internal_well",
                  p("Select kind of individual:"),
                  selectInput("select_tested", label = NULL, 
@@ -312,10 +325,20 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                ),
       
       tabPanel("DOC Facilities: Positive Test Totals", 
+               wellPanel(id="internal_well",
+                         p("Select kind of individual:"),
+                         selectInput("select_positive_fac", label = NULL, 
+                                     choices = c("All", "Prisoners", "Staff", "Total"),
+                                     selected = "All", multiple=FALSE),
+                         em('Exact number of positive tests per facility annotated in',
+                            '"Prisoners", "Staff", and "Total" plots.')
+               ),
                div(align="center",
                  h2(textOutput("n_positive_DOC_str")),
-                 p("Reports of prisoners tested", strong("positive"),
-                   "for COVID-19 at individual DOC facilities pursuant to SJC 12926"),
+                 p("Reports of",
+                   textOutput("type_positive_fac", inline=T),
+                   "tested", strong("positive"),
+                   "for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
                  em("*The DOC only began reporting facility-level data on April 13.",
                     "See the Total Positive Tests page for longer-term totals.")
                  ),
@@ -327,14 +350,19 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                          p("Select up to three facilities to plot versus time.*"),
                          splitLayout(
                            selectInput("select_fac1", label = NULL, choices = fac_choices,
-                                       selected = "All DOC Facilities", multiple=FALSE),
+                                       selected = "DOC Total**", multiple=FALSE),
                            selectInput("select_fac2", label = NULL, choices = fac_choices,
-                                       selected = "MTC", multiple=FALSE),
+                                       selected = "All DOC Facilities", multiple=FALSE),
                            selectInput("select_fac3", label = NULL, choices = fac_choices,
-                                       selected = "MCI-F", multiple=FALSE) 
+                                       selected = "MTC", multiple=FALSE) 
                          ),
-                         em("*The DOC only began reporting facility-level data on April 13.",
-                            "See the Positive Tests Over Time page for longer-term DOC tracking")
+                         em("*The DOC only began reporting facility-level prisoner data on April 13,",
+                            "and facility-level staff data on April 15.",
+                            "See the Positive Tests Over Time page for longer-term DOC tracking"),
+                         em('**DOC Total includes staff categorized as "Other"',
+                            'while the facility total does not. Additionally,',
+                            'some DOC staff are not assigned to a particular facility.',
+                            style="display: block; margin-top: 1rem;")
                          ),
                withSpinner(plotlyOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
@@ -425,7 +453,9 @@ server <- function(input, output, session) {
                    matches("Population")), 
               as.numeric) %>%
     # Render dates as such
-    mutate(Date = as.Date(Date))
+    mutate(Date = as.Date(Date)) %>%
+    # Protect against empty cells messing things up
+    filter(Date >= ymd(20200327))
   
   output$n_rows <- renderText({nrow(sjc_df)})
   
@@ -445,8 +475,7 @@ server <- function(input, output, session) {
     mutate(Date = as.Date(Date, origin=lubridate::origin),
            # Calculate totals of released, positive, tested
            all_released = `N Released Pre-Trial` + 
-             `N Released Sentenced` + 
-             `N Released Parole`,
+             `N Released Sentenced`,
            all_positive = `Total Positive`,
            all_tested = `Total Tested`,
            County = factor(County, levels=counties))
@@ -532,7 +561,7 @@ server <- function(input, output, session) {
     
       output$n_releases_str <- renderText({n_released})
       
-    } else if (select_release() %in% c("Parole", "Pre-Trial", "Sentenced")) {
+    } else if (select_release() %in% c("Pre-Trial", "Sentenced")) {
       g <- released_df %>%
         filter(release_type == select_release()) %>%
         group_by(County, release_type) %>%
@@ -1032,43 +1061,105 @@ server <- function(input, output, session) {
   })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # DOC Data
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  sjc_DOC_df <- read_excel(tf, sheet=2) %>%
+    mutate_if(is.character, ~na_if(., 'NA')) %>%
+    mutate(Date = as.Date(Date)) %>%
+    mutate_at(vars(starts_with("N "), starts_with("Total")),
+              as.numeric)
+  
+  sjc_DOC_num_df <- sjc_DOC_df %>%
+    rename(fac = `DOC Facility`,
+           all_positive = `Total Positive`) %>%
+    select(-Notes)
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # DOC Facility Totals
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
-  GET(sjc_dropbox_url, write_disk(tf_DOC <- tempfile(fileext = ".xlsx")))
+  fac_positive_df <- sjc_DOC_num_df %>%
+    rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`) %>%
+    pivot_longer(cols=matches("N Positive", ignore.case=F),
+                 names_to="positive_type",
+                 names_prefix="N Positive - ")
   
-  sjc_DOC_df <- read_excel(tf_DOC, sheet=2) %>%
-    mutate_if(is.character, ~na_if(., 'NA')) %>%
-    mutate(Date = as.Date(Date))
-  
-  sjc_DOC_num_df <- sjc_DOC_df %>%
-    rename(all_positive = `N Positive - Detainees/Inmates`,
-           fac = `DOC Facility`) %>%
-    select(-Notes)
-  
-  output$n_positive_DOC_str <- renderText({
-    paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
-    })
+  # Determine which variable to plot
+  select_positive_fac <- reactive({ input$select_positive_fac })
   
   # Plot
   output$DOC_positives_plot <- renderPlotly({
     
-    sjc_DOC_num_df %>%
-      group_by(fac) %>%
-      summarize(all_positive_cumul = sum(all_positive)) %>%
-      ggplot(aes(x=fac, 
-                 y=all_positive_cumul, 
-                 fill = all_positive_cumul > 0,
-                 label = all_positive_cumul)) +
-      geom_col(show.legend=F) +
-      geom_bar_text(contrast=T, family="gtam") +
-      labs(y = "", x="") +
+    if (select_positive_fac() == "All") {
+      g <- fac_positive_df %>%
+        filter(!is.na(value)) %>%
+        group_by(fac, positive_type) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=fac, 
+                   y=sum_value, 
+                   fill =positive_type, 
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = T) +
+        labs(fill = "") + 
+        theme(legend.position = "top",
+              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
+      
+      output$n_positive_DOC_str <- renderText({
+        paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
+      })
+      
+      output$type_positive_fac <- renderText({"prisoners and staff"})
+      
+    } else if (select_positive_fac() %in% c("Prisoners", "Staff")) {
+      g <- fac_positive_df %>%
+        filter(!is.na(value)) %>%
+        filter(positive_type == select_positive_fac()) %>%
+        group_by(fac, positive_type) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=fac, 
+                   y=sum_value, fill = as.factor(1),
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = F) +
+        geom_bar_text(contrast=T, family="gtam")
+      
+      
+      output$n_positive_DOC_str <- renderText({
+        fac_positive_df %>%
+          filter(positive_type == select_positive_fac()) %>%
+          pull(value) %>%
+          sum(na.rm=T) %>%
+          as.character() %>%
+          paste0("*")
+      })
+      
+      output$type_positive_fac <- renderText({tolower(select_positive_fac())})
+      
+    } else if (select_positive_fac() == "Total") {
+      g <- fac_positive_df %>%
+        filter(!is.na(value)) %>%
+        group_by(fac) %>%
+        summarize(sum_value = sum(value)) %>%
+        ggplot(aes(x=fac, 
+                   y=sum_value, fill = as.factor(1),
+                   label=sum_value)) +
+        geom_col(position = "stack", show.legend = F) +
+        geom_bar_text(contrast=T, family="gtam")
+      
+      output$n_positive_DOC_str <- renderText({
+        paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
+      })
+      
+      output$type_positive_fac <- renderText({"prisoners and staff"})
+    }
+    
+    g +
+      labs(y = "Tested Positive", x="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
-            axis.text.y = element_blank(),
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14),
             legend.position = "none") +
-      scale_fill_manual(values = c("white", "#0055aa"))
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
   })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1083,16 +1174,20 @@ server <- function(input, output, session) {
   })
   
   DOC_total_df <- sjc_num_df %>%
-    select(-all_positive) %>%
-    rename(all_positive = `N Positive - Detainees/Inmates`) %>%
     filter(County == "DOC") %>%
     rename(fac = County) %>%
-    mutate(fac = "All DOC Facilities") %>%
+    mutate(fac = "DOC Total**") %>%
     dplyr::select(Date, fac, all_positive)
+  
+  DOC_fac_total_df <- sjc_DOC_num_df %>%
+    group_by(Date) %>%
+    summarize(all_positive = sum(all_positive)) %>%
+    mutate(fac = "All DOC Facilities")
   
   df_by_fac <- sjc_DOC_num_df %>%
     dplyr::select(Date, fac, all_positive) %>%
-    rbind(DOC_total_df)
+    rbind(DOC_total_df) %>%
+    rbind(DOC_fac_total_df)
   
   # Plot
   output$DOC_time_plot <- renderPlotly({
@@ -1101,12 +1196,13 @@ server <- function(input, output, session) {
       filter(fac %in% fac_to_plot()) %>%
       group_by(fac) %>%
       mutate(cumul_pos = cumsum(all_positive)) %>%
+      filter(fac == "DOC Total**" | (fac != "DOC Total**" & Date >= ymd(20200415))) %>%
     ggplot(aes(x=Date, y = cumul_pos, 
                  color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.7) +
       geom_point(size = 3) +
-      labs(x = "", y = "Total Prisoners Tested Positive", color="",
-           title = paste("Prisoners with Positive COVID-19 Tests over Time"),
+      labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
+           title = paste("Positive COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
