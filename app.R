@@ -690,7 +690,7 @@ server <- function(input, output, session) {
         annotate("label", min(pos_to_plot$Date), Inf, label=annotate_tests,
                  vjust=2, hjust=0, fill="grey", alpha=0.5, 
                  label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
-        labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
+        labs(x = "", y = "Total Prisoners & Staff\nTested Positive", color="",
              title = paste("Positive COVID-19 Tests over Time"),
              subtitle="Cumulative pursuant to SJC 12926") +
         theme(plot.title= element_text(family="GT America", face='bold'),
@@ -778,7 +778,7 @@ server <- function(input, output, session) {
   # Plot
   output$tests_v_time_plot <- renderPlotly({
     
-    df_by_county %>%
+    g <- df_by_county %>%
       filter(County %in% cnty_to_plot_test()) %>%
       group_by(County) %>%
       mutate(cumul = cumsum(all_tested)) %>%
@@ -799,6 +799,9 @@ server <- function(input, output, session) {
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
+    
+    lines_plotly_style(g, "Prisoners & Staff Tested", "County")
+    
     
   })
   
@@ -830,7 +833,7 @@ server <- function(input, output, session) {
   # Plot
   output$pop_v_time_plot <- renderPlotly({
     
-    pop_df %>%
+    g <-pop_df %>%
       mutate(pop = na_if(pop, 0)) %>%
       filter(Date >= ymd(20200407),
              County %in% cnty_to_plot_pop(),
@@ -850,6 +853,9 @@ server <- function(input, output, session) {
       scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200407),NA)) +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off') 
+    
+    lines_plotly_style(g, "Incarcerated Population", "County",
+                       subtitle=F)
     
   })
   
@@ -1069,7 +1075,7 @@ server <- function(input, output, session) {
   # Plot
   output$DOC_time_plot <- renderPlotly({
     
-    df_by_fac %>%
+    g <- df_by_fac %>%
       filter(fac %in% fac_to_plot()) %>%
       group_by(fac) %>%
       mutate(cumul_pos = cumsum(all_positive)) %>%
@@ -1078,11 +1084,11 @@ server <- function(input, output, session) {
                  color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.7) +
       geom_point(size = 3) +
-      labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
+      labs(x = "", y = "Total Prisoners & Staff\nTested Positive", color="",
            title = paste("Positive COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family="GT America", face='bold'),
+            text = element_text(family="GT America", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -1091,6 +1097,9 @@ server <- function(input, output, session) {
       scale_x_date(date_labels = "%b %e ") +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off')
+    
+    lines_plotly_style(g, "Prisoners & Staff Tested Positive", "Facility")
+    
   })
   
   

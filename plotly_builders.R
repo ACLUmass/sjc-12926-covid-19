@@ -148,16 +148,23 @@ stacked_bar_plot <- function(data, y_label, location) {
 }
 
 # Convert lines to ggplotly
-lines_plotly_style <- function(gg_plot, y_label, location, annotation=FALSE) {
+lines_plotly_style <- function(gg_plot, y_label, location, 
+  annotation=FALSE, subtitle=TRUE) {
+
+  title_html <- paste0("<b>", y_label, "</b>")
+
+  if (subtitle) {
+    title_html <- paste0(title_html,
+                        '<br>',
+                        '<sup>',
+                        "Cumulative pursuant to SJC 12926",
+                        '</sup>')
+  }
 
   g <- ggplotly(gg_plot) %>%
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       layout(legend = legend_layout_bottom) %>%
-      layout(title = list(text = paste0("<b>", y_label, " over Time</b>",
-                                        '<br>',
-                                        '<sup>',
-                                        "Cumulative pursuant to SJC 12926",
-                                        '</sup>')))
+      layout(title = list(text = title_html))
     if (annotation) {
       n_traces <- length(g$x$data) - 1
     } else {
