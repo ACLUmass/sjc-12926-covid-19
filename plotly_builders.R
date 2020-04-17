@@ -134,6 +134,12 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       style(hoverinfo = "none", traces = traces_to_hide) %>%
       layout(legend = legend_layout_top)  
+    
+    cat(location_to_plot)
+    cat(type_of(location_to_plot))
+    cat(as.character(location_to_plot))
+    cat(g$x$data)
+    
 
     text_x1 <- paste0(as.character(location_to_plot), ": ", label_source[g$x$data[[1]]$x])
     text_y1 <- paste0(g$x$data[[1]]$name, " ", y_label, ": ", g$x$data[[1]]$y)
