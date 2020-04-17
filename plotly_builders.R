@@ -38,14 +38,20 @@ single_bar_plot <- function(data, filter_value, y_label) {
         filter(type == filter_value) 
   }
 
+  label_threshold <- data %>%
+    group_by(County) %>%
+    summarize(sum_value = sum(value)) %>%
+    pull(sum_value) %>%
+    max() * .07
+
   g <- data%>%
         group_by(County) %>%
         summarize(sum_value = sum(value)) %>%
         ungroup() %>%
-        mutate(label_vjust = ifelse(sum_value < 3, 
+        mutate(label_vjust = ifelse(sum_value < label_threshold, 
                                     sum_value + max(sum_value) * .025, 
                                     sum_value - max(sum_value) * .0375),
-               label_color = ifelse(sum_value <3, "black", "white")) %>%
+               label_color = ifelse(sum_value < label_threshold, "black", "white")) %>%
       ggplot(aes(x=County,
                    y=sum_value,
                    fill = as.factor(1))) +
