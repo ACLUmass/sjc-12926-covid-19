@@ -13,6 +13,7 @@ library(tidyr)
 library(ggfittext)
 library(DT)
 library(tigris)
+library(plotly)
 
 source("plotly_builders.R")
 
