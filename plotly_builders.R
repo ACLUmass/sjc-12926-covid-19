@@ -93,11 +93,7 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
       gsub("loc", location_to_plot, .) %>%
       gsub("sum_value", y_label, .)
     
-    # text_x <- paste0(as.character(location_to_plot), ": ", label_source[g$x$data[[1]]$x])
-    # text_y <- paste0(y_label, ": ", g$x$data[[1]]$y)
-    
     g %>%
-      # style(text = paste0(text_x, "</br></br>", text_y), traces=1) %>%
       style(text = text_rep, traces = 1) %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
@@ -140,23 +136,19 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
       style(hoverinfo = "none", traces = traces_to_hide) %>%
       layout(legend = legend_layout_top)  
     
-    g
+    text_rep1 <- g$x$data[[1]]$text %>%
+      gsub("loc", location_to_plot, .) %>%
+      gsub("sum_value", y_label, .)
     
-    # cat("\n", file=stderr(), "location:", location_to_plot)
-    # cat("\n", file=stderr(), "location type:", typeof(location_to_plot))
-    # cat("\n", file=stderr(), "ggplotly data:", paste0(g$x$data, collapse=" "))
+    text_rep2 <- g$x$data[[2]]$text %>%
+      gsub("loc", location_to_plot, .) %>%
+      gsub("sum_value", y_label, .)
     
-
-    # text_x1 <- paste0(as.character(location_to_plot), ": ", label_source[g$x$data[[1]]$x])
-    # text_y1 <- paste0(g$x$data[[1]]$name, " ", y_label, ": ", g$x$data[[1]]$y)
-    # text_x2 <- paste0(as.character(location_to_plot), ": ", label_source[g$x$data[[2]]$x])
-    # text_y2 <- paste0(g$x$data[[2]]$name, " ", y_label, ": ", g$x$data[[2]]$y)
-    # 
-    # g %>%
-    #   style(text = paste0(text_x1, "</br></br>", text_y1), traces=1) %>%
-    #   style(text = paste0(text_x2, "</br></br>", text_y2), traces=2) %>%
-    #   style(hoverlabel = label_lightback, traces = traces_lightback) %>%
-    #   style(hoverlabel = label_darkback, traces = traces_darkback)
+    g %>%
+      style(text = text_rep1, traces=1) %>%
+      style(text = text_rep2, traces=2) %>%
+      style(hoverlabel = label_lightback, traces = traces_lightback) %>%
+      style(hoverlabel = label_darkback, traces = traces_darkback)
 }
 
 # Convert lines to ggplotly
@@ -177,20 +169,19 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       layout(legend = legend_layout_bottom) %>%
       layout(title = list(text = title_html))
-    # if (annotation) {
-    #   n_traces <- length(g$x$data) - 1
-    # } else {
-    #   n_traces <- length(g$x$data)
-    # }
-    # for (i in 1:n_traces) {
-    #   text_x <- as.Date(g$x$data[[i]]$x, origin=lubridate::origin) # Date
-    #   text_y <- paste0(y_label, ": ", g$x$data[[i]]$y)
-    #   text_name <- paste0(location_to_plot, ": ", g$x$data[[i]]$name)
-    #   
-    #   g <- g %>%
-    #     style(text = paste0(text_x, "</br></br>", text_name,"</br>", text_y), 
-    #           traces=i)
-    # }
+    if (annotation) {
+      n_traces <- length(g$x$data) - 1
+    } else {
+      n_traces <- length(g$x$data)
+    }
+    for (i in 1:n_traces) {
+      text_rep <- g$x$data[[i]]$text %>%
+        gsub("cumul", y_label, .)
+
+      g <- g %>%
+        style(text = text_rep,
+              traces=i)
+    }
 
     if (length(g$x$data) == 1) {
       traces_lightback <- 0
