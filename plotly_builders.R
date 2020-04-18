@@ -171,7 +171,7 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
   g <- ggplotly(gg_plot) %>%
       config(modeBarButtonsToRemove = modeBarButtonsToRemove_time) %>%
       layout(legend = legend_layout_bottom) %>%
-      layout(title = list(text = title_html))
+      layout(title = list(text = title_html, family = "GT America"))
   
     if (annotation) {
       n_traces <- length(g$x$data) - 1

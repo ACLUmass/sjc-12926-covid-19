@@ -591,8 +591,8 @@ server <- function(input, output, session) {
       labs(x = "", y = "Total Prisoners Released", color="",
            title = paste("Prisoners Released over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="GT America", face='bold'),
-            text = element_text(family="GT America", size = 16),
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -694,8 +694,8 @@ server <- function(input, output, session) {
         labs(x = "", y = "Total Prisoners & Staff\nTested Positive", color="",
              title = paste("Positive COVID-19 Tests over Time"),
              subtitle="Cumulative pursuant to SJC 12926") +
-        theme(plot.title= element_text(family="GT America", face='bold'),
-              text = element_text(family="GT America", size = 16),
+        theme(plot.title= element_text(family="gtam", face='bold'),
+              text = element_text(family="gtam", size = 16),
               plot.margin = unit(c(1,1,4,1), "lines"),
               legend.position = c(.5, -.22), legend.direction="horizontal",
               legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -789,8 +789,8 @@ server <- function(input, output, session) {
       labs(x = "", y = "Total Prisoners & Staff Tested", color="",
            title = paste("COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="GT America", face='bold'),
-            text = element_text(family="GT America", size = 16),
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -844,8 +844,8 @@ server <- function(input, output, session) {
       geom_point(size=3) +
       labs(x = "", y = "Total Prisoners", color="",
            title = paste("Incarcerated Populations over Time")) +
-      theme(plot.title= element_text(family="GT America", face='bold'),
-            text = element_text(family="GT America", size = 16),
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -1088,8 +1088,8 @@ server <- function(input, output, session) {
       labs(x = "", y = "Total Prisoners & Staff\nTested Positive", color="",
            title = paste("Positive COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="GT America", face='bold'),
-            text = element_text(family="GT America", size = 16),
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
