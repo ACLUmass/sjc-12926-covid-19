@@ -13,6 +13,9 @@ library(tidyr)
 library(ggfittext)
 library(DT)
 library(tigris)
+library(plotly)
+
+source("plotly_builders.R")
 
 # Set ggplot settings
 theme_set(theme_minimal())
@@ -147,7 +150,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  ),
                h2(textOutput("n_releases_str"), align="center"),
                p("Prisoners released pursuant to SJC 12926", align="center"),
-               withSpinner(plotOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Releases Over Time",
@@ -175,7 +178,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    selectInput("select_county3_rel", label = NULL, choices = county_choices,
                                selected = "Barnstable", multiple=FALSE)
                  )),
-               withSpinner(plotOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
@@ -206,7 +209,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  textOutput("type_tested", inline=T),
                  "tested for COVID-19  pursuant to SJC 12926", 
                  align="center"),
-               withSpinner(plotOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Tests Over Time",
@@ -220,7 +223,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    selectInput("select_county3_test", label = NULL, choices = county_choices,
                                selected = "Barnstable", multiple=FALSE)
                  )),
-               withSpinner(plotOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
@@ -238,7 +241,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  textOutput("type_positive", inline=T),
                  "tested", strong("positive"),
                  "for COVID-19 pursuant to SJC 12926", align="center"),
-               withSpinner(plotOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Positive Tests Over Time",
@@ -252,7 +255,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county3_pos", label = NULL, choices = county_choices,
                                        selected = "Barnstable", multiple=FALSE)
                          )),
-               withSpinner(plotOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
@@ -267,7 +270,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county3_pop", label = NULL, choices = county_choices,
                                        selected = "--", multiple=FALSE)
                          )),
-               withSpinner(plotOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
@@ -285,7 +288,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       #                          choices = infection_choices,
       #                          selected = "DOC", multiple=FALSE)
       #            )),
-      #          withSpinner(plotOutput("infections_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+      #          withSpinner(plotlyOutput("infections_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
       #          em('Data on COVID-19 cases in Massachusetts ("MA Total") from', 
       #             a(href="https://www.mass.gov/info-details/covid-19-cases-quarantine-and-monitoring", 
       #               "mass.gov")
@@ -325,7 +328,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  em("*The DOC only began reporting facility-level data on April 13.",
                     "See the Total Positive Tests page for longer-term totals.")
                  ),
-               withSpinner(plotOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("DOC Facilities: Positive Tests v. Time", 
@@ -347,7 +350,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                             'some DOC staff are not assigned to a particular facility.',
                             style="display: block; margin-top: 1rem;")
                          ),
-               withSpinner(plotOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               withSpinner(plotlyOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Explore Data",
@@ -460,7 +463,8 @@ server <- function(input, output, session) {
            all_released = `N Released Pre-Trial` + 
              `N Released Sentenced`,
            all_positive = `Total Positive`,
-           all_tested = `Total Tested`)
+           all_tested = `Total Tested`,
+           County = factor(County, levels=counties))
   
   # Determine whether to plot last day
   last_date_entered <- max(sjc_num_df$Date, na.rm=T)
@@ -521,67 +525,45 @@ server <- function(input, output, session) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   released_df <- sjc_num_df %>%
     pivot_longer(cols=matches("Released", ignore.case=F),
-                 names_to="release_type",
+                 names_to="type",
                  names_prefix="N Released ")
   
   # Determine which variable to plot
   select_release <- reactive({ input$select_release })
 
-  output$all_releases_plot <- renderPlot({
+  output$all_releases_plot <- renderPlotly({
     
     if (select_release() == "All") {
-      g <- released_df %>%
-        group_by(County, release_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, 
-                   fill =release_type, 
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = T) + 
-        labs(fill = "") + 
-        theme(legend.position = "top",
-              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
-    
+      
       output$n_releases_str <- renderText({n_released})
       
+      stacked_bar_plot(released_df, 
+                      "Prisoners Released",
+                      "County")
+      
     } else if (select_release() %in% c("Pre-Trial", "Sentenced")) {
-      g <- released_df %>%
-        filter(release_type == select_release()) %>%
-        group_by(County, release_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
       
       output$n_releases_str <- renderText({
         released_df %>%
-          filter(release_type == select_release()) %>%
+          filter(type == select_release()) %>%
           pull(value) %>%
           sum()
-        })
+      })
+      
+      single_bar_plot(released_df, 
+                      select_release(), 
+                      paste(select_release(), "Prisoners Released"),
+                      "County")
       
     } else if (select_release() == "Total") {
-      g <- released_df %>%
-        group_by(County) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
       
       output$n_releases_str <- renderText({n_released})
       
+      single_bar_plot(released_df, 
+                      select_release(), "Prisoners Released",
+                      "County")
+      
     }
-    
-    g +
-      labs(y = "Prisoners Released", x="") +
-      theme(axis.text.x = element_text(angle=45, hjust=1),
-            plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
   })
   
@@ -597,9 +579,9 @@ server <- function(input, output, session) {
   })
   
   # Plot
-  output$releases_v_time_plot <- renderPlot({
+  output$releases_v_time_plot <- renderPlotly({
     
-    df_by_county %>%
+    g <- df_by_county %>%
       filter(County %in% cnty_to_plot_rel()) %>%
       group_by(County) %>%
       mutate(cumul = cumsum(all_released)) %>%
@@ -609,8 +591,8 @@ server <- function(input, output, session) {
       labs(x = "", y = "Total Prisoners Released", color="",
            title = paste("Prisoners Released over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family="GT America", face='bold'),
+            text = element_text(family="GT America", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -620,6 +602,8 @@ server <- function(input, output, session) {
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
+    
+    lines_plotly_style(g, "Prisoners Released", "County")
     
   })
   
@@ -632,72 +616,44 @@ server <- function(input, output, session) {
     rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`) %>%
     dplyr::select(-`N Positive - COs`, -`N Positive - Contractor`) %>%
     pivot_longer(cols=matches("N Positive", ignore.case=F),
-                 names_to="positive_type",
+                 names_to="type",
                  names_prefix="N Positive - ")
   
   # Determine which variable to plot
   select_positive <- reactive({ input$select_positive })
 
-  output$all_positives_plot <- renderPlot({
+  output$all_positives_plot <- renderPlotly({
     
     if (select_positive() == "All") {
-      g <- positive_df %>%
-        group_by(County, positive_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, 
-                   fill =positive_type, 
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = T) +
-        labs(fill = "") + 
-        theme(legend.position = "top",
-              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
-      
       output$n_positive_str <- renderText({n_positive})
       output$type_positive <- renderText({"prisoners and staff"})
       
-    } else if (select_positive() %in% c("Prisoners", "Staff")) {
-      g <- positive_df %>%
-        filter(positive_type == select_positive()) %>%
-        group_by(County, positive_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+      stacked_bar_plot(positive_df, 
+                       "Tested Positive",
+                       "County")
       
+    } else if (select_positive() %in% c("Prisoners", "Staff")) {
       output$n_positive_str <- renderText({
         positive_df %>%
-          filter(positive_type == select_positive()) %>%
+          filter(type == select_positive()) %>%
           pull(value) %>%
           sum()
       })
-      
       output$type_positive <- renderText({tolower(select_positive())})
       
+      single_bar_plot(positive_df, 
+                      select_positive(), 
+                      paste(select_positive(), "Tested Positive"),
+                      "County")
+
     } else if (select_positive() == "Total") {
-      g <- positive_df %>%
-        group_by(County) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
-      
       output$n_positive_str <- renderText({n_positive})
       output$type_positive <- renderText({"prisoners and staff"})
       
+      single_bar_plot(positive_df, 
+                      select_positive(), "Prisoners & Staff Tested Positive",
+                      "County")
     }
-    
-    g +
-      labs(y = "Tested Positive for COVID-19", x="") +
-      theme(axis.text.x = element_text(angle=45, hjust=1),
-            plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
-    
   })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -712,7 +668,7 @@ server <- function(input, output, session) {
   })
   
   # Plot
-  output$positives_v_time_plot <- renderPlot({
+  output$positives_v_time_plot <- renderPlotly({
     
     annotate_tests_df <- df_by_county %>%
       filter(County %in% cnty_to_plot_pos()) %>%
@@ -728,27 +684,30 @@ server <- function(input, output, session) {
       group_by(County) %>%
       mutate(cumul = cumsum(all_positive))
       
-    pos_to_plot %>%
-    ggplot(aes(x=Date, y = cumul, color=County)) +
-      geom_path(size=2, show.legend = T, alpha=0.8) +
-      geom_point(size=3) +
-      annotate("label", min(pos_to_plot$Date), Inf, label=annotate_tests,
-               vjust=2, hjust=0, fill="grey", alpha=0.5, 
-               label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
-      labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
-           title = paste("Positive COVID-19 Tests over Time"),
-           subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
-            plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22), legend.direction="horizontal",
-            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
-            legend.key.width = unit(1, "cm"),
-            legend.text = element_text(size=16)) +
-      scale_x_date(date_labels = "%b %e ") +
-      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+    g <- pos_to_plot %>%
+      ggplot(aes(x=Date, y = cumul, color=County)) +
+        geom_path(size=2, show.legend = T, alpha=0.8) +
+        geom_point(size=3) +
+        annotate("label", min(pos_to_plot$Date), Inf, label=annotate_tests,
+                 vjust=2, hjust=0, fill="grey", alpha=0.5, 
+                 label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
+        labs(x = "", y = "Total Prisoners & Staff\nTested Positive", color="",
+             title = paste("Positive COVID-19 Tests over Time"),
+             subtitle="Cumulative pursuant to SJC 12926") +
+        theme(plot.title= element_text(family="GT America", face='bold'),
+              text = element_text(family="GT America", size = 16),
+              plot.margin = unit(c(1,1,4,1), "lines"),
+              legend.position = c(.5, -.22), legend.direction="horizontal",
+              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+              legend.key.width = unit(1, "cm"),
+              legend.text = element_text(size=16)) +
+        scale_x_date(date_labels = "%b %e ") +
+        scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+        coord_cartesian(clip = 'off') +
+        ylim(0, NA)
+    
+    lines_plotly_style(g, "Prisoners & Staff Tested Positive", "County", 
+                       annotation=TRUE)
     
   })
   
@@ -762,71 +721,47 @@ server <- function(input, output, session) {
     rename(`N Tested - Prisoners`=`N Tested - Detainees/Inmates`) %>%
     dplyr::select(-`N Tested - COs`, -`N Tested - Contractors`) %>%
     pivot_longer(cols=matches("N Tested", ignore.case=F),
-                 names_to="tested_type",
+                 names_to="type",
                  names_prefix="N Tested - ")
   
   # Determine which variable to plot
   select_tested <- reactive({ input$select_tested })
   
-  output$all_tests_plot <- renderPlot({
+  output$all_tests_plot <- renderPlotly({
     
     if (select_tested() == "All") {
-      g <- tested_df %>%
-        group_by(County, tested_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, 
-                   fill =tested_type, 
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = T) +
-        labs(fill = "") + 
-        theme(legend.position = "top",
-              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
       
       output$n_tests_str <- renderText({n_tested})
       output$type_tested <- renderText({"prisoners and staff"})
       
-    } else if (select_tested() %in% c("Prisoners", "Staff")) {
-      g <- tested_df %>%
-        filter(tested_type == select_tested()) %>%
-        group_by(County, tested_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+      stacked_bar_plot(tested_df, 
+                       "Tested",
+                       "County")
       
+    } else if (select_tested() %in% c("Prisoners", "Staff")) {
       output$n_tests_str <- renderText({
         tested_df %>%
-          filter(tested_type == select_tested()) %>%
+          filter(type == select_tested()) %>%
           pull(value) %>%
           sum()
       })
-      
       output$type_tested <- renderText({tolower(select_tested())})
       
-    } else if (select_tested() == "Total") {
-      g <- tested_df %>%
-        group_by(County) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=factor(County, levels=counties), 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+      single_bar_plot(tested_df, 
+                      select_tested(), 
+                      paste(select_tested(), "Tested"),
+                      "County")
       
+    } else if (select_tested() == "Total") {
       output$n_tests_str <- renderText({n_tested})
       output$type_tested <- renderText({"prisoners and staff"})
       
+      single_bar_plot(tested_df, 
+                      select_tested(),
+                      "Prisoners & Staff Tested",
+                      "County")
+      
     }
-    
-    g +
-      labs(y = "Tested for COVID-19", x="") +
-      theme(axis.text.x = element_text(angle=45, hjust=1),
-            plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
   })
   
@@ -842,9 +777,9 @@ server <- function(input, output, session) {
   })
   
   # Plot
-  output$tests_v_time_plot <- renderPlot({
+  output$tests_v_time_plot <- renderPlotly({
     
-    df_by_county %>%
+    g <- df_by_county %>%
       filter(County %in% cnty_to_plot_test()) %>%
       group_by(County) %>%
       mutate(cumul = cumsum(all_tested)) %>%
@@ -854,8 +789,8 @@ server <- function(input, output, session) {
       labs(x = "", y = "Total Prisoners & Staff Tested", color="",
            title = paste("COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family="GT America", face='bold'),
+            text = element_text(family="GT America", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -865,6 +800,9 @@ server <- function(input, output, session) {
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
+    
+    lines_plotly_style(g, "Prisoners & Staff Tested", "County")
+    
     
   })
   
@@ -894,9 +832,9 @@ server <- function(input, output, session) {
     bind_rows(all_pop_df)
   
   # Plot
-  output$pop_v_time_plot <- renderPlot({
+  output$pop_v_time_plot <- renderPlotly({
     
-    pop_df %>%
+    g <-pop_df %>%
       mutate(pop = na_if(pop, 0)) %>%
       filter(Date >= ymd(20200407),
              County %in% cnty_to_plot_pop(),
@@ -906,8 +844,8 @@ server <- function(input, output, session) {
       geom_point(size=3) +
       labs(x = "", y = "Total Prisoners", color="",
            title = paste("Incarcerated Populations over Time")) +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family="GT America", face='bold'),
+            text = element_text(family="GT America", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -916,6 +854,9 @@ server <- function(input, output, session) {
       scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200407),NA)) +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off') 
+    
+    lines_plotly_style(g, "Incarcerated Population", "County",
+                       subtitle=F)
     
   })
   
@@ -950,7 +891,7 @@ server <- function(input, output, session) {
   # })
   # 
   # # Plot
-  # output$infections_v_time_plot <- renderPlot({
+  # output$infections_v_time_plot <- renderPlotly({
   #   
   #   infection_df_by_county %>%
   #     filter(County %in% cnty_to_plot_inf()) %>%
@@ -1048,30 +989,21 @@ server <- function(input, output, session) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
   fac_positive_df <- sjc_DOC_num_df %>%
-    rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`) %>%
+    rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`,
+           Facility = fac) %>%
     pivot_longer(cols=matches("N Positive", ignore.case=F),
-                 names_to="positive_type",
-                 names_prefix="N Positive - ")
+                 names_to="type",
+                 names_prefix="N Positive - ") %>%
+    filter(!is.na(value))
+    
   
   # Determine which variable to plot
   select_positive_fac <- reactive({ input$select_positive_fac })
   
   # Plot
-  output$DOC_positives_plot <- renderPlot({
+  output$DOC_positives_plot <- renderPlotly({
     
     if (select_positive_fac() == "All") {
-      g <- fac_positive_df %>%
-        filter(!is.na(value)) %>%
-        group_by(fac, positive_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=fac, 
-                   y=sum_value, 
-                   fill =positive_type, 
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = T) +
-        labs(fill = "") + 
-        theme(legend.position = "top",
-              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
       
       output$n_positive_DOC_str <- renderText({
         paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
@@ -1079,55 +1011,39 @@ server <- function(input, output, session) {
       
       output$type_positive_fac <- renderText({"prisoners and staff"})
       
-    } else if (select_positive_fac() %in% c("Prisoners", "Staff")) {
-      g <- fac_positive_df %>%
-        filter(!is.na(value)) %>%
-        filter(positive_type == select_positive_fac()) %>%
-        group_by(fac, positive_type) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=fac, 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
+      stacked_bar_plot(fac_positive_df, 
+                       "Tested Positive",
+                       "Facility")
       
+    } else if (select_positive_fac() %in% c("Prisoners", "Staff")) {
       
       output$n_positive_DOC_str <- renderText({
         fac_positive_df %>%
-          filter(positive_type == select_positive_fac()) %>%
+          filter(type == select_positive_fac()) %>%
           pull(value) %>%
           sum(na.rm=T) %>%
           as.character() %>%
           paste0("*")
       })
-      
       output$type_positive_fac <- renderText({tolower(select_positive_fac())})
       
+      single_bar_plot(fac_positive_df, 
+                      select_positive_fac(), 
+                      paste(select_positive_fac(), "Tested Positive"),
+                      "Facility")
+      
     } else if (select_positive_fac() == "Total") {
-      g <- fac_positive_df %>%
-        filter(!is.na(value)) %>%
-        group_by(fac) %>%
-        summarize(sum_value = sum(value)) %>%
-        ggplot(aes(x=fac, 
-                   y=sum_value, fill = as.factor(1),
-                   label=sum_value)) +
-        geom_col(position = "stack", show.legend = F) +
-        geom_bar_text(contrast=T, family="gtam")
       
       output$n_positive_DOC_str <- renderText({
         paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
       })
-      
       output$type_positive_fac <- renderText({"prisoners and staff"})
+      
+      single_bar_plot(fac_positive_df, 
+                      select_positive_fac(),
+                      "Prisoners & Staff Tested Positive",
+                      "Facility")
     }
-    
-    g +
-      labs(y = "Tested Positive", x="") +
-      theme(axis.text.x = element_text(angle=45, hjust=1),
-            plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
-    
   })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1158,22 +1074,22 @@ server <- function(input, output, session) {
     rbind(DOC_fac_total_df)
   
   # Plot
-  output$DOC_time_plot <- renderPlot({
+  output$DOC_time_plot <- renderPlotly({
     
-    df_by_fac %>%
+    g <- df_by_fac %>%
       filter(fac %in% fac_to_plot()) %>%
       group_by(fac) %>%
-      mutate(cumul_pos = cumsum(all_positive)) %>%
+      mutate(cumul = cumsum(all_positive)) %>%
       filter(fac == "DOC Total**" | (fac != "DOC Total**" & Date >= ymd(20200415))) %>%
-    ggplot(aes(x=Date, y = cumul_pos, 
+    ggplot(aes(x=Date, y = cumul, 
                  color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.7) +
       geom_point(size = 3) +
-      labs(x = "", y = "Total Prisoners & Staff Tested Positive", color="",
+      labs(x = "", y = "Total Prisoners & Staff\nTested Positive", color="",
            title = paste("Positive COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family="GT America", face='bold'),
+            text = element_text(family="GT America", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -1182,6 +1098,9 @@ server <- function(input, output, session) {
       scale_x_date(date_labels = "%b %e ") +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off')
+    
+    lines_plotly_style(g, "Prisoners & Staff Tested Positive", "Facility")
+    
   })
   
   
