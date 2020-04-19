@@ -21,7 +21,7 @@ source("plotly_builders.R")
 theme_set(theme_minimal())
 
 # Load ggplot-friendly font using show_text
-font_add("gtam", "GT-America-Standard-Regular.ttf",
+font_add(c("gtam", "GT America"), "GT-America-Standard-Regular.ttf",
          bold = "GT-America-Standard-Bold.ttf")
 showtext_auto()
 
@@ -591,8 +591,8 @@ server <- function(input, output, session) {
       labs(x = "", y = "Total Prisoners Released", color="",
            title = paste("Prisoners Released over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family=c("gtam", "GT America"), face='bold'),
+            text = element_text(family=c("gtam", "GT America"), size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -694,8 +694,8 @@ server <- function(input, output, session) {
         labs(x = "", y = "Total Prisoners & Staff\nTested Positive", color="",
              title = paste("Positive COVID-19 Tests over Time"),
              subtitle="Cumulative pursuant to SJC 12926") +
-        theme(plot.title= element_text(family="gtam", face='bold'),
-              text = element_text(family="gtam", size = 16),
+        theme(plot.title= element_text(family=c("gtam", "GT America"), face='bold'),
+              text = element_text(family=c("gtam", "GT America"), size = 16),
               plot.margin = unit(c(1,1,4,1), "lines"),
               legend.position = c(.5, -.22), legend.direction="horizontal",
               legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -789,8 +789,8 @@ server <- function(input, output, session) {
       labs(x = "", y = "Total Prisoners & Staff Tested", color="",
            title = paste("COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family=c("gtam", "GT America"), face='bold'),
+            text = element_text(family=c("gtam", "GT America"), size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -844,8 +844,8 @@ server <- function(input, output, session) {
       geom_point(size=3) +
       labs(x = "", y = "Total Prisoners", color="",
            title = paste("Incarcerated Populations over Time")) +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family=c("gtam", "GT America"), face='bold'),
+            text = element_text(family=c("gtam", "GT America"), size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -903,8 +903,8 @@ server <- function(input, output, session) {
   #     labs(x = "", y = "Infection Rate per 10,000", color="",
   #          title = "Prisoner Infection Rate Over Time",
   #          subtitle = "Postive Cases per 10,000 Prisoners") +
-  #     theme(plot.title= element_text(family="gtam", face='bold'),
-  #           text = element_text(family="gtam", size = 16),
+  #     theme(plot.title= element_text(family=c("gtam", "GT America"), face='bold'),
+  #           text = element_text(family=c("gtam", "GT America"), size = 16),
   #           plot.margin = unit(c(1,1,4,1), "lines"),
   #           legend.position = c(.5, -.22), legend.direction="horizontal",
   #           legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
@@ -1088,8 +1088,8 @@ server <- function(input, output, session) {
       labs(x = "", y = "Total Prisoners & Staff\nTested Positive", color="",
            title = paste("Positive COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
+      theme(plot.title= element_text(family=c("gtam", "GT America"), face='bold'),
+            text = element_text(family=c("gtam", "GT America"), size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
             legend.position = c(.5, -.22), legend.direction="horizontal",
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
