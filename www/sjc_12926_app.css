@@ -31,7 +31,7 @@ Thank you: https://shiny.rstudio.com/articles/css.html
 /* GT America Bold */
 @font-face {
   font-family:'gtam';
-  src: url("fonts/gtamerica/gtamerica/GT-America-Standard-Bold.woff2") format('woff2');
+  src: url("fonts/gtamerica/GT-America-Standard-Bold.woff2") format('woff2');
   font-weight:600;
 }
 
