@@ -6,7 +6,7 @@
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # Load ggplot-friendly font using show_text
-font_add("GT America", "GT-America-Standard-Regular.ttf",
+font_add("gtam", "GT-America-Standard-Regular.ttf",
          bold = "GT-America-Standard-Bold.ttf")
 showtext_auto()
 
@@ -14,7 +14,7 @@ showtext_auto()
 label_lightback <- list(
   bordercolor = "white",
   font = list(
-    family = "GT America",
+    family = "gtam",
     size = 15,
     color="black"
   )
@@ -22,7 +22,7 @@ label_lightback <- list(
 label_darkback <- list(
   bordercolor = "white",
   font = list(
-    family = "GT America",
+    family = "gtam",
     size = 15,
     color="white"
   )
@@ -78,7 +78,7 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
                    fill = as.factor(1))) +
         geom_col(position = "stack", show.legend = F) +
         geom_text(aes(label=sum_value, color=label_color, y = label_vjust),
-                  family="GT America") +
+                  family="gtam") +
         theme(legend.position = "none") +
         scale_color_manual(values = c("black", "white"))
       
@@ -89,8 +89,8 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
     g <- g + 
       labs(y = y_label, x="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
-            plot.title= element_text(family="GT America", face='bold'),
-            text = element_text(family="GT America", size=14)) +
+            plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size=14)) +
       scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
     g <- ggplotly(g, tooltip=c("x", "y")) %>%
@@ -135,8 +135,8 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
     g <- g + 
       labs(y = y_label, x="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
-            plot.title= element_text(family="GT America", face='bold'),
-            text = element_text(family="GT America", size=14)) +
+            plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size=14)) +
       scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
     g <- ggplotly(g, tooltip=c("x", "y")) %>%
@@ -176,7 +176,7 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
   g <- ggplotly(gg_plot) %>%
       config(modeBarButtonsToRemove = modeBarButtonsToRemove_time) %>%
       layout(legend = legend_layout_bottom) %>%
-      layout(title = list(text = title_html, family = "GT America"))
+      layout(title = list(text = title_html, family = "gtam"))
   
     if (annotation) {
       n_traces <- length(g$x$data) - 1
