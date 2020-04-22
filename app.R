@@ -33,7 +33,7 @@ counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex",
               "Franklin", "Hampden", "Hampshire", "Middlesex", "Norfolk", 
               "Plymouth", "Suffolk", "Worcester")
 # Make list for drop-downs
-county_choices <- c("--", "All", counties)
+county_choices <- c("--", "All", "All Counties", counties)
 # infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
 fac_choices <- c("--", "DOC Total**", "All DOC Facilities", 'Boston Pre', 'BSH', 
                  'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
@@ -174,9 +174,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    selectInput("select_county1_rel", label = NULL, choices = county_choices,
                                selected = "All", multiple=FALSE),
                    selectInput("select_county2_rel", label = NULL, choices = county_choices,
-                               selected = "DOC", multiple=FALSE),
+                               selected = "All Counties", multiple=FALSE),
                    selectInput("select_county3_rel", label = NULL, choices = county_choices,
-                               selected = "Barnstable", multiple=FALSE)
+                               selected = "DOC", multiple=FALSE)
                  )),
                withSpinner(plotlyOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
@@ -219,9 +219,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    selectInput("select_county1_test", label = NULL, choices = county_choices,
                                selected = "All", multiple=FALSE),
                    selectInput("select_county2_test", label = NULL, choices = county_choices,
-                               selected = "DOC", multiple=FALSE),
+                               selected = "All Counties", multiple=FALSE),
                    selectInput("select_county3_test", label = NULL, choices = county_choices,
-                               selected = "Barnstable", multiple=FALSE)
+                               selected = "DOC", multiple=FALSE)
                  )),
                withSpinner(plotlyOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
@@ -251,9 +251,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county1_pos", label = NULL, choices = county_choices,
                                        selected = "All", multiple=FALSE),
                            selectInput("select_county2_pos", label = NULL, choices = county_choices,
-                                       selected = "DOC", multiple=FALSE),
+                                       selected = "All Counties", multiple=FALSE),
                            selectInput("select_county3_pos", label = NULL, choices = county_choices,
-                                       selected = "Barnstable", multiple=FALSE)
+                                       selected = "DOC", multiple=FALSE)
                          )),
                withSpinner(plotlyOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
@@ -498,6 +498,14 @@ server <- function(input, output, session) {
               all_tested = sum(all_tested),
               all_released = sum(all_released))
   
+  all_df_all_counties <- sjc_num_df %>%
+    filter(County != "DOC") %>%
+    group_by(Date) %>%
+    summarize(all_released = sum(all_released),
+              all_positive = sum(all_positive),
+              all_tested = sum(all_tested)) %>%
+    mutate(County = "All Counties")
+  
   all_df_all <- sjc_num_df %>%
     group_by(Date) %>%
     summarize(all_released = sum(all_released),
@@ -507,7 +515,8 @@ server <- function(input, output, session) {
   
   df_by_county <- sjc_num_df %>%
     dplyr::select(Date, County, all_released, all_positive, all_tested) %>%
-    rbind(all_df_all)
+    rbind(all_df_all) %>%
+    rbind(all_df_all_counties)
   
   # Calc MA rates
   ma_dropbox_url = "https://www.dropbox.com/s/xwp85c0efmlgq5r/MA_infection_rates.xlsx?dl=1"
@@ -825,11 +834,21 @@ server <- function(input, output, session) {
     summarize(pop = sum(pop)) %>%
     mutate(County = "All")
   
+  all_counties_pop_df <- sjc_num_df %>%
+    mutate(pop = `Total Population`) %>%
+    filter(pop != 0,
+           County != "DOC") %>%
+    group_by(Date) %>%
+    filter(n() == 13) %>%
+    summarize(pop = sum(pop)) %>%
+    mutate(County = "All Counties")
+  
   pop_df <-  sjc_num_df %>%
     mutate(pop = `Total Population`) %>%
     group_by(Date, County) %>%
     summarize(pop = sum(pop)) %>%
-    bind_rows(all_pop_df)
+    bind_rows(all_pop_df) %>%
+    bind_rows(all_counties_pop_df)
   
   # Plot
   output$pop_v_time_plot <- renderPlotly({
