@@ -415,12 +415,41 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
   )
 )
 
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Server
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# Create a reactive object here that we can share between all the sessions.
+vals <- reactiveValues(count=0)
+
 server <- function(input, output, session) {
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Set up session counter
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  # Increment the number of sessions when one is opened.
+  # We use isolate() here to:
+  #  a.) Provide a reactive context
+  #  b.) Ensure that this expression doesn't take a reactive dependency on
+  #      vals$count -- if it did, every time vals$count changed, this expression
+  #      would run, leading to an infinite loop.
+  isolate(vals$count <- vals$count + 1)
+  # Update log to reflect current number of sessions
+  line = paste(query_time = now('America/New_York'), "\t", vals$count, "active sessions")
+  write(line, file = "n_sessions.txt", append=TRUE)
+  
+  # When a session ends, decrement the counter.
+  session$onSessionEnded(function(){
+    # We use isolate() here for the same reasons as above.
+    isolate(vals$count <- vals$count - 1)
+    # Update log to reflect current number of sessions
+    line = paste(query_time = now('America/New_York'), "\t", vals$count, "active sessions")
+    write(line, file = "n_sessions.txt", append=TRUE)
+  })
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Load Data
