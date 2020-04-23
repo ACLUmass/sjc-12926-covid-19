@@ -43,6 +43,15 @@ legend_layout_bottom <- list(orientation = "h",
                           xanchor="center",
                           bgcolor = alpha('lightgray', 0.4))
 
+# Define x axes
+counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex", 
+              "Franklin", "Hampden", "Hampshire", "Middlesex", "Norfolk", 
+              "Plymouth", "Suffolk", "Worcester")
+fac_staff <- c('Boston Pre', 'BSH', 
+               'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
+               'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
+               'SBCC', 'SMCC', "Non-Facility")
+
 # Function for plots with one kind of bar
 single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
   if (filter_value != "Total") {
@@ -113,7 +122,7 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
   if (location_to_plot == "County") {
     label_source <- counties
   } else if (location_to_plot == "Facility") {
-    label_source <- data$Facility %>% unique() %>% sort()
+    label_source <- fac_staff
   }
 
   g <- data%>%
