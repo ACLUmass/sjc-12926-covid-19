@@ -639,7 +639,7 @@ server <- function(input, output, session) {
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22), legend.direction="horizontal",
+            legend.position = c(.5, -.22),
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
             legend.key.width = unit(1, "cm"),
             legend.text = element_text(size=16)) +
@@ -715,14 +715,14 @@ server <- function(input, output, session) {
   # Plot
   output$positives_v_time_plot <- renderPlotly({
     
-    annotate_tests_df <- df_by_county %>%
-      filter(County %in% cnty_to_plot_pos()) %>%
-      group_by(County) %>%
-      summarize(all_tests = sum(all_tested))
-    
-    annotate_tests <- paste0(paste0(annotate_tests_df$County, ": ", 
-                                    annotate_tests_df$all_tests, " tested"), 
-                             collapse="\n")
+    # annotate_tests_df <- df_by_county %>%
+    #   filter(County %in% cnty_to_plot_pos()) %>%
+    #   group_by(County) %>%
+    #   summarize(all_tests = sum(all_tested))
+    # 
+    # annotate_tests <- paste0(paste0(annotate_tests_df$County, ": ", 
+    #                                 annotate_tests_df$all_tests, " tested"), 
+    #                          collapse="\n")
     
     pos_to_plot <- df_by_county %>%
       filter(County %in% cnty_to_plot_pos()) %>%
@@ -733,16 +733,16 @@ server <- function(input, output, session) {
       ggplot(aes(x=Date, y = cumul, color=County)) +
         geom_path(size=2, show.legend = T, alpha=0.8) +
         geom_point(size=3) +
-        annotate("label", min(pos_to_plot$Date), Inf, label=annotate_tests,
-                 vjust=2, hjust=0, fill="grey", alpha=0.5, 
-                 label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
+        # annotate("label", min(pos_to_plot$Date), Inf, label=annotate_tests,
+        #          vjust=2, hjust=0, fill="grey", alpha=0.5, 
+        #          label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
         labs(x = "", y = "Total Prisoners & Staff\nTested Positive", color="",
              title = paste("Positive COVID-19 Tests over Time"),
              subtitle="Cumulative pursuant to SJC 12926") +
         theme(plot.title= element_text(family="gtam", face='bold'),
               text = element_text(family="gtam", size = 16),
               plot.margin = unit(c(1,1,4,1), "lines"),
-              legend.position = c(.5, -.22), legend.direction="horizontal",
+              legend.position = c(.5, -.22), 
               legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
               legend.key.width = unit(1, "cm"),
               legend.text = element_text(size=16)) +
@@ -837,7 +837,7 @@ server <- function(input, output, session) {
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22), legend.direction="horizontal",
+            legend.position = c(.5, -.22), 
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
             legend.key.width = unit(1, "cm"),
             legend.text = element_text(size=16)) +
@@ -880,7 +880,8 @@ server <- function(input, output, session) {
     mutate(County = "All Counties")
   
   pop_df <-  sjc_num_df %>%
-    mutate(pop = `Total Population`) %>%
+    mutate(pop = `Total Population`,
+           County = as.character(County)) %>%
     group_by(Date, County) %>%
     summarize(pop = sum(pop)) %>%
     bind_rows(all_pop_df) %>%
@@ -902,7 +903,7 @@ server <- function(input, output, session) {
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22), legend.direction="horizontal",
+            legend.position = c(.5, -.22),
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
             legend.key.width = unit(1, "cm"),
             legend.text = element_text(size=16)) +
@@ -961,7 +962,7 @@ server <- function(input, output, session) {
   #     theme(plot.title= element_text(family="gtam", face='bold'),
   #           text = element_text(family="gtam", size = 16),
   #           plot.margin = unit(c(1,1,4,1), "lines"),
-  #           legend.position = c(.5, -.22), legend.direction="horizontal",
+  #           legend.position = c(.5, -.22), 
   #           legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
   #           legend.key.width = unit(1, "cm"),
   #           legend.text = element_text(size=16)) +
@@ -1148,7 +1149,7 @@ server <- function(input, output, session) {
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
             plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22), legend.direction="horizontal",
+            legend.position = c(.5, -.22),
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
             legend.key.width = unit(1, "cm"),
             legend.text = element_text(size=16)) +
