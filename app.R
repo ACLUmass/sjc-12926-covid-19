@@ -12,7 +12,6 @@ library(readxl)
 library(tidyr)
 library(ggfittext)
 library(DT)
-library(tigris)
 library(plotly)
 
 source("plotly_builders.R")
@@ -26,7 +25,7 @@ font_add("gtam", "GT-America-Standard-Regular.ttf",
 showtext_auto()
 
 # Download county data
-mass_cntys <- counties(state="massachusetts", cb=T)
+mass_cntys <- tigris::counties(state="massachusetts", cb=T)
 
 # Define list of counties
 counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex", 
@@ -39,6 +38,11 @@ fac_choices <- c("--", "DOC Total**", "All DOC Facilities", 'Boston Pre', 'BSH',
                  'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
                  'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
                  'SBCC', 'SMCC')
+fac_staff <- c('Boston Pre', 'BSH', 
+               'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
+               'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
+               'SBCC', 'SMCC', "Non-Facility")
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -346,8 +350,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                             "and facility-level staff data on April 15.",
                             "See the Positive Tests Over Time page for longer-term DOC tracking"),
                          em('**DOC Total includes staff categorized as "Other"',
-                            'while the facility total does not. Additionally,',
-                            'some DOC staff are not assigned to a particular facility.',
+                            'while the facility total does not.',
                             style="display: block; margin-top: 1rem;")
                          ),
                withSpinner(plotlyOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -1034,6 +1037,8 @@ server <- function(input, output, session) {
   sjc_DOC_num_df <- sjc_DOC_df %>%
     rename(fac = `DOC Facility`,
            all_positive = `Total Positive`) %>%
+    mutate(fac = factor(fac, levels=fac_staff)) %>%
+    filter(!is.na(all_positive)) %>%
     select(-Notes)
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
