@@ -437,18 +437,22 @@ server <- function(input, output, session) {
   #  b.) Ensure that this expression doesn't take a reactive dependency on
   #      vals$count -- if it did, every time vals$count changed, this expression
   #      would run, leading to an infinite loop.
-  isolate(vals$count <- vals$count + 1)
-  # Update log to reflect current number of sessions
-  line = paste(query_time = now('America/New_York'), "\t", vals$count, "active sessions")
-  write(line, file = "n_sessions.txt", append=TRUE)
+  isolate({
+    vals$count <- vals$count + 1
+    # Update log to reflect current number of sessions
+    line = paste(query_time = now('America/New_York'), "\t", vals$count, "active sessions")
+    write(line, file = "n_sessions.txt", append=TRUE)
+    })
   
   # When a session ends, decrement the counter.
   session$onSessionEnded(function(){
     # We use isolate() here for the same reasons as above.
-    isolate(vals$count <- vals$count - 1)
-    # Update log to reflect current number of sessions
-    line = paste(query_time = now('America/New_York'), "\t", vals$count, "active sessions")
-    write(line, file = "n_sessions.txt", append=TRUE)
+    isolate({
+      vals$count <- vals$count - 1
+      # Update log to reflect current number of sessions
+      line = paste(query_time = now('America/New_York'), "\t", vals$count, "active sessions")
+      write(line, file = "n_sessions.txt", append=TRUE)
+    })
   })
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

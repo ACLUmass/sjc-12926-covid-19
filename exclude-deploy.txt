@@ -5,3 +5,4 @@ exclude-deploy.txt
 .git
 LICENSE
 README.md
+n_sessions.txt
