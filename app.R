@@ -24,8 +24,8 @@ font_add("gtam", "GT-America-Standard-Regular.ttf",
          bold = "GT-America-Standard-Bold.ttf")
 showtext_auto()
 
-# Download county data
-mass_cntys <- tigris::counties(state="massachusetts", cb=T)
+# Download Massachusetts county data
+mass_cntys <- tigris::counties(state=25, cb=T)
 
 # Define list of counties
 counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex", 
