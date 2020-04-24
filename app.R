@@ -464,7 +464,9 @@ server <- function(input, output, session) {
   isolate({
     vals$count <- vals$count + 1
     # Update log to reflect current number of sessions
-    line = paste(query_time = now('America/New_York'), "\t", vals$count, "active sessions")
+    line = paste(query_time = now('America/New_York'), "\t", 
+                 vals$count, "active sessions", "\t", 
+                 Sys.getpid())
     write(line, file = "n_sessions.txt", append=TRUE)
     })
   
@@ -474,7 +476,9 @@ server <- function(input, output, session) {
     isolate({
       vals$count <- vals$count - 1
       # Update log to reflect current number of sessions
-      line = paste(query_time = now('America/New_York'), "\t", vals$count, "active sessions")
+      line = paste(query_time = now('America/New_York'), "\t", 
+                   vals$count, "active sessions", "\t", 
+                   Sys.getpid())
       write(line, file = "n_sessions.txt", append=TRUE)
     })
   })
