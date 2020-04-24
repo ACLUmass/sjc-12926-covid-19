@@ -148,6 +148,14 @@ a[data-value="DOC Facilities: Positive Tests v. Time"]
   margin-bottom: -5px;
 }
 
+#internal_well .shiny-input-radiogroup {
+  margin-bottom: 2rem;
+}
+
+#internal_well #radio_prompt {
+  margin-bottom: 0px;
+}
+
 #internal_well .selectize-input {
   border-radius: 0px;
 }

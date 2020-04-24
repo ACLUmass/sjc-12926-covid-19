@@ -188,13 +188,7 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
       layout(title = list(text = title_html, 
                           font=list(family = "gtam")))
   
-    if (annotation) {
-      n_traces <- length(g$x$data) - 1
-    } else {
-      n_traces <- length(g$x$data)
-    }
-  
-    for (i in 1:n_traces) {
+    for (i in 1:length(g$x$data)) {
         text_rep <- g$x$data[[i]]$text %>%
           gsub("pop", y_label, .) %>%
           gsub("cumul", y_label, .) %>%
