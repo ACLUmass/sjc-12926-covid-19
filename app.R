@@ -1051,7 +1051,7 @@ server <- function(input, output, session) {
       y_axis_label <- "Number Tested Positive"
     }
     
-    mass_cntys_joined <- geo_join(mass_cntys, sum_sjc_num_df, "NAME", "County")
+    mass_cntys_joined <- tigris::geo_join(mass_cntys, sum_sjc_num_df, "NAME", "County")
     
     pal <- colorNumeric(
       palette = "YlGnBu",
