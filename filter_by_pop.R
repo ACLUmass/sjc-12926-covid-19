@@ -44,22 +44,26 @@ get_df_by_fac <- function(sjc_num_df, sjc_DOC_num_df, population) {
   
   if (population == "p") {
     sjc_num_df <- sjc_num_df %>%
-      select(-all_positive) %>%
-      mutate(all_positive = `N Positive - Detainees/Inmates`)
+      select(-all_positive, -all_tested) %>%
+      mutate(all_positive = `N Positive - Detainees/Inmates`,
+             all_tested = `N Tested - Detainees/Inmates`)
     
     sjc_DOC_num_df <- sjc_DOC_num_df %>%
-      select(-all_positive) %>%
-      mutate(all_positive = `N Positive - Detainees/Inmates`) %>%
+      select(-all_positive, -all_tested) %>%
+      mutate(all_positive = `N Positive - Detainees/Inmates`,
+             all_tested = `N Tested - Detainees/Inmates`) %>%
       filter(!is.na(all_positive))
     
   } else if (population == "s") {
     sjc_num_df <- sjc_num_df %>%
-      select(-all_positive) %>%
-      mutate(all_positive = `N Positive - COs` + `N Positive - Staff` + `N Positive - Contractor`)
+      select(-all_positive, -all_tested) %>%
+      mutate(all_positive = `N Positive - COs` + `N Positive - Staff` + `N Positive - Contractor`,
+             all_tested = `N Tested - COs` + `N Tested - Staff` + `N Tested - Contractors`)
     
     sjc_DOC_num_df <- sjc_DOC_num_df %>%
-      select(-all_positive) %>%
-      mutate(all_positive = `N Positive - Staff`) %>%
+      select(-all_positive, -all_tested) %>%
+      mutate(all_positive = `N Positive - Staff`,
+             all_tested = `N Tested - Staff`) %>%
       filter(!is.na(all_positive))
   }
   
@@ -67,15 +71,16 @@ get_df_by_fac <- function(sjc_num_df, sjc_DOC_num_df, population) {
     filter(County == "DOC") %>%
     rename(fac = County) %>%
     mutate(fac = "DOC Total**") %>%
-    dplyr::select(Date, fac, all_positive)
+    dplyr::select(Date, fac, all_positive, all_tested)
   
   DOC_fac_total_df <- sjc_DOC_num_df %>%
     group_by(Date) %>%
-    summarize(all_positive = sum(all_positive)) %>%
+    summarize(all_positive = sum(all_positive),
+              all_tested = sum(all_tested)) %>%
     mutate(fac = "All DOC Facilities")
   
   df_by_fac <- sjc_DOC_num_df %>%
-    dplyr::select(Date, fac, all_positive) %>%
+    dplyr::select(Date, fac, all_positive, all_tested) %>%
     rbind(DOC_total_df) %>%
     rbind(DOC_fac_total_df)
   

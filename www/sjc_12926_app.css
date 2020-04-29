@@ -129,11 +129,14 @@ h1, h2, h3, h4 {
   font-family: gtamcond;
 }
 
-a[data-value="Mapping County Trends"],
-a[data-value="External Resources"],
-a[data-value="DOC Facilities: Positive Tests v. Time"]
+a[data-value="External Resources"]
 {
   border-bottom: 1px solid #eee;
+}
+
+a[data-value="Explore Data"]
+{
+  border-top: 1px solid #eee;
 }
 
 #county_maps {
@@ -168,4 +171,10 @@ a[data-value="DOC Facilities: Positive Tests v. Time"]
   margin-top: 20px;
 }
 
-    
+.nav-pills .navbar-brand {
+    color: #fadf7c;
+    padding-left: 5px;
+    text-transform: uppercase;
+    font-family: gtamcond;
+    font-weight: bold;
+}

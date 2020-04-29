@@ -37,12 +37,20 @@ county_choices <- c("--", "All", "All Counties", counties)
 # infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
 fac_choices <- c("--", "DOC Total**", "All DOC Facilities", 'Boston Pre', 'BSH', 
                  'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
-                 'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
+                 'MCI-Shirley', 'MTC',  "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
                  'SBCC', 'SMCC')
 fac_staff <- c('Boston Pre', 'BSH', 
                'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
-               'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
+               'MCI-Shirley', 'MTC', "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
                'SBCC', 'SMCC', "Non-Facility")
+
+pop_choices <- c("--", 'All', 'All Counties', "DOC", 'DOC: Boston Pre', 'DOC: BSH', 
+                 'DOC: LSH', 'DOC: MASAC', 'DOC: MCI-C', 'DOC: MCI-CJ', 'DOC: MCI-F', 
+                 'DOC: MCI-Norfolk', 'DOC: MCI-Shirley', 'DOC: MTC', 
+                 'DOC: NCCI-Gardn', 'DOC: NECC', 'DOC: OCCC', 'DOC: Pondville', 
+                 'DOC: SBCC', 'DOC: SMCC', 'Barnstable', 'Berkshire', 'Bristol',
+                 'Dukes', 'Essex', 'Franklin', 'Hampden', 'Hampshire', 'Middlesex', 
+                 'Norfolk', 'Plymouth', 'Suffolk', 'Worcester')
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -145,6 +153,23 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                   </li>
                 </ul>")
                ),
+      
+      tabPanel("Incarcerated Population Over Time",
+               wellPanel(id="internal_well",
+                         p("Select up to three locations to plot versus time."),
+                         splitLayout(
+                           selectInput("select_county1_pop", label = NULL, choices = pop_choices,
+                                       selected = "All", multiple=FALSE),
+                           selectInput("select_county2_pop", label = NULL, choices = pop_choices,
+                                       selected = "--", multiple=FALSE),
+                           selectInput("select_county3_pop", label = NULL, choices = pop_choices,
+                                       selected = "--", multiple=FALSE)
+                         )),
+               withSpinner(plotlyOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths duerunApp to COVID-19 are not included in these data.")
+      ),
+      
+      "Counties + DOC",
       
       tabPanel("Total Releases", 
                wellPanel(id="internal_well",
@@ -276,21 +301,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
-      tabPanel("Incarcerated Population Over Time",
-               wellPanel(id="internal_well",
-                         p("Select up to three locations to plot versus time."),
-                         splitLayout(
-                           selectInput("select_county1_pop", label = NULL, choices = county_choices,
-                                       selected = "All", multiple=FALSE),
-                           selectInput("select_county2_pop", label = NULL, choices = county_choices,
-                                       selected = "--", multiple=FALSE),
-                           selectInput("select_county3_pop", label = NULL, choices = county_choices,
-                                       selected = "--", multiple=FALSE)
-                         )),
-               withSpinner(plotlyOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-      ),
-      
       # tabPanel("Infection Rates", align="center",
       #          wellPanel(
       #            p("Select up to three locations to plot versus time."),
@@ -327,7 +337,55 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            type=4, color="#b5b5b5", size=0.5)
                ),
       
-      tabPanel("DOC Facilities: Positive Test Totals", 
+     "DOC Facilities",
+    
+      tabPanel("Total Tests", 
+               wellPanel(id="internal_well",
+                         p("Select kind of individual:"),
+                         selectInput("select_tests_fac", label = NULL, 
+                                     choices = c("All", "Prisoners", "Staff", "Total"),
+                                     selected = "All", multiple=FALSE),
+                         em('Exact number of tests per facility annotated in',
+                            '"Prisoners", "Staff", and "Total" plots.')
+               ),
+               div(align="center",
+                   h2(textOutput("n_tests_DOC_str")),
+                   p("Reports of",
+                     textOutput("type_tests_fac", inline=T),
+                     "tested for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
+                   em("*The DOC only began reporting facility-level testing data on April 25.",
+                      "See the Total Tests page for longer-term totals.")
+               ),
+               withSpinner(plotlyOutput("DOC_tests_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+     
+     tabPanel("Tests Over Time",
+              wellPanel(id="internal_well",
+                        p("Select population to plot.", id="radio_prompt"),
+                        radioButtons("doc_test_radio", label = NULL, 
+                                     selected = "ps" , inline = T, 
+                                     choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                     choiceValues = c("p", "s", "ps")),
+                        p("Select up to three facilities to plot versus time.*"),
+                        splitLayout(
+                          selectInput("select_fac1_test", label = NULL, choices = fac_choices,
+                                      selected = "All DOC Facilities", multiple=FALSE),
+                          selectInput("select_fac2_test", label = NULL, choices = fac_choices,
+                                      selected = "DOC Total**", multiple=FALSE),
+                          selectInput("select_fac3_test", label = NULL, choices = fac_choices,
+                                      selected = "MCI-Shirley", multiple=FALSE)
+                        ),
+                        em("*The DOC only began reporting facility-level testing data on April 25.",
+                           "See the Counties + DOC Tests Over Time page for longer-term DOC tracking"),
+                        em('**DOC Total reflects the cumulative count of prisoner tests submitted in DOC-wide',
+                           "reports going back to March 27.",
+                           style="display: block; margin-top: 1rem;")
+                        ),
+              withSpinner(plotlyOutput("doc_tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+              em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+     ),
+      
+      tabPanel("Total Positive Tests", 
                wellPanel(id="internal_well",
                          p("Select kind of individual:"),
                          selectInput("select_positive_fac", label = NULL, 
@@ -342,13 +400,13 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    textOutput("type_positive_fac", inline=T),
                    "tested", strong("positive"),
                    "for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
-                 em("*The DOC only began reporting facility-level data on April 13.",
+                 em("*The DOC only began reporting facility-level positive data on April 13.",
                     "See the Total Positive Tests page for longer-term totals.")
                  ),
                withSpinner(plotlyOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
-      tabPanel("DOC Facilities: Positive Tests v. Time", 
+      tabPanel("Positive Tests Over Time", 
                wellPanel(id="internal_well",
                  p("Select population to plot.", id="radio_prompt"),
                  radioButtons("doc_positive_radio", label = NULL, 
@@ -366,7 +424,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  ),
                  em("*The DOC only began reporting facility-level prisoner data on April 13,",
                     "and facility-level staff data on April 15.",
-                    "See the Positive Tests Over Time page for longer-term DOC tracking"),
+                    "See the Counties + DOC Positive Tests Over Time page for longer-term DOC tracking"),
                  em('**DOC Total reflects DOC-wide reports, and might undercount prisoner',
                     "cases as compared to the facility total due to the DOC reporting",
                     "active, rather than total, cases.",
@@ -589,6 +647,24 @@ server <- function(input, output, session) {
   #   mutate(cumul_rate_10000 = as.numeric(cumul_rate_10000),
   #          Date = as.Date(Date),
   #          County = "MA Total")
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Load DOC Facility Data
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  sjc_DOC_df <- read_excel(tf, sheet=2) %>%
+    mutate_if(is.character, ~na_if(., 'NA')) %>%
+    mutate(Date = as.Date(Date)) %>%
+    mutate_at(vars(starts_with("N "), starts_with("Total")),
+              as.numeric)
+  
+  sjc_DOC_num_df <- sjc_DOC_df %>%
+    rename(fac = `DOC Facility`,
+           all_positive = `Total Positive`,
+           all_tested = `Total Tested`) %>%
+    mutate(fac = factor(fac, levels=fac_staff)) %>%
+    filter(!is.na(all_positive)) %>%
+    select(-Notes)
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # All Releases
@@ -934,13 +1010,21 @@ server <- function(input, output, session) {
     summarize(pop = sum(pop)) %>%
     mutate(County = "All Counties")
   
+  doc_fac_pop_df <- sjc_DOC_num_df %>%
+    mutate(pop = `Total Population`,
+           County = paste("DOC:", fac)) %>%
+    filter(!is.na(pop)) %>%
+    group_by(Date, County) %>%
+    summarize(pop = sum(pop)) 
+  
   pop_df <-  sjc_num_df %>%
     mutate(pop = `Total Population`,
            County = as.character(County)) %>%
     group_by(Date, County) %>%
     summarize(pop = sum(pop)) %>%
     bind_rows(all_pop_df) %>%
-    bind_rows(all_counties_pop_df)
+    bind_rows(all_counties_pop_df) %>%
+    bind_rows(doc_fac_pop_df)
   
   # Plot
   output$pop_v_time_plot <- renderPlotly({
@@ -950,7 +1034,8 @@ server <- function(input, output, session) {
       filter(Date >= ymd(20200407),
              County %in% cnty_to_plot_pop(),
              !is.na(pop)) %>%
-      ggplot(aes(x=Date, y = pop, color=County)) +
+      rename(Location = County) %>%
+    ggplot(aes(x=Date, y = pop, color=Location)) +
       geom_path(size=2, show.legend = T, alpha=0.8) +
       geom_point(size=3) +
       labs(x = "", y = "Total Prisoners", color="",
@@ -1081,24 +1166,126 @@ server <- function(input, output, session) {
   })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Data
+  # DOC Facility Test Totals
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
-  sjc_DOC_df <- read_excel(tf, sheet=2) %>%
-    mutate_if(is.character, ~na_if(., 'NA')) %>%
-    mutate(Date = as.Date(Date)) %>%
-    mutate_at(vars(starts_with("N "), starts_with("Total")),
-              as.numeric)
+  fac_tests_df <- sjc_DOC_num_df %>%
+    rename(`N Tested - Prisoners`=`N Tested - Detainees/Inmates`,
+           Facility = fac) %>%
+    pivot_longer(cols=matches("N Tested", ignore.case=F),
+                 names_to="type",
+                 names_prefix="N Tested - ") %>%
+    filter(!is.na(value))
   
-  sjc_DOC_num_df <- sjc_DOC_df %>%
-    rename(fac = `DOC Facility`,
-           all_positive = `Total Positive`) %>%
-    mutate(fac = factor(fac, levels=fac_staff)) %>%
-    filter(!is.na(all_positive)) %>%
-    select(-Notes)
+  
+  # Determine which variable to plot
+  select_tests_fac <- reactive({ input$select_tests_fac })
+  
+  # Plot
+  output$DOC_tests_plot <- renderPlotly({
+    
+    if (select_tests_fac() == "All") {
+      
+      output$n_tests_DOC_str <- renderText({
+        paste0(as.character(sum(sjc_DOC_num_df$all_tested, na.rm=T)), "*")
+      })
+      
+      output$type_tests_fac <- renderText({"prisoners and staff"})
+      
+      stacked_bar_plot(fac_tests_df, 
+                       "Tested",
+                       "Facility")
+      
+    } else if (select_tests_fac() %in% c("Prisoners", "Staff")) {
+      
+      output$n_tests_DOC_str <- renderText({
+        fac_tests_df %>%
+          filter(type == select_tests_fac()) %>%
+          pull(value) %>%
+          sum(na.rm=T) %>%
+          as.character() %>%
+          paste0("*")
+      })
+      output$type_tests_fac <- renderText({tolower(select_tests_fac())})
+      
+      single_bar_plot(fac_tests_df, 
+                      select_tests_fac(), 
+                      paste(select_tests_fac(), "Tested"),
+                      "Facility")
+      
+    } else if (select_tests_fac() == "Total") {
+      
+      output$n_tests_DOC_str <- renderText({
+        paste0(as.character(sum(sjc_DOC_num_df$all_tested, na.rm=T)), "*")
+      })
+      output$type_tests_fac <- renderText({"prisoners and staff"})
+      
+      single_bar_plot(fac_tests_df, 
+                      select_tests_fac(),
+                      "Prisoners & Staff Tested",
+                      "Facility")
+    }
+  })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Facility Totals
+  # DOC Facility Tests v. Time
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  # Determine which counties to plot
+  fac_to_plot_test <- reactive({
+    c(input$select_fac1_test,
+      input$select_fac2_test,
+      input$select_fac3_test)
+  })
+  
+  # Determine which population to plot
+  pop_to_plot_test_doc <- reactive({input$doc_test_radio})
+  
+  # Plot
+  output$doc_tests_v_time_plot <- renderPlotly({
+    
+    # Apply population filter
+    df_by_fac <- get_df_by_fac(sjc_num_df, sjc_DOC_num_df, pop_to_plot_test_doc())
+    
+    # Determine what label is
+    if (pop_to_plot_test_doc() == "ps") {
+      y_label = "Prisoners & Staff Tested"
+    } else if (pop_to_plot_test_doc() == "p") {
+      y_label = "Prisoners Tested"
+    } else if (pop_to_plot_test_doc() == "s") {
+      y_label = "Staff Tested"
+    }
+    
+    g <- df_by_fac %>%
+      filter(fac %in% fac_to_plot_test(),
+             !is.na(all_tested)) %>%
+      group_by(fac) %>%
+      mutate(cumul = cumsum(all_tested)) %>%
+    ggplot(aes(x=Date, y = cumul, color=fac)) +
+      geom_path(size=2, show.legend = T, alpha=0.8) +
+      geom_point(size=3) +
+      labs(x = "", y = y_label, color="",
+           title = paste("COVID-19 Tests over Time"),
+           subtitle="Cumulative pursuant to SJC 12926") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), 
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') +
+      ylim(0, NA)
+    
+    lines_plotly_style(g, y_label, "Facility")
+    
+    
+  })
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # DOC Facility Positive Totals
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
   fac_positive_df <- sjc_DOC_num_df %>%
