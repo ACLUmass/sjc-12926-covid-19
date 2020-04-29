@@ -37,11 +37,11 @@ county_choices <- c("--", "All", "All Counties", counties)
 # infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
 fac_choices <- c("--", "DOC Total**", "All DOC Facilities", 'Boston Pre', 'BSH', 
                  'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
-                 'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
+                 'MCI-Shirley', 'MTC',  "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
                  'SBCC', 'SMCC')
 fac_staff <- c('Boston Pre', 'BSH', 
                'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
-               'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
+               'MCI-Shirley', 'MTC', "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
                'SBCC', 'SMCC', "Non-Facility")
 
 
@@ -327,6 +327,26 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            type=4, color="#b5b5b5", size=0.5)
                ),
       
+      tabPanel("DOC Facilities: Test Totals", 
+               wellPanel(id="internal_well",
+                         p("Select kind of individual:"),
+                         selectInput("select_tests_fac", label = NULL, 
+                                     choices = c("All", "Prisoners", "Staff", "Total"),
+                                     selected = "All", multiple=FALSE),
+                         em('Exact number of tests per facility annotated in',
+                            '"Prisoners", "Staff", and "Total" plots.')
+               ),
+               div(align="center",
+                   h2(textOutput("n_tests_DOC_str")),
+                   p("Reports of",
+                     textOutput("type_tests_fac", inline=T),
+                     "tested for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
+                   em("*The DOC only began reporting facility-level testing data on April 25.",
+                      "See the Total Tests page for longer-term totals.")
+               ),
+               withSpinner(plotlyOutput("DOC_tests_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+      
       tabPanel("DOC Facilities: Positive Test Totals", 
                wellPanel(id="internal_well",
                          p("Select kind of individual:"),
@@ -342,7 +362,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    textOutput("type_positive_fac", inline=T),
                    "tested", strong("positive"),
                    "for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
-                 em("*The DOC only began reporting facility-level data on April 13.",
+                 em("*The DOC only began reporting facility-level positive data on April 13.",
                     "See the Total Positive Tests page for longer-term totals.")
                  ),
                withSpinner(plotlyOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -1051,7 +1071,7 @@ server <- function(input, output, session) {
       y_axis_label <- "Number Tested Positive"
     }
     
-    mass_cntys_joined <- geo_join(mass_cntys, sum_sjc_num_df, "NAME", "County")
+    mass_cntys_joined <- tigris::geo_join(mass_cntys, sum_sjc_num_df, "NAME", "County")
     
     pal <- colorNumeric(
       palette = "YlGnBu",
@@ -1092,13 +1112,76 @@ server <- function(input, output, session) {
   
   sjc_DOC_num_df <- sjc_DOC_df %>%
     rename(fac = `DOC Facility`,
-           all_positive = `Total Positive`) %>%
+           all_positive = `Total Positive`,
+           all_tested = `Total Tested`) %>%
     mutate(fac = factor(fac, levels=fac_staff)) %>%
     filter(!is.na(all_positive)) %>%
     select(-Notes)
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Facility Totals
+  # DOC Facility Test Totals
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  fac_tests_df <- sjc_DOC_num_df %>%
+    rename(`N Tested - Prisoners`=`N Tested - Detainees/Inmates`,
+           Facility = fac) %>%
+    pivot_longer(cols=matches("N Tested", ignore.case=F),
+                 names_to="type",
+                 names_prefix="N Tested - ") %>%
+    filter(!is.na(value))
+  
+  
+  # Determine which variable to plot
+  select_tests_fac <- reactive({ input$select_tests_fac })
+  
+  # Plot
+  output$DOC_tests_plot <- renderPlotly({
+    
+    if (select_tests_fac() == "All") {
+      
+      output$n_tests_DOC_str <- renderText({
+        paste0(as.character(sum(sjc_DOC_num_df$all_tested, na.rm=T)), "*")
+      })
+      
+      output$type_tests_fac <- renderText({"prisoners and staff"})
+      
+      stacked_bar_plot(fac_tests_df, 
+                       "Tested",
+                       "Facility")
+      
+    } else if (select_tests_fac() %in% c("Prisoners", "Staff")) {
+      
+      output$n_tests_DOC_str <- renderText({
+        fac_tests_df %>%
+          filter(type == select_tests_fac()) %>%
+          pull(value) %>%
+          sum(na.rm=T) %>%
+          as.character() %>%
+          paste0("*")
+      })
+      output$type_tests_fac <- renderText({tolower(select_tests_fac())})
+      
+      single_bar_plot(fac_tests_df, 
+                      select_tests_fac(), 
+                      paste(select_tests_fac(), "Tested"),
+                      "Facility")
+      
+    } else if (select_tests_fac() == "Total") {
+      
+      output$n_tests_DOC_str <- renderText({
+        paste0(as.character(sum(sjc_DOC_num_df$all_tested, na.rm=T)), "*")
+      })
+      output$type_tests_fac <- renderText({"prisoners and staff"})
+      
+      single_bar_plot(fac_tests_df, 
+                      select_tests_fac(),
+                      "Prisoners & Staff Tested",
+                      "Facility")
+    }
+  })
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # DOC Facility Positive Totals
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
   fac_positive_df <- sjc_DOC_num_df %>%
