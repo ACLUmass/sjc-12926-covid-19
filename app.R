@@ -44,6 +44,14 @@ fac_staff <- c('Boston Pre', 'BSH',
                'MCI-Shirley', 'MTC', "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
                'SBCC', 'SMCC', "Non-Facility")
 
+pop_choices <- c("--", 'All', 'All Counties', "DOC", 'DOC: Boston Pre', 'DOC: BSH', 
+                 'DOC: LSH', 'DOC: MASAC', 'DOC: MCI-C', 'DOC: MCI-CJ', 'DOC: MCI-F', 
+                 'DOC: MCI-Norfolk', 'DOC: MCI-Shirley', 'DOC: MTC', 
+                 'DOC: NCCI-Gardn', 'DOC: NECC', 'DOC: OCCC', 'DOC: Pondville', 
+                 'DOC: SBCC', 'DOC: SMCC', 'Barnstable', 'Berkshire', 'Bristol',
+                 'Dukes', 'Essex', 'Franklin', 'Hampden', 'Hampshire', 'Middlesex', 
+                 'Norfolk', 'Plymouth', 'Suffolk', 'Worcester')
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -280,11 +288,11 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                wellPanel(id="internal_well",
                          p("Select up to three locations to plot versus time."),
                          splitLayout(
-                           selectInput("select_county1_pop", label = NULL, choices = county_choices,
+                           selectInput("select_county1_pop", label = NULL, choices = pop_choices,
                                        selected = "All", multiple=FALSE),
-                           selectInput("select_county2_pop", label = NULL, choices = county_choices,
+                           selectInput("select_county2_pop", label = NULL, choices = pop_choices,
                                        selected = "--", multiple=FALSE),
-                           selectInput("select_county3_pop", label = NULL, choices = county_choices,
+                           selectInput("select_county3_pop", label = NULL, choices = pop_choices,
                                        selected = "--", multiple=FALSE)
                          )),
                withSpinner(plotlyOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -609,6 +617,24 @@ server <- function(input, output, session) {
   #   mutate(cumul_rate_10000 = as.numeric(cumul_rate_10000),
   #          Date = as.Date(Date),
   #          County = "MA Total")
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Load DOC Facility Data
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  sjc_DOC_df <- read_excel(tf, sheet=2) %>%
+    mutate_if(is.character, ~na_if(., 'NA')) %>%
+    mutate(Date = as.Date(Date)) %>%
+    mutate_at(vars(starts_with("N "), starts_with("Total")),
+              as.numeric)
+  
+  sjc_DOC_num_df <- sjc_DOC_df %>%
+    rename(fac = `DOC Facility`,
+           all_positive = `Total Positive`,
+           all_tested = `Total Tested`) %>%
+    mutate(fac = factor(fac, levels=fac_staff)) %>%
+    filter(!is.na(all_positive)) %>%
+    select(-Notes)
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # All Releases
@@ -954,13 +980,21 @@ server <- function(input, output, session) {
     summarize(pop = sum(pop)) %>%
     mutate(County = "All Counties")
   
+  doc_fac_pop_df <- sjc_DOC_num_df %>%
+    mutate(pop = `Total Population`,
+           County = paste("DOC:", fac)) %>%
+    filter(!is.na(pop)) %>%
+    group_by(Date, County) %>%
+    summarize(pop = sum(pop)) 
+  
   pop_df <-  sjc_num_df %>%
     mutate(pop = `Total Population`,
            County = as.character(County)) %>%
     group_by(Date, County) %>%
     summarize(pop = sum(pop)) %>%
     bind_rows(all_pop_df) %>%
-    bind_rows(all_counties_pop_df)
+    bind_rows(all_counties_pop_df) %>%
+    bind_rows(doc_fac_pop_df)
   
   # Plot
   output$pop_v_time_plot <- renderPlotly({
@@ -970,7 +1004,8 @@ server <- function(input, output, session) {
       filter(Date >= ymd(20200407),
              County %in% cnty_to_plot_pop(),
              !is.na(pop)) %>%
-      ggplot(aes(x=Date, y = pop, color=County)) +
+      rename(Location = County) %>%
+    ggplot(aes(x=Date, y = pop, color=Location)) +
       geom_path(size=2, show.legend = T, alpha=0.8) +
       geom_point(size=3) +
       labs(x = "", y = "Total Prisoners", color="",
@@ -1099,24 +1134,6 @@ server <- function(input, output, session) {
            }")))
 
   })
-  
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Data
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
-  sjc_DOC_df <- read_excel(tf, sheet=2) %>%
-    mutate_if(is.character, ~na_if(., 'NA')) %>%
-    mutate(Date = as.Date(Date)) %>%
-    mutate_at(vars(starts_with("N "), starts_with("Total")),
-              as.numeric)
-  
-  sjc_DOC_num_df <- sjc_DOC_df %>%
-    rename(fac = `DOC Facility`,
-           all_positive = `Total Positive`,
-           all_tested = `Total Tested`) %>%
-    mutate(fac = factor(fac, levels=fac_staff)) %>%
-    filter(!is.na(all_positive)) %>%
-    select(-Notes)
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # DOC Facility Test Totals
