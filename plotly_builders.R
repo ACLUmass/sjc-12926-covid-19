@@ -228,8 +228,7 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
           gsub("fac", location_to_plot, .)
 
       g <- g %>%
-        style(text = text_rep,
-              traces=i)
+        style(text = text_rep, traces=i)
     }
 
     
