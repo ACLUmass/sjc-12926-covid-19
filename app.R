@@ -169,6 +169,34 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("Please note that prisoner deaths duerunApp to COVID-19 are not included in these data.")
       ),
       
+      tabPanel("Tests & Positives Over Time", 
+               div(id="dev-info",
+                     wellPanel(
+                       fluidRow(
+                         column(1, icon('info-circle')),
+                         column(11, h4("DOC Staff Testing"),
+                                em("Please note the DOC is not reporting tests of staff.", 
+                                   style="margin-top:0px"))
+                       )
+                     )
+               ),
+               wellPanel(id="internal_well",
+                         p("Select population to plot.", id="radio_prompt"),
+                         radioButtons("both_radio", label = NULL, 
+                                      selected = "ps" , inline = T, 
+                                      choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                      choiceValues = c("p", "s", "ps")),
+                         p("Select location to plot versus time.*"),
+                         splitLayout(
+                           selectInput("select_both", label = NULL, choices = tail(pop_choices, -1),
+                                       selected = "All", multiple=FALSE)
+                         ),
+                         em("*The DOC only began reporting facility-level prisoner positives on April 13,",
+                            "facility-level staff positives on April 15, and facility-level testing data on April 25.")
+               ),
+               withSpinner(plotlyOutput("both_plot"), type=4, color="#b5b5b5", size=0.5),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+      
       "Counties + DOC",
       
       tabPanel("Total Releases", 
@@ -665,6 +693,81 @@ server <- function(input, output, session) {
     mutate(fac = factor(fac, levels=fac_staff)) %>%
     filter(!is.na(all_positive)) %>%
     select(-Notes)
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Tests & Postives Over Time
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  # Determine which counties to plot
+  loc_to_plot_both <- reactive({input$select_both})
+  
+  # Determine which population to plot
+  pop_to_plot_both <- reactive({input$both_radio})
+  
+  output$both_plot <- renderPlotly({
+  
+    # Apply population filter
+    df_by_county <- get_df_by_county(sjc_num_df, pop_to_plot_both()) %>%
+      rename(loc = County) %>%
+      mutate(loc = as.character(loc))
+    
+    df_by_fac <- get_df_by_fac(sjc_num_df, sjc_DOC_num_df, pop_to_plot_both()) %>%
+      filter(fac != "DOC Total**", 
+             fac != "All DOC Facilities",
+             fac != "Non-Facility") %>%
+      filter(!is.na(fac)) %>%
+      mutate(fac = paste("DOC:", fac)) %>%
+      rename(loc = fac)
+    
+    # Combine fac & county data
+    df_by_loc <- df_by_county %>%
+      bind_rows(df_by_fac)
+    
+    # Determine what label is
+    if (pop_to_plot_both() == "ps") {
+      y_label = "Prisoners & Staff Tested & Positive"
+    } else if (pop_to_plot_both() == "p") {
+      y_label = "Prisoners Tested & Positive"
+    } else if (pop_to_plot_both() == "s") {
+      y_label = "Staff Tested & Positive"
+    }
+    
+    # Pull out string for what population we're plotting
+    pop_to_annotate <- str_split(y_label, " Tested")[[1]][1]
+    
+    g <- df_by_loc %>%
+      filter(loc == loc_to_plot_both()) %>%
+      mutate(cumul_Tested = NA, cumul_Positive = NA)
+    
+    # Deal with cumsum NA issue
+    g$cumul_Tested[!is.na(g$all_tested)] <- cumsum(g$all_tested[!is.na(g$all_tested)])
+    g$cumul_Positive[!is.na(g$all_positive)] <- cumsum(g$all_positive[!is.na(g$all_positive)])
+    
+    g <- g %>%
+      select(-starts_with("all")) %>%
+      pivot_longer(cols = starts_with("cumul"), names_to = "type", 
+                   names_prefix = "cumul_") %>%
+    ggplot(aes(x=Date, y = value, color=type)) +
+      geom_path(size=2, show.legend = T, alpha=0.8) +
+      geom_point(size=3) +
+      labs(x = "", y = pop_to_annotate, color="",
+           title = paste("Positive COVID-19 Tests over Time"),
+           subtitle="Cumulative pursuant to SJC 12926") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), 
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') +
+      ylim(0, NA)
+  
+    lines_plotly_style(g, y_label, "Location", pos_and_test=T)
+    
+  })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # All Releases

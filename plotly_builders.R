@@ -203,7 +203,7 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
 
 # Convert lines to ggplotly
 lines_plotly_style <- function(gg_plot, y_label, location_to_plot, 
-  annotation=FALSE, subtitle=TRUE) {
+  annotation=FALSE, subtitle=TRUE, pos_and_test=FALSE) {
 
   title_html <- paste0("<b>", y_label, "</b>")
 
@@ -214,13 +214,34 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
                         "Cumulative pursuant to SJC 12926",
                         '</sup>')
   }
+  
+  if (pos_and_test) {
+    g <- ggplotly(gg_plot, tooltip = c("x", "y"))
+  } else {
+    g <- ggplotly(gg_plot)
+  }
 
-  g <- ggplotly(gg_plot) %>%
+  g <- g %>%
       config(modeBarButtonsToRemove = modeBarButtonsToRemove_time) %>%
       layout(legend = legend_layout_bottom) %>%
       layout(title = list(text = title_html, 
                           font=list(family = "gtam")))
   
+  if (pos_and_test) {
+    # Pull out string for what population we're plotting
+    pop_to_annotate <- str_split(y_label, " Tested")[[1]][1]
+    
+    # Replace "value" with population tested or positive
+    for (i in 1:length(g$x$data)) {
+      text_rep <- g$x$data[[i]]$text %>%
+        gsub("value", paste(pop_to_annotate, g$x$data[[i]]$name), .)
+      
+      g <- g %>%
+        style(text = text_rep, traces=i)
+    }
+    
+  } else {
+    # Replace tooltip key with better names
     for (i in 1:length(g$x$data)) {
         text_rep <- g$x$data[[i]]$text %>%
           gsub("pop", y_label, .) %>%
@@ -230,21 +251,21 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
       g <- g %>%
         style(text = text_rep, traces=i)
     }
-
+  }
     
-    if (length(g$x$data) == 1) {
-      traces_lightback <- 0
-      traces_darkback <- 1
-    } else if (length(g$x$data) == 2) {
-      traces_lightback <- 0
-      traces_darkback <- 1:2
-    } else if (length(g$x$data) >= 3) {
-      traces_lightback <- 3
-      traces_darkback <- 1:2
-    }
-       
-    g %>%
-      style(hoverlabel = label_lightback, traces = traces_lightback) %>%
-      style(hoverlabel = label_darkback, traces = traces_darkback)
+  if (length(g$x$data) == 1) {
+    traces_lightback <- 0
+    traces_darkback <- 1
+  } else if (length(g$x$data) == 2) {
+    traces_lightback <- 0
+    traces_darkback <- 1:2
+  } else if (length(g$x$data) >= 3) {
+    traces_lightback <- 3
+    traces_darkback <- 1:2
+  }
+     
+  g %>%
+    style(hoverlabel = label_lightback, traces = traces_lightback) %>%
+    style(hoverlabel = label_darkback, traces = traces_darkback)
 
 }
