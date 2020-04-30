@@ -645,26 +645,6 @@ server <- function(input, output, session) {
               all_tested = sum(all_tested),
               all_released = sum(all_released))
   
-  all_df_all_counties <- sjc_num_df %>%
-    filter(County != "DOC") %>%
-    group_by(Date) %>%
-    summarize(all_released = sum(all_released),
-              all_positive = sum(all_positive),
-              all_tested = sum(all_tested)) %>%
-    mutate(County = "All Counties")
-  
-  all_df_all <- sjc_num_df %>%
-    group_by(Date) %>%
-    summarize(all_released = sum(all_released),
-              all_positive = sum(all_positive),
-              all_tested = sum(all_tested)) %>%
-    mutate(County = "All")
-  
-  df_by_county <- sjc_num_df %>%
-    dplyr::select(Date, County, all_released, all_positive, all_tested) %>%
-    rbind(all_df_all) %>%
-    rbind(all_df_all_counties)
-  
   # Calc MA rates
   ma_dropbox_url = "https://www.dropbox.com/s/xwp85c0efmlgq5r/MA_infection_rates.xlsx?dl=1"
   
@@ -820,6 +800,8 @@ server <- function(input, output, session) {
   # Releases v. Time
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
+  df_by_county_rel <- get_df_by_county(sjc_num_df, "p")
+  
   # Determine which counties to plot
   cnty_to_plot_rel <- reactive({
     c(input$select_county1_rel,
@@ -830,7 +812,7 @@ server <- function(input, output, session) {
   # Plot
   output$releases_v_time_plot <- renderPlotly({
     
-    g <- df_by_county %>%
+    g <- df_by_county_rel %>%
       filter(County %in% cnty_to_plot_rel()) %>%
       group_by(County) %>%
       mutate(cumul = cumsum(all_released)) %>%

@@ -21,19 +21,21 @@ get_df_by_county <- function(sjc_num_df, population) {
   
   all_df_all <- sjc_num_df %>%
     group_by(Date) %>%
-    summarize(all_positive = sum(all_positive),
+    summarize(all_released = sum(all_released),
+              all_positive = sum(all_positive),
               all_tested = sum(all_tested)) %>%
     mutate(County = "All")
   
   all_df_all_counties <- sjc_num_df %>%
     filter(County != "DOC") %>%
     group_by(Date) %>%
-    summarize(all_positive = sum(all_positive),
+    summarize(all_released = sum(all_released),
+              all_positive = sum(all_positive),
               all_tested = sum(all_tested)) %>%
     mutate(County = "All Counties")
   
   df_by_county <- sjc_num_df %>%
-    dplyr::select(Date, County, all_positive, all_tested) %>%
+    dplyr::select(Date, County, all_positive, all_tested, all_released) %>%
     rbind(all_df_all) %>%
     rbind(all_df_all_counties)
   
