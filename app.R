@@ -366,6 +366,37 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                ),
       
      "DOC Facilities",
+     
+     tabPanel("Total Releases", 
+              div(align="center",
+                  h2(textOutput("n_releases_DOC_str")),
+                  p("Reports of prisoners released at individual DOC facilities pursuant to SJC 12926", align="center"),
+                  em("*The DOC only began reporting facility-level releases on April 29.",
+                     "See the Counties + DOC: Total Releases page for longer-term totals.")
+              ),
+              withSpinner(plotlyOutput("all_releases_DOC_plot"), type=4, color="#b5b5b5", size=0.5),
+              em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+     
+     tabPanel("Releases Over Time",
+              wellPanel(id="internal_well",
+                        p("Select up to three facilities to plot versus time.*"),
+                        splitLayout(
+                          selectInput("select_fac1_rel", label = NULL, choices = fac_choices,
+                                      selected = "All DOC Facilities", multiple=FALSE),
+                          selectInput("select_fac2_rel", label = NULL, choices = fac_choices,
+                                      selected = "DOC Total**", multiple=FALSE),
+                          selectInput("select_fac3_rel", label = NULL, choices = fac_choices,
+                                      selected = "MCI-Norfolk", multiple=FALSE)
+                        ),
+                        em("*The DOC only began reporting facility-level releases on April 29.",
+                           "See the Counties + DOC: Releases Over Time page for longer-term totals."),
+                        em('**DOC Total reflects the cumulative count of prisoner releases submitted in DOC-wide',
+                           "reports going back to March 27.",
+                           style="display: block; margin-top: 1rem;")
+                    ),
+              withSpinner(plotlyOutput("DOC_releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+              em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+     ),
     
       tabPanel("Total Tests", 
                wellPanel(id="internal_well",
@@ -669,7 +700,8 @@ server <- function(input, output, session) {
   sjc_DOC_num_df <- sjc_DOC_df %>%
     rename(fac = `DOC Facility`,
            all_positive = `Total Positive`,
-           all_tested = `Total Tested`) %>%
+           all_tested = `Total Tested`,
+           all_released = `N Released`) %>%
     mutate(fac = factor(fac, levels=fac_staff)) %>%
     filter(!is.na(all_positive)) %>%
     select(-Notes)
@@ -1248,6 +1280,73 @@ server <- function(input, output, session) {
                map.fitBounds(groupLayer.getBounds());
            }")))
 
+  })
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # DOC Facility Release Totals
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  DOC_released_df <- sjc_DOC_num_df %>%
+    rename(value = all_released,
+           Facility = fac) %>%
+    select(Date, Facility, value) %>%
+    filter(!is.na(value))
+  
+  # Calculate totals
+  n_released_DOC <- sum(DOC_released_df$value)
+  output$n_releases_DOC_str <- renderText({
+    paste0(n_released_DOC, "*")
+  })
+  
+  output$all_releases_DOC_plot <- renderPlotly({
+  
+    single_bar_plot(DOC_released_df, 
+                    "Total", "Prisoners Released",
+                    "Facility")
+  
+  })
+  
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # DOC Facility Releases v. Time
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  df_by_fac_rel <- get_df_by_fac(sjc_num_df, sjc_DOC_num_df, "p")
+  
+  # Determine which counties to plot
+  fac_to_plot_rel <- reactive({
+    c(input$select_fac1_rel,
+      input$select_fac2_rel,
+      input$select_fac3_rel)
+  })
+  
+  # Plot
+  output$DOC_releases_v_time_plot <- renderPlotly({
+    
+    g <- df_by_fac_rel %>%
+      filter(fac %in% fac_to_plot_rel(),
+             !is.na(all_released)) %>%
+      group_by(fac) %>%
+      mutate(cumul = cumsum(all_released)) %>%
+    ggplot(aes(x=Date, y = cumul, color=fac)) +
+      geom_path(size=2, show.legend = T, alpha=0.8) +
+      geom_point(size=3) +
+      labs(x = "", y = "Total Prisoners Released", color="",
+           title = paste("Prisoners Released over Time"),
+           subtitle="Cumulative pursuant to SJC 12926") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22),
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') +
+      ylim(0, NA)
+    
+    lines_plotly_style(g, "Prisoners Released", "Facility")
+    
   })
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
