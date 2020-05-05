@@ -149,6 +149,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                         <li><a href='https://www.wbur.org/news/2020/04/09/covid-19-sheriff-essex-county-jail-soars' target='_blank'>WBUR: Essex 4/9/2020</a></li>
                         <li><a href='https://commonwealthmagazine.org/health-care/virus-notes-22-mayors-back-vote-by-mail/' target='_blank'>Commonwealth Magazine: DOC 4/22/2020</a></li>
                         <li><a href='https://www.masslive.com/coronavirus/2020/04/doc-yet-to-provide-missing-data-about-prisoners-and-staff-with-coronavirus-dating-back-to-april-3-public-defender-agency-of-mass-claims.html' target='_blank'>MassLive: DOC 4/23/2020</a></li>
+                        <li><a href='https://commonwealthmagazine.org/criminal-justice/inmates-testify-about-covid-19-dangers/' target='_blank'>Commonwealth Magazine: DOC 4/27/2020</a></li>
+                        <li><a href='https://framinghamsource.com/index.php/2020/05/01/36-percent-of-mci-framingham-inmates-positive-for-coronavirus/' target='_blank'>Framingham Source: MCI-Framingham 5/1/2020</a></li>
                       </ul>
                   </li>
                 </ul>")
