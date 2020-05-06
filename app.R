@@ -649,7 +649,7 @@ server <- function(input, output, session) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
   # Define file locations
-  sjc_dropbox_url <- "https://www.dropbox.com/s/xutf23fy40nwjb3/prison_data_SJC12926.xlsx?dl=1"
+  sjc_dropbox_url <- "https://docs.google.com/spreadsheets/d/1nmZ84rjOxQgdTL0PdV7SrbyDTbD7nROQ/export#gid=1419540291"
   
   # Download excel spreadsheet from URL and read as DF
   GET(sjc_dropbox_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
