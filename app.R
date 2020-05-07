@@ -172,16 +172,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       ),
       
       tabPanel("Tests & Positives Over Time", 
-               div(id="dev-info",
-                     wellPanel(
-                       fluidRow(
-                         column(1, icon('info-circle')),
-                         column(11, h4("DOC Staff Testing"),
-                                em("Please note the DOC is not reporting tests of staff.", 
-                                   style="margin-top:0px"))
-                       )
-                     )
-               ),
                wellPanel(id="internal_well",
                          p("Select population to plot.", id="radio_prompt"),
                          radioButtons("both_radio", label = NULL, 
@@ -216,20 +206,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Releases Over Time",
-               conditionalPanel(
-                 condition = "input.select_county1_rel == 'Hampshire'|input.select_county2_rel == 'Hampshire'|input.select_county3_rel == 'Hampshire'",
-                 div(id="dev-warning",
-                     wellPanel(
-                       fluidRow(
-                         column(1, icon('exclamation-triangle')),
-                         column(11, h4("Hampshire County Releases"),
-                                em("We are awaiting verification from Hampshire County",
-                                   "that might lead to changes in their daily reports of releases.", 
-                                   style="margin-top:0px"))
-                       )
-                     )
-                 )
-               ),
                wellPanel(id="internal_well",
                  p("Select up to three locations to plot versus time."),
                  splitLayout(
@@ -245,19 +221,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       ),
       
       tabPanel("Total Tests", 
-               conditionalPanel(
-                 condition = "input.select_tested == 'All'|input.select_tested == 'Staff'|input.select_tested == 'Total'",
-                 div(id="dev-info",
-                     wellPanel(
-                       fluidRow(
-                         column(1, icon('info-circle')),
-                         column(11, h4("DOC Staff Testing"),
-                                em("Please note the DOC is not reporting tests of staff.", 
-                                   style="margin-top:0px"))
-                       )
-                     )
-                 )
-               ),
                wellPanel(id="internal_well",
                  p("Select kind of individual:"),
                  selectInput("select_tested", label = NULL, 
@@ -275,22 +238,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       tabPanel("Tests Over Time",
-               conditionalPanel(
-                 condition = "(input.select_county1_test == 'DOC'|
-                               input.select_county2_test == 'DOC'|
-                               input.select_county3_test == 'DOC') & 
-                              (input.test_radio == 'ps'|input.test_radio == 's')",
-                 div(id="dev-info",
-                     wellPanel(
-                       fluidRow(
-                         column(1, icon('info-circle')),
-                         column(11, h4("DOC Staff Testing"),
-                                em("Please note the DOC is not reporting tests of staff.", 
-                                   style="margin-top:0px"))
-                       )
-                     )
-                 )
-               ),
                wellPanel(id="internal_well",
                  p("Select population to plot.", id="radio_prompt"),
                  radioButtons("test_radio", label = NULL, 
@@ -417,19 +364,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
      ),
     
       tabPanel("Total Tests", 
-               conditionalPanel(
-                 condition = "input.select_tests_fac == 'All'|input.select_tests_fac == 'Staff'|input.select_tests_fac == 'Total'",
-                 div(id="dev-info",
-                     wellPanel(
-                       fluidRow(
-                         column(1, icon('info-circle')),
-                         column(11, h4("DOC Staff Testing"),
-                                em("Please note the DOC is not reporting tests of staff.", 
-                                   style="margin-top:0px"))
-                       )
-                     )
-                 )
-               ),
                wellPanel(id="internal_well",
                          p("Select kind of individual:"),
                          selectInput("select_tests_fac", label = NULL, 
@@ -450,19 +384,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
      
      tabPanel("Tests Over Time",
-              conditionalPanel(
-                condition = "input.doc_test_radio == 'ps'|input.doc_test_radio == 's'",
-                div(id="dev-info",
-                    wellPanel(
-                      fluidRow(
-                        column(1, icon('info-circle')),
-                        column(11, h4("DOC Staff Testing"),
-                               em("Please note the DOC is not reporting tests of staff.", 
-                                  style="margin-top:0px"))
-                      )
-                    )
-                )
-              ),
               wellPanel(id="internal_well",
                         p("Select population to plot.", id="radio_prompt"),
                         radioButtons("doc_test_radio", label = NULL, 
