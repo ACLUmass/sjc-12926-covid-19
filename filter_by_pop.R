@@ -112,9 +112,13 @@ get_df_by_county_fac <- function(sjc_num_df, sjc_county_num_df, population) {
     
     sjc_county_num_df <- sjc_county_num_df %>%
       dplyr::select(-all_positive, -all_tested) %>%
-      mutate(all_positive = `N Positive - Staff`,
-             all_tested = `N Tested - Staff`) %>%
-      filter(!is.na(all_positive))
+      group_by(Date, fac) %>%
+      mutate(all_positive = sum(`N Positive - COs`, 
+                                `N Positive - Staff`, 
+                                `N Positive - Contractors`, na.rm=T),
+             all_tested = sum(`N Tested - COs`,
+                              `N Tested - Staff`, 
+                              `N Tested - Contractors`, na.rm = T))
   }
   
   counties_with_breakdowns <- sjc_county_num_df %>%
@@ -136,8 +140,8 @@ get_df_by_county_fac <- function(sjc_num_df, sjc_county_num_df, population) {
   
   df_by_county_fac <- sjc_county_num_df %>%
     dplyr::select(Date, fac, all_positive, all_tested) %>%
-    rbind(all_df_all_counties) %>%
-    rbind(county_total_df)
+    bind_rows(all_df_all_counties) %>%
+    bind_rows(county_total_df)
   
   return(df_by_county_fac)
 }
