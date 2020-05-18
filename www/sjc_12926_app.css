@@ -129,15 +129,17 @@ h1, h2, h3, h4 {
   font-family: gtamcond;
 }
 
-a[data-value="External Resources"]
+a[data-value="External Resources"],
+a[data-value="Tests & Positives Over Time"],
+a[data-value="County Facilities"]
 {
   border-bottom: 1px solid #eee;
 }
 
-a[data-value="Explore Data"]
+/*a[data-value="Explore Data"]
 {
   border-top: 1px solid #eee;
-}
+}*/
 
 #county_maps {
   margin-top: 2rem;
