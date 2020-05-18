@@ -294,26 +294,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
-      # tabPanel("Infection Rates", align="center",
-      #          wellPanel(
-      #            p("Select up to three locations to plot versus time."),
-      #            splitLayout(
-      #              selectInput("select_county_inf1", label = NULL, 
-      #                          choices = infection_choices,
-      #                          selected = "MA Total", multiple=FALSE),
-      #              selectInput("select_county_inf2", label = NULL, 
-      #                          choices = infection_choices,
-      #                          selected = "MA Prisoner Total", multiple=FALSE),
-      #              selectInput("select_county_inf3", label = NULL, 
-      #                          choices = infection_choices,
-      #                          selected = "DOC", multiple=FALSE)
-      #            )),
-      #          withSpinner(plotlyOutput("infections_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-      #          em('Data on COVID-19 cases in Massachusetts ("MA Total") from', 
-      #             a(href="https://www.mass.gov/info-details/covid-19-cases-quarantine-and-monitoring", 
-      #               "mass.gov")
-      #             )
-      # ),
       
       tabPanel("Mapping County Trends", 
                wellPanel(id="internal_well",
@@ -640,17 +620,6 @@ server <- function(input, output, session) {
     summarize(all_positive = sum(all_positive),
               all_tested = sum(all_tested),
               all_released = sum(all_released))
-  
-  # Calc MA rates
-  ma_dropbox_url = "https://www.dropbox.com/s/xwp85c0efmlgq5r/MA_infection_rates.xlsx?dl=1"
-  
-  # # Download excel spreadsheet from URL and read as DF
-  # GET(ma_dropbox_url, write_disk(tf_ma <- tempfile(fileext = ".xlsx")))
-  # ma_df <- read_excel(tf_ma) %>% 
-  #   dplyr::select(Date, cumul_rate_10000) %>%
-  #   mutate(cumul_rate_10000 = as.numeric(cumul_rate_10000),
-  #          Date = as.Date(Date),
-  #          County = "MA Total")
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Load DOC Facility Data
