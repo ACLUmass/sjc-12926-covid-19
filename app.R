@@ -54,6 +54,11 @@ pop_choices <- c("--", 'All', 'All Counties', "DOC", 'DOC: Boston Pre', 'DOC: BS
                  'Dukes', 'Essex', 'Franklin', 'Hampden', 'Hampshire', 'Middlesex', 
                  'Norfolk', 'Plymouth', 'Suffolk', 'Worcester')
 
+cty_facs <- c('Bristol - Ash Street Jail', 'Bristol - DHOC', 'Essex - Middleton', 
+              'Essex - Prerelease', 'Essex - Women in Transition', 'Hampden - Ludlow', 
+               'Hampden - Mill Street', "Hampden - Women's Facility", 'Suffolk - HOC', 
+               'Suffolk - Jail')
+
 # UI --------------------------------------------------------------------------
 
 ui <- fluidPage(theme = "sjc_12926_app.css",
@@ -484,26 +489,26 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                
                "----",
                
-               tabPanel("Total Positive Tests"#, 
-                        # wellPanel(id="internal_well",
-                        #           p("Select kind of individual:"),
-                        #           selectInput("select_positive_fac", label = NULL, 
-                        #                       choices = c("All", "Prisoners", "Staff", "Total"),
-                        #                       selected = "All", multiple=FALSE),
-                        #           em('Exact number of positive tests per facility annotated in',
-                        #              '"Prisoners", "Staff", and "Total" plots.')
-                        # ),
-                        # div(align="center",
-                        #     h2(textOutput("n_positive_DOC_str")),
-                        #     p("Reports of",
-                        #       textOutput("type_positive_fac", inline=T),
-                        #       "tested", strong("positive"),
-                        #       "for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
-                        #     em("*The DOC only began reporting facility-level positive data on April 13.",
-                        #        "See the Total Positive Tests page for longer-term totals.")
-                        # ),
-                        # withSpinner(plotlyOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
-                        # em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+               tabPanel("Total Positive Tests", 
+                        wellPanel(id="internal_well",
+                                  p("Select kind of individual:"),
+                                  selectInput("select_positive_cty", label = NULL,
+                                              choices = c("All", "Prisoners", "Staff", "Total"),
+                                              selected = "All", multiple=FALSE),
+                                  em('Exact number of positive tests per facility annotated in',
+                                     '"Prisoners", "Staff", and "Total" plots.')
+                        ),
+                        div(align="center",
+                            h2(textOutput("n_positive_cty_str")),
+                            p("Reports of",
+                              textOutput("type_positive_cty", inline=T),
+                              "tested", strong("positive"),
+                              "for COVID-19 at individual county facilities pursuant to SJC 12926", align="center"),
+                            em("*Only some counties began reporting facility-level positive data on May 8.",
+                               "See the Counties + DOC Aggregates: Total Positive Tests page for longer-term totals.")
+                        ),
+                        withSpinner(plotlyOutput("cty_positives_plot"), type=4, color="#b5b5b5", size=0.5),
+                        em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
                   ),
                
                tabPanel("Positive Tests Over Time"#, 
@@ -537,20 +542,20 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                 ),
                "----",
                
-               tabPanel("Mapping County Trends"#, 
-                        # wellPanel(id="internal_well",
-                        #           p("Select value to plot."),
-                        #           selectInput("select_y_plot", label = NULL, 
-                        #                       choices = c("Releases", "Tests", "Positive Cases"),
-                        #                       selected = "Releases", multiple=FALSE)
-                        # ),
-                        # em("All maps reflect data from county jails and HOCs alone,",
-                        #    "as the Massachusutts DOC has only been reporting",
-                        #    "facility-level data since April 25th."),
-                        # em("Maps of tests and positive cases include both prisoner and staff data."),
-                        # em("Please note that prisoner deaths due to COVID-19 are not included in these data."),
-                        # withSpinner(leafletOutput("county_maps"),
-                        #             type=4, color="#b5b5b5", size=0.5)
+               tabPanel("Mapping County Trends", 
+                        wellPanel(id="internal_well",
+                                  p("Select value to plot."),
+                                  selectInput("select_y_plot", label = NULL,
+                                              choices = c("Releases", "Tests", "Positive Cases"),
+                                              selected = "Releases", multiple=FALSE)
+                        ),
+                        em("All maps reflect data from county jails and HOCs alone,",
+                           "as the Massachusutts DOC has only been reporting",
+                           "facility-level data since April 25th."),
+                        em("Maps of tests and positive cases include both prisoner and staff data."),
+                        em("Please note that prisoner deaths due to COVID-19 are not included in these data."),
+                        withSpinner(leafletOutput("county_maps"),
+                                    type=4, color="#b5b5b5", size=0.5)
                )
     ),
     
@@ -745,7 +750,23 @@ server <- function(input, output, session) {
            all_released = `N Released`) %>%
     mutate(fac = factor(fac, levels=fac_staff)) %>%
     filter(!is.na(all_positive)) %>%
-    select(-Notes)
+    dplyr::select(-Notes)
+  
+  # Load County Data -----------------------------------------------------------
+  
+  sjc_county_df <- read_excel(tf, sheet=3) %>%
+    mutate_if(is.character, ~na_if(., 'NA')) %>%
+    mutate(Date = as.Date(Date)) %>%
+    mutate_at(vars(starts_with("N "), starts_with("Total")),
+              as.numeric)
+  
+  sjc_county_num_df <- sjc_county_df %>%
+    rename(fac = `County Facility`,
+           all_positive = `Total Positive`,
+           all_tested = `Total Tested`) %>%
+    mutate(fac = factor(fac, levels=cty_facs)) %>%
+    filter(!is.na(all_positive)) %>%
+    dplyr::select(-Notes)
   
   # Population v. Time -------------------------------------------------------
   
@@ -867,7 +888,7 @@ server <- function(input, output, session) {
     g$cumul_Positive[!is.na(g$all_positive)] <- cumsum(g$all_positive[!is.na(g$all_positive)])
     
     g <- g %>%
-      select(-starts_with("all")) %>%
+      dplyr::select(-starts_with("all")) %>%
       pivot_longer(cols = starts_with("cumul"), names_to = "type", 
                    names_prefix = "cumul_") %>%
     ggplot(aes(x=Date, y = value, color=type)) +
@@ -1201,7 +1222,7 @@ server <- function(input, output, session) {
   DOC_released_df <- sjc_DOC_num_df %>%
     rename(value = all_released,
            Facility = fac) %>%
-    select(Date, Facility, value) %>%
+    dplyr::select(Date, Facility, value) %>%
     filter(!is.na(value))
   
   # Calculate totals
@@ -1484,6 +1505,60 @@ server <- function(input, output, session) {
     
   })
   
+  # Counties: Total Positives -------------------------------------------------------
+  cty_positive_df <- sjc_county_num_df %>%
+    mutate(`N Positive - Staff` = `N Positive - COs` + 
+             `N Positive - Staff` + `N Positive - Contractor`) %>%
+    rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`,
+           Facility = fac) %>%
+    dplyr::select(-`N Positive - COs`, -`N Positive - Contractor`) %>%
+    pivot_longer(cols=matches("N Positive", ignore.case=F),
+                 names_to="type",
+                 names_prefix="N Positive - ") %>%
+    filter(!is.na(value))
+  
+  # Determine which variable to plot
+  select_positive_cty <- reactive({ input$select_positive_cty })
+  
+  output$cty_positives_plot <- renderPlotly({
+    
+    if (select_positive_cty() == "All") {
+      output$n_positive_cty_str <- renderText({
+        paste0(as.character(sum(sjc_county_num_df$all_positive, na.rm=T)), "*")
+      })
+      output$type_positive_cty <- renderText({"prisoners and staff"})
+      
+      stacked_bar_plot(cty_positive_df, 
+                       "Tested Positive",
+                       "County Facility")
+      
+    } else if (select_positive_cty() %in% c("Prisoners", "Staff")) {
+      output$n_positive_cty_str <- renderText({
+        cty_positive_df %>%
+          filter(type == select_positive_cty()) %>%
+          pull(value) %>%
+          sum(na.rm=T) %>%
+          as.character() %>%
+          paste0("*")
+      })
+      output$type_positive_cty <- renderText({tolower(select_positive_cty())})
+      
+      single_bar_plot(cty_positive_df, 
+                      select_positive_cty(), 
+                      paste(select_positive_cty(), "Tested Positive"),
+                      "County Facility")
+      
+    } else if (select_positive_cty() == "Total") {
+      output$n_positive_cty_str <- renderText({
+        paste0(as.character(sum(sjc_county_num_df$all_positive, na.rm=T)), "*")
+      })
+      output$type_positive_cty <- renderText({"prisoners and staff"})
+      
+      single_bar_plot(cty_positive_df, 
+                      select_positive_cty(), "Prisoners & Staff Tested Positive",
+                      "County Facility")
+    }
+  })
   
   # County: Maps ------------------------------------------------------
   

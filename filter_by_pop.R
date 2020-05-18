@@ -9,12 +9,12 @@ get_df_by_county <- function(sjc_num_df, population) {
   
   if (population == "p") {
     sjc_num_df <- sjc_num_df %>%
-      select(-all_positive, -all_tested) %>%
+      dplyr::select(-all_positive, -all_tested) %>%
       mutate(all_positive = `N Positive - Detainees/Inmates`,
              all_tested = `N Tested - Detainees/Inmates`)
   } else if (population == "s") {
     sjc_num_df <- sjc_num_df %>%
-      select(-all_positive, -all_tested) %>%
+      dplyr::select(-all_positive, -all_tested) %>%
       mutate(all_positive = `N Positive - COs` + `N Positive - Staff` + `N Positive - Contractor`,
              all_tested = `N Tested - COs` + `N Tested - Staff` + `N Tested - Contractors`)
   }
@@ -46,24 +46,24 @@ get_df_by_fac <- function(sjc_num_df, sjc_DOC_num_df, population) {
   
   if (population == "p") {
     sjc_num_df <- sjc_num_df %>%
-      select(-all_positive, -all_tested) %>%
+      dplyr::select(-all_positive, -all_tested) %>%
       mutate(all_positive = `N Positive - Detainees/Inmates`,
              all_tested = `N Tested - Detainees/Inmates`)
     
     sjc_DOC_num_df <- sjc_DOC_num_df %>%
-      select(-all_positive, -all_tested) %>%
+      dplyr::select(-all_positive, -all_tested) %>%
       mutate(all_positive = `N Positive - Detainees/Inmates`,
              all_tested = `N Tested - Detainees/Inmates`) %>%
       filter(!is.na(all_positive))
     
   } else if (population == "s") {
     sjc_num_df <- sjc_num_df %>%
-      select(-all_positive, -all_tested) %>%
+      dplyr::select(-all_positive, -all_tested) %>%
       mutate(all_positive = `N Positive - COs` + `N Positive - Staff` + `N Positive - Contractor`,
              all_tested = `N Tested - COs` + `N Tested - Staff` + `N Tested - Contractors`)
     
     sjc_DOC_num_df <- sjc_DOC_num_df %>%
-      select(-all_positive, -all_tested) %>%
+      dplyr::select(-all_positive, -all_tested) %>%
       mutate(all_positive = `N Positive - Staff`,
              all_tested = `N Tested - Staff`) %>%
       filter(!is.na(all_positive))

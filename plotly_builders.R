@@ -51,6 +51,10 @@ fac_staff <- c('Boston Pre', 'BSH',
                'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
                'MCI-Shirley', 'MTC', 'NCCI-Gardn', 'OCCC', 'Pondville', 
                'SBCC', 'SMCC', "Non-Facility")
+cty_facs <- c('Bristol - Ash Street Jail', 'Bristol - DHOC', 'Essex - Middleton', 
+              'Essex - Prerelease', 'Essex - Women in Transition', 'Hampden - Ludlow', 
+              'Hampden - Mill Street', "Hampden - Women's Facility", 'Suffolk - HOC', 
+              'Suffolk - Jail')
 
 # Function for plots with one kind of bar
 single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
@@ -64,6 +68,9 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
     label_source = counties
   } else if (location_to_plot == "Facility") {
     label_source = data$Facility %>% unique() %>% sort()
+  } else if (location_to_plot == "County Facility") {
+    label_source <- cty_facs
+    location_to_plot <- "Facility"
   }
 
   data <- data %>%
@@ -156,6 +163,9 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
     label_source <- counties
   } else if (location_to_plot == "Facility") {
     label_source <- fac_staff
+  } else if (location_to_plot == "County Facility") {
+    label_source <- cty_facs
+    location_to_plot <- "Facility"
   }
 
   g <- data%>%
@@ -165,7 +175,7 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
       ggplot(aes(x=loc,
                    y=sum_value,
                    fill = type)) +
-        geom_col(position = "stack") 
+        geom_col(position = "stack") +
         labs(fill = "") + 
         theme(legend.position = "top",
               legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
