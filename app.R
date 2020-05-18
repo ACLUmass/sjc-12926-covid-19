@@ -17,6 +17,8 @@ library(plotly)
 source("plotly_builders.R")
 source("filter_by_pop.R")
 
+# Initialization --------------------------------------------------------------
+
 # Set ggplot settings
 theme_set(theme_minimal())
 
@@ -32,9 +34,9 @@ mass_cntys <- tigris::counties(state=25, cb=T)
 counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex", 
               "Franklin", "Hampden", "Hampshire", "Middlesex", "Norfolk", 
               "Plymouth", "Suffolk", "Worcester")
+
 # Make list for drop-downs
 county_choices <- c("--", "All", "All Counties", counties)
-# infection_choices <- c("--", "MA Total", "MA Prisoner Total", counties)
 fac_choices <- c("--", "DOC Total**", "All DOC Facilities", 'Boston Pre', 'BSH', 
                  'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
                  'MCI-Shirley', 'MTC',  "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
@@ -52,12 +54,8 @@ pop_choices <- c("--", 'All', 'All Counties', "DOC", 'DOC: Boston Pre', 'DOC: BS
                  'Dukes', 'Essex', 'Franklin', 'Hampden', 'Hampshire', 'Middlesex', 
                  'Norfolk', 'Plymouth', 'Suffolk', 'Worcester')
 
+# UI --------------------------------------------------------------------------
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# UI
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ui <- fluidPage(theme = "sjc_12926_app.css",
       
   # Add favicon          
@@ -66,7 +64,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     tags$link(rel = "icon", type = "image/png", sizes = "512x512", href = "favicon.png")
   ),
   
-  # App title ----
+  # App title
   div(id="title",
     titlePanel("Tracking COVID-19 in Massachusetts Prison & Jails")
   ),
@@ -155,7 +153,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                   </li>
                 </ul>")
                ),
-      
+
       "Data by County/Facility",
       
       tabPanel("Incarcerated Population Over Time",
@@ -621,12 +619,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
   )
 )
 
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Server
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Server ----------------------------------------------------------------------
 
 # Create a reactive object here that we can share between all the sessions.
 vals <- reactiveValues(count=0)
