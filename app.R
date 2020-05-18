@@ -550,10 +550,10 @@ server <- function(input, output, session) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
   # Define file locations
-  sjc_dropbox_url <- "https://docs.google.com/spreadsheets/d/1nmZ84rjOxQgdTL0PdV7SrbyDTbD7nROQ/export#gid=1419540291"
+  sjc_googledrive_url <- "https://docs.google.com/spreadsheets/d/1nmZ84rjOxQgdTL0PdV7SrbyDTbD7nROQ/export#gid=1419540291"
   
   # Download excel spreadsheet from URL and read as DF
-  GET(sjc_dropbox_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
+  GET(sjc_googledrive_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
   sjc_df <- read_excel(tf) %>%
     # Turn string "NA" to real NA
     mutate_if(is.character, ~na_if(., 'NA')) %>%
@@ -1559,7 +1559,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       withProgress(message = 'Downloading...', value = 1, {
-        GET(sjc_dropbox_url, write_disk(file))
+        GET(sjc_googledrive_url, write_disk(file))
       })
     }
   )
