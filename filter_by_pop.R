@@ -89,3 +89,55 @@ get_df_by_fac <- function(sjc_num_df, sjc_DOC_num_df, population) {
   
   return(df_by_fac)
 }
+
+get_df_by_county_fac <- function(sjc_num_df, sjc_county_num_df, population) {
+  
+  if (population == "p") {
+    sjc_num_df <- sjc_num_df %>%
+      dplyr::select(-all_positive, -all_tested) %>%
+      mutate(all_positive = `N Positive - Detainees/Inmates`,
+             all_tested = `N Tested - Detainees/Inmates`)
+    
+    sjc_county_num_df <- sjc_county_num_df %>%
+      dplyr::select(-all_positive, -all_tested) %>%
+      mutate(all_positive = `N Positive - Detainees/Inmates`,
+             all_tested = `N Tested - Detainees/Inmates`) %>%
+      filter(!is.na(all_positive))
+    
+  } else if (population == "s") {
+    sjc_num_df <- sjc_num_df %>%
+      dplyr::select(-all_positive, -all_tested) %>%
+      mutate(all_positive = `N Positive - COs` + `N Positive - Staff` + `N Positive - Contractor`,
+             all_tested = `N Tested - COs` + `N Tested - Staff` + `N Tested - Contractors`)
+    
+    sjc_county_num_df <- sjc_county_num_df %>%
+      dplyr::select(-all_positive, -all_tested) %>%
+      mutate(all_positive = `N Positive - Staff`,
+             all_tested = `N Tested - Staff`) %>%
+      filter(!is.na(all_positive))
+  }
+  
+  counties_with_breakdowns <- sjc_county_num_df %>%
+    separate(fac, c("County", NA), sep=" - ") %>%
+    pull(County) %>%
+    unique()
+  
+  all_df_all_counties <- sjc_num_df %>%
+    filter(County != "DOC") %>%
+    group_by(Date) %>%
+    summarize(all_positive = sum(all_positive),
+              all_tested = sum(all_tested)) %>%
+    mutate(fac = "All Counties")
+  
+  county_total_df <- sjc_num_df %>%
+    filter(County %in% counties_with_breakdowns) %>%
+    rename(fac = County) %>%
+    dplyr::select(Date, fac, all_positive, all_tested)
+  
+  df_by_county_fac <- sjc_county_num_df %>%
+    dplyr::select(Date, fac, all_positive, all_tested) %>%
+    rbind(all_df_all_counties) %>%
+    rbind(county_total_df)
+  
+  return(df_by_county_fac)
+}

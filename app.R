@@ -58,6 +58,7 @@ cty_facs <- c('Bristol - Ash Street Jail', 'Bristol - DHOC', 'Essex - Middleton'
               'Essex - Prerelease', 'Essex - Women in Transition', 'Hampden - Ludlow', 
                'Hampden - Mill Street', "Hampden - Women's Facility", 'Suffolk - HOC', 
                'Suffolk - Jail')
+ctyfac_choices <- c("--", "All Counties", cty_facs)
 
 # UI --------------------------------------------------------------------------
 
@@ -194,6 +195,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                withSpinner(plotlyOutput("both_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
+    # UI: DOC + County Aggregates ---------------------------------------------
     navbarMenu("Counties + DOC Aggregates",
       
         tabPanel("Total Releases", 
@@ -304,6 +306,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
         )
       ),
       
+    # UI: DOC Facilities ------------------------------------------------------
      navbarMenu("DOC Facilities",
      
        tabPanel("Total Releases", 
@@ -438,6 +441,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  em("Please note that prisoner deaths due to COVID-19 are not included in these data."))
      ),
     
+    # UI: County Facilities --------------------------------------------------
     navbarMenu("County Facilities",
                
                tabPanel("Total Tests", 
@@ -511,34 +515,28 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                         em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
                   ),
                
-               tabPanel("Positive Tests Over Time"#, 
-                        # wellPanel(id="internal_well",
-                        #           p("Select population to plot.", id="radio_prompt"),
-                        #           radioButtons("doc_positive_radio", label = NULL, 
-                        #                        selected = "ps" , inline = T, 
-                        #                        choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
-                        #                        choiceValues = c("p", "s", "ps")),
-                        #           p("Select up to three facilities to plot versus time.*"),
-                        #           splitLayout(
-                        #             selectInput("select_fac1", label = NULL, choices = fac_choices,
-                        #                         selected = "DOC Total**", multiple=FALSE),
-                        #             selectInput("select_fac2", label = NULL, choices = fac_choices,
-                        #                         selected = "All DOC Facilities", multiple=FALSE),
-                        #             selectInput("select_fac3", label = NULL, choices = fac_choices,
-                        #                         selected = "MTC", multiple=FALSE) 
-                        #           ),
-                        #           em("*The DOC only began reporting facility-level prisoner data on April 13,",
-                        #              "and facility-level staff data on April 15.",
-                        #              "See the Counties + DOC Positive Tests Over Time page for longer-term DOC tracking"),
-                        #           em('**DOC Total reflects DOC-wide reports, and might undercount prisoner',
-                        #              "cases as compared to the facility total due to the DOC reporting",
-                        #              "active, rather than total, cases.",
-                        #              'Additionally, DOC Total staff includes staff categorized as "Other"',
-                        #              'while the facility total does not.',
-                        #              style="display: block; margin-top: 1rem;")
-                        # ),
-                        # withSpinner(plotlyOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                        # em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+               tabPanel("Positive Tests Over Time", 
+                        wellPanel(id="internal_well",
+                                  p("Select population to plot.", id="radio_prompt"),
+                                  radioButtons("cty_positive_radio", label = NULL,
+                                               selected = "ps" , inline = T,
+                                               choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                               choiceValues = c("p", "s", "ps")),
+                                  p("Select up to three facilities to plot versus time.*"),
+                                  splitLayout(
+                                    selectInput("select_ctyfac1", label = NULL, choices = ctyfac_choices,
+                                                multiple=FALSE),
+                                    selectInput("select_ctyfac2", label = NULL, choices = ctyfac_choices,
+                                                multiple=FALSE),
+                                    selectInput("select_ctyfac3", label = NULL, choices = ctyfac_choices,
+                                                multiple=FALSE)
+                                  ),
+                                  em("*Only some counties began reporting facility-level positive data on May 8.",
+                                     "See the Counties + DOC Aggregates: Total Positive Tests page for longer-term totals.",
+                                     style="display: block; margin-top: 1rem;")
+                        ),
+                        withSpinner(plotlyOutput("ctyfac_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                        em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
                 ),
                "----",
                
@@ -767,6 +765,29 @@ server <- function(input, output, session) {
     mutate(fac = factor(fac, levels=cty_facs)) %>%
     filter(!is.na(all_positive)) %>%
     dplyr::select(-Notes)
+  
+  counties_with_breakdowns <- sjc_county_num_df %>%
+    separate(fac, c("County", NA), sep=" - ") %>%
+    pull(County) %>%
+    unique()
+  
+  # Determine county facility selector
+  ctyfac_choices <- c("--", "All Counties", 
+                      sort(c(counties_with_breakdowns, cty_facs)))
+  
+  # Update selectors
+  observe({
+    updateSelectInput(session, "select_ctyfac1",
+                      choices = ctyfac_choices,
+                      selected = "All Counties")
+    updateSelectInput(session, "select_ctyfac2",
+                      choices = ctyfac_choices,
+                      selected = "Bristol")
+    updateSelectInput(session, "select_ctyfac3",
+                      choices = ctyfac_choices,
+                      selected = "Bristol - DHOC")
+    
+  })
   
   # Population v. Time -------------------------------------------------------
   
@@ -1619,7 +1640,60 @@ server <- function(input, output, session) {
     }
   })
   
-  # County: Maps ------------------------------------------------------
+  # Counties: Positives v. Time -------------------------------------------------------
+  # Determine which facilities to plot
+  ctyfac_to_plot <- reactive({
+    c(input$select_ctyfac1,
+      input$select_ctyfac2,
+      input$select_ctyfac3)
+  })
+  
+  # Determine which population to plot
+  pop_to_plot_cty_pos <- reactive({input$cty_positive_radio})
+  
+  # Plot
+  output$ctyfac_time_plot <- renderPlotly({
+    
+    # Apply population filter
+    df_by_county_fac <- get_df_by_county_fac(sjc_num_df, sjc_county_num_df, 
+                                             pop_to_plot_cty_pos())
+    
+    # Determine what label is
+    if (pop_to_plot_cty_pos() == "ps") {
+      y_label = "Prisoners & Staff Tested Positive"
+    } else if (pop_to_plot_cty_pos() == "p") {
+      y_label = "Prisoners Tested Positive"
+    } else if (pop_to_plot_cty_pos() == "s") {
+      y_label = "Staff Tested Positive"
+    }
+    
+    g <- df_by_county_fac %>%
+      filter(fac %in% ctyfac_to_plot()) %>%
+      group_by(fac) %>%
+      mutate(cumul = cumsum(all_positive)) %>%
+      ggplot(aes(x=Date, y = cumul, 
+                 color=fac)) +
+      geom_path(size=1.3, show.legend = T, alpha=0.7) +
+      geom_point(size = 3) +
+      labs(x = "", y = y_label, color="",
+           title = paste("Positive COVID-19 Tests over Time"),
+           subtitle="Cumulative pursuant to SJC 12926") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22),
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off')
+    
+    lines_plotly_style(g, y_label, "Location")
+    
+  })
+  
+  # Counties: Maps ------------------------------------------------------
   
   # Determine which variable to plot
   y_to_plot <- reactive({ input$select_y_plot })

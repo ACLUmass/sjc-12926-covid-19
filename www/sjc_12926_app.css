@@ -180,3 +180,7 @@ a[data-value="County Facilities"]
     font-family: gtamcond;
     font-weight: bold;
 }
+
+.selectize-control {
+    white-space: normal;
+}
