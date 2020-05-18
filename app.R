@@ -440,25 +440,25 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     
     navbarMenu("County Facilities",
                
-               tabPanel("Total Tests"#, 
-                        # wellPanel(id="internal_well",
-                        #           p("Select kind of individual:"),
-                        #           selectInput("select_tests_fac", label = NULL, 
-                        #                       choices = c("All", "Prisoners", "Staff", "Total"),
-                        #                       selected = "All", multiple=FALSE),
-                        #           em('Exact number of tests per facility annotated in',
-                        #              '"Prisoners", "Staff", and "Total" plots.')
-                        # ),
-                        # div(align="center",
-                        #     h2(textOutput("n_tests_DOC_str")),
-                        #     p("Reports of",
-                        #       textOutput("type_tests_fac", inline=T),
-                        #       "tested for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
-                        #     em("*The DOC only began reporting facility-level testing data on April 25.",
-                        #        "See the Total Tests page for longer-term totals.")
-                        # ),
-                        # withSpinner(plotlyOutput("DOC_tests_plot"), type=4, color="#b5b5b5", size=0.5),
-                        # em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+               tabPanel("Total Tests", 
+                        wellPanel(id="internal_well",
+                                  p("Select kind of individual:"),
+                                  selectInput("select_tests_cty", label = NULL,
+                                              choices = c("All", "Prisoners", "Staff", "Total"),
+                                              selected = "All", multiple=FALSE),
+                                  em('Exact number of tests per facility annotated in',
+                                     '"Prisoners", "Staff", and "Total" plots.')
+                        ),
+                        div(align="center",
+                            h2(textOutput("n_tests_cty_str")),
+                            p("Reports of",
+                              textOutput("type_tests_cty", inline=T),
+                              "tested for COVID-19 at individual county facilities pursuant to SJC 12926", align="center"),
+                            em("*Only some counties began reporting facility-level testing data on May 8.",
+                               "See the Counties + DOC Aggregates: Total Tests page for longer-term totals.")
+                        ),
+                        withSpinner(plotlyOutput("cty_tests_plot"), type=4, color="#b5b5b5", size=0.5),
+                        em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
                   ),
                
                tabPanel("Tests Over Time"#,
@@ -1505,13 +1505,72 @@ server <- function(input, output, session) {
     
   })
   
+  # Counties: Total Tests -------------------------------------------------------
+  cty_tests_df <- sjc_county_num_df %>%
+    group_by(Date, fac) %>%
+    mutate(`N Tested - Staff` = sum(`N Tested - COs`,
+                                    `N Tested - Staff`, 
+                                    `N Tested - Contractors`, na.rm=T)) %>%
+    rename(`N Tested - Prisoners`=`N Tested - Detainees/Inmates`,
+           Facility = fac) %>%
+    dplyr::select(-`N Tested - COs`, -`N Tested - Contractors`) %>%
+    pivot_longer(cols=matches("N Tested", ignore.case=F),
+                 names_to="type",
+                 names_prefix="N Tested - ") %>%
+    filter(!is.na(value))
+  
+  # Determine which variable to plot
+  select_tests_cty <- reactive({ input$select_tests_cty })
+  
+  output$cty_tests_plot <- renderPlotly({
+    
+    if (select_tests_cty() == "All") {
+      output$n_tests_cty_str <- renderText({
+        paste0(as.character(sum(sjc_county_num_df$all_tested, na.rm=T)), "*")
+      })
+      output$type_tests_cty <- renderText({"prisoners and staff"})
+      
+      stacked_bar_plot(cty_tests_df, 
+                       "Tested",
+                       "County Facility")
+      
+    } else if (select_tests_cty() %in% c("Prisoners", "Staff")) {
+      output$n_tests_cty_str <- renderText({
+        cty_tests_df %>%
+          filter(type == select_tests_cty()) %>%
+          pull(value) %>%
+          sum(na.rm=T) %>%
+          as.character() %>%
+          paste0("*")
+      })
+      output$type_tests_cty <- renderText({tolower(select_tests_cty())})
+      
+      single_bar_plot(cty_tests_df, 
+                      select_tests_cty(), 
+                      paste(select_tests_cty(), "Tested"),
+                      "County Facility")
+      
+    } else if (select_tests_cty() == "Total") {
+      output$n_tests_cty_str <- renderText({
+        paste0(as.character(sum(sjc_county_num_df$all_tested, na.rm=T)), "*")
+      })
+      output$type_tests_cty <- renderText({"prisoners and staff"})
+      
+      single_bar_plot(cty_tests_df, 
+                      select_tests_cty(), "Prisoners & Staff Tested",
+                      "County Facility")
+    }
+  })
+  
   # Counties: Total Positives -------------------------------------------------------
   cty_positive_df <- sjc_county_num_df %>%
-    mutate(`N Positive - Staff` = `N Positive - COs` + 
-             `N Positive - Staff` + `N Positive - Contractor`) %>%
+    group_by(Date, fac) %>%
+    mutate(`N Positive - Staff` = sum(`N Positive - COs`,
+                                    `N Positive - Staff`,
+                                    `N Positive - Contractors`, na.rm=T)) %>%
     rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`,
            Facility = fac) %>%
-    dplyr::select(-`N Positive - COs`, -`N Positive - Contractor`) %>%
+    dplyr::select(-`N Positive - COs`, -`N Positive - Contractors`) %>%
     pivot_longer(cols=matches("N Positive", ignore.case=F),
                  names_to="type",
                  names_prefix="N Positive - ") %>%

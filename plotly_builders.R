@@ -175,10 +175,7 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
       ggplot(aes(x=loc,
                    y=sum_value,
                    fill = type)) +
-        geom_col(position = "stack") +
-        labs(fill = "") + 
-        theme(legend.position = "top",
-              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA))
+        geom_col(position = "stack")
       
     traces_to_hide <- 0
     traces_lightback <- 2
