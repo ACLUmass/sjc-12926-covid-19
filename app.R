@@ -589,7 +589,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            tabPanel("Counties and DOC", 
                                     withSpinner(dataTableOutput("df_table"), type=4, color="#b5b5b5", size=0.5)),
                            tabPanel("DOC Facilities", 
-                                    withSpinner(dataTableOutput("DOC_df_table"), type=4, color="#b5b5b5", size=0.5))
+                                    withSpinner(dataTableOutput("DOC_df_table"), type=4, color="#b5b5b5", size=0.5)),
+                           tabPanel("County Facilities", 
+                                    withSpinner(dataTableOutput("cty_df_table"), type=4, color="#b5b5b5", size=0.5))
                            )
       ),
       
@@ -1813,6 +1815,12 @@ server <- function(input, output, session) {
   
   output$DOC_df_table <- renderDataTable(
     {sjc_DOC_df},
+    options = list(scrollX = TRUE), 
+    filter = 'top'
+  )
+  
+  output$cty_df_table <- renderDataTable(
+    {sjc_county_df},
     options = list(scrollX = TRUE), 
     filter = 'top'
   )
