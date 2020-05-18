@@ -626,9 +626,7 @@ vals <- reactiveValues(count=0)
 
 server <- function(input, output, session) {
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Set up session counter
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Session Counter -----------------------------------------------------------
   
   # Increment the number of sessions when one is opened.
   # We use isolate() here to:
@@ -658,9 +656,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Load Data
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Load Data -----------------------------------------------------------
   
   # Define file locations
   sjc_googledrive_url <- "https://docs.google.com/spreadsheets/d/1nmZ84rjOxQgdTL0PdV7SrbyDTbD7nROQ/export#gid=1419540291"
@@ -734,9 +730,7 @@ server <- function(input, output, session) {
               all_tested = sum(all_tested),
               all_released = sum(all_released))
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Load DOC Facility Data
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Load DOC Data -----------------------------------------------------------
   
   sjc_DOC_df <- read_excel(tf, sheet=2) %>%
     mutate_if(is.character, ~na_if(., 'NA')) %>%
@@ -753,9 +747,79 @@ server <- function(input, output, session) {
     filter(!is.na(all_positive)) %>%
     select(-Notes)
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Tests & Postives Over Time
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Population v. Time -------------------------------------------------------
+  
+  # Determine which counties to plot
+  cnty_to_plot_pop <- reactive({
+    c(input$select_county1_pop,
+      input$select_county2_pop,
+      input$select_county3_pop)
+  })
+  
+  all_pop_df <- sjc_num_df %>%
+    mutate(pop = `Total Population`) %>%
+    filter(pop != 0) %>%
+    group_by(Date) %>%
+    filter(n() == 14) %>%
+    summarize(pop = sum(pop)) %>%
+    mutate(County = "All")
+  
+  all_counties_pop_df <- sjc_num_df %>%
+    mutate(pop = `Total Population`) %>%
+    filter(pop != 0,
+           County != "DOC") %>%
+    group_by(Date) %>%
+    filter(n() == 13) %>%
+    summarize(pop = sum(pop)) %>%
+    mutate(County = "All Counties")
+  
+  doc_fac_pop_df <- sjc_DOC_num_df %>%
+    mutate(pop = `Total Population`,
+           County = paste("DOC:", fac)) %>%
+    filter(!is.na(pop)) %>%
+    group_by(Date, County) %>%
+    summarize(pop = sum(pop)) 
+  
+  pop_df <-  sjc_num_df %>%
+    mutate(pop = `Total Population`,
+           County = as.character(County)) %>%
+    group_by(Date, County) %>%
+    summarize(pop = sum(pop)) %>%
+    bind_rows(all_pop_df) %>%
+    bind_rows(all_counties_pop_df) %>%
+    bind_rows(doc_fac_pop_df)
+  
+  # Plot
+  output$pop_v_time_plot <- renderPlotly({
+    
+    g <-pop_df %>%
+      mutate(pop = na_if(pop, 0)) %>%
+      filter(Date >= ymd(20200407),
+             County %in% cnty_to_plot_pop(),
+             !is.na(pop)) %>%
+      rename(Location = County) %>%
+      ggplot(aes(x=Date, y = pop, color=Location)) +
+      geom_path(size=2, show.legend = T, alpha=0.8) +
+      geom_point(size=3) +
+      labs(x = "", y = "Total Prisoners", color="",
+           title = paste("Incarcerated Populations over Time")) +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22),
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200407),NA)) +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') 
+    
+    lines_plotly_style(g, "Incarcerated Population", "County",
+                       subtitle=F)
+    
+  })
+  
+  # Compare Tests & Positives -------------------------------------------------
   
   # Determine which counties to plot
   loc_to_plot_both <- reactive({input$select_both})
@@ -828,9 +892,7 @@ server <- function(input, output, session) {
     
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # All Releases
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Total Releases -------------------------------------------------------
   released_df <- sjc_num_df %>%
     pivot_longer(cols=matches("Released", ignore.case=F),
                  names_to="type",
@@ -875,9 +937,7 @@ server <- function(input, output, session) {
     
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Releases v. Time
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Releases v. Time -------------------------------------------------------
   
   df_by_county_rel <- get_df_by_county(sjc_num_df, "p")
   
@@ -917,9 +977,7 @@ server <- function(input, output, session) {
     
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # All Positives
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Total Positives -------------------------------------------------------
   positive_df <- sjc_num_df %>%
     mutate(`N Positive - Staff` = `N Positive - COs` + 
              `N Positive - Staff` + `N Positive - Contractor`) %>%
@@ -966,9 +1024,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Positives v. Time
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Positives v. Time -------------------------------------------------------
   
   # Determine which counties to plot
   cnty_to_plot_pos <- reactive({
@@ -1036,9 +1092,7 @@ server <- function(input, output, session) {
     
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # All Tests
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Total Tests -------------------------------------------------------
   
   tested_df <- sjc_num_df %>%
     mutate(`N Tested - Staff` = `N Tested - COs` + 
@@ -1090,9 +1144,7 @@ server <- function(input, output, session) {
     
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Tests v. Time
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Tests v. Time -------------------------------------------------------
   
   # Determine which counties to plot
   cnty_to_plot_test <- reactive({
@@ -1145,194 +1197,7 @@ server <- function(input, output, session) {
     
     
   })
-  
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Populations v. Time
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
-  # Determine which counties to plot
-  cnty_to_plot_pop <- reactive({
-    c(input$select_county1_pop,
-      input$select_county2_pop,
-      input$select_county3_pop)
-  })
-  
-  all_pop_df <- sjc_num_df %>%
-    mutate(pop = `Total Population`) %>%
-    filter(pop != 0) %>%
-    group_by(Date) %>%
-    filter(n() == 14) %>%
-    summarize(pop = sum(pop)) %>%
-    mutate(County = "All")
-  
-  all_counties_pop_df <- sjc_num_df %>%
-    mutate(pop = `Total Population`) %>%
-    filter(pop != 0,
-           County != "DOC") %>%
-    group_by(Date) %>%
-    filter(n() == 13) %>%
-    summarize(pop = sum(pop)) %>%
-    mutate(County = "All Counties")
-  
-  doc_fac_pop_df <- sjc_DOC_num_df %>%
-    mutate(pop = `Total Population`,
-           County = paste("DOC:", fac)) %>%
-    filter(!is.na(pop)) %>%
-    group_by(Date, County) %>%
-    summarize(pop = sum(pop)) 
-  
-  pop_df <-  sjc_num_df %>%
-    mutate(pop = `Total Population`,
-           County = as.character(County)) %>%
-    group_by(Date, County) %>%
-    summarize(pop = sum(pop)) %>%
-    bind_rows(all_pop_df) %>%
-    bind_rows(all_counties_pop_df) %>%
-    bind_rows(doc_fac_pop_df)
-  
-  # Plot
-  output$pop_v_time_plot <- renderPlotly({
-    
-    g <-pop_df %>%
-      mutate(pop = na_if(pop, 0)) %>%
-      filter(Date >= ymd(20200407),
-             County %in% cnty_to_plot_pop(),
-             !is.na(pop)) %>%
-      rename(Location = County) %>%
-    ggplot(aes(x=Date, y = pop, color=Location)) +
-      geom_path(size=2, show.legend = T, alpha=0.8) +
-      geom_point(size=3) +
-      labs(x = "", y = "Total Prisoners", color="",
-           title = paste("Incarcerated Populations over Time")) +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
-            plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22),
-            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
-            legend.key.width = unit(1, "cm"),
-            legend.text = element_text(size=16)) +
-      scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200407),NA)) +
-      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') 
-    
-    lines_plotly_style(g, "Incarcerated Population", "County",
-                       subtitle=F)
-    
-  })
-  
-  # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # # 😷 Infection Rates 😷
-  # # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # 
-  # infection_df_all <- sjc_num_df %>%
-  #   group_by(Date) %>%
-  #   summarize(in_det_positive = sum(`N Positive - Detainees/Inmates`),
-  #             pop = sum(`Total Population`)) %>%
-  #   mutate(cumul_in_det_positive = cumsum(in_det_positive)) %>%
-  #   mutate(County = "MA Prisoner Total",
-  #          cumul_rate_10000 = cumul_in_det_positive / pop * 10000) %>%
-  #   dplyr::select(Date, County, cumul_rate_10000)
-  # 
-  # infection_df_by_county <- sjc_num_df %>%
-  #   mutate(in_det_positive = `N Positive - Detainees/Inmates`,
-  #          pop = `Total Population`) %>%
-  #   group_by(County) %>%
-  #   mutate(cumul_in_det_positive = cumsum(in_det_positive),
-  #          cumul_rate_10000 = cumul_in_det_positive / pop * 10000) %>%
-  #   dplyr::select(Date, County, cumul_rate_10000) %>%
-  #   bind_rows(infection_df_all) %>%
-  #   bind_rows(ma_df)
-  # 
-  # # Determine which incidents to plot
-  # cnty_to_plot_inf <- reactive({
-  #   c(input$select_county_inf1,
-  #     input$select_county_inf2,
-  #     input$select_county_inf3)
-  # })
-  # 
-  # # Plot
-  # output$infections_v_time_plot <- renderPlotly({
-  #   
-  #   infection_df_by_county %>%
-  #     filter(County %in% cnty_to_plot_inf()) %>%
-  #     ungroup() %>%
-  #     mutate(County = factor(County, levels=infection_choices)) %>%
-  #   ggplot(aes(x=Date, y = cumul_rate_10000, color = County)) +
-  #     geom_path(size=1.3, show.legend = T) +
-  #     geom_point() +
-  #     labs(x = "", y = "Infection Rate per 10,000", color="",
-  #          title = "Prisoner Infection Rate Over Time",
-  #          subtitle = "Postive Cases per 10,000 Prisoners") +
-  #     theme(plot.title= element_text(family="gtam", face='bold'),
-  #           text = element_text(family="gtam", size = 16),
-  #           plot.margin = unit(c(1,1,4,1), "lines"),
-  #           legend.position = c(.5, -.22), 
-  #           legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
-  #           legend.key.width = unit(1, "cm"),
-  #           legend.text = element_text(size=16)) +
-  #     scale_x_date(date_labels = "%b %e ") +
-  #     scale_color_manual(values=c("black", "#ef404d", "#0055aa")) +
-  #     coord_cartesian(clip = 'off')
-  #   
-  # })
-
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # 🌍 Incidents by Location 🌍
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
-  # Determine which variable to plot
-  y_to_plot <- reactive({ input$select_y_plot })
-  
-  # Plot map
-  output$county_maps <- renderLeaflet({
-
-    if (y_to_plot() == "Releases") {
-      sum_sjc_num_df <- sum_sjc_num_df %>%
-        mutate(value = all_released)
-      y_axis_label <- "Number Released"
-    } else if (y_to_plot() == "Tests") {
-      sum_sjc_num_df <- sum_sjc_num_df %>%
-        mutate(value = all_tested)
-      y_axis_label <- "Number Tested"
-    } else if (y_to_plot() == "Positive Cases") {
-      sum_sjc_num_df <- sum_sjc_num_df %>%
-        mutate(value = all_positive)
-      y_axis_label <- "Number Tested Positive"
-    }
-    
-    mass_cntys_joined <- tigris::geo_join(mass_cntys, sum_sjc_num_df, "NAME", "County")
-    
-    pal <- colorNumeric(
-      palette = "YlGnBu",
-      domain = sum_sjc_num_df$value
-    )
-    
-    leaflet(mass_cntys_joined) %>% 
-      addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
-      addPolygons(fillColor = ~pal(value),
-                  fillOpacity = .6,
-                  weight=1,
-                  color = "#b2aeae",
-                  label = ~paste(NAME, "County:", value, y_to_plot()),
-                  group="circle_marks") %>%
-      addLegend(pal = pal, 
-                values = sum_sjc_num_df$value, 
-                position = "bottomleft", 
-                title = y_axis_label
-      )  %>%
-      addEasyButton(easyButton(
-        icon="fa-home", title="Reset",
-        onClick=JS("function(btn, map){
-               var groupLayer = map.layerManager.getLayerGroup('circle_marks');
-               map.fitBounds(groupLayer.getBounds());
-           }")))
-
-  })
-  
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Facility Release Totals
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
+ # DOC: Total Releases -----------------------------------------------------
   DOC_released_df <- sjc_DOC_num_df %>%
     rename(value = all_released,
            Facility = fac) %>%
@@ -1353,10 +1218,7 @@ server <- function(input, output, session) {
   
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Facility Releases v. Time
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
+  # DOC: Releases v. Time -----------------------------------------------------
   df_by_fac_rel <- get_df_by_fac(sjc_num_df, sjc_DOC_num_df, "p")
   
   # Determine which counties to plot
@@ -1396,10 +1258,7 @@ server <- function(input, output, session) {
     
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Facility Test Totals
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
+  # DOC: Total Tests -----------------------------------------------------
   fac_tests_df <- sjc_DOC_num_df %>%
     rename(`N Tested - Prisoners`=`N Tested - Detainees/Inmates`,
            Facility = fac) %>%
@@ -1458,10 +1317,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Facility Tests v. Time
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
+  # DOC: Tests v. Time -----------------------------------------------------
   # Determine which counties to plot
   fac_to_plot_test <- reactive({
     c(input$select_fac1_test,
@@ -1515,10 +1371,7 @@ server <- function(input, output, session) {
     
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Facility Positive Totals
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
+  # DOC: Total Positives -----------------------------------------------------
   fac_positive_df <- sjc_DOC_num_df %>%
     rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`,
            Facility = fac) %>%
@@ -1577,10 +1430,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # DOC Facilities v. Time
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
+  # DOC: Positives v. Time -----------------------------------------------------
   # Determine which facilities to plot
   fac_to_plot <- reactive({
     c(input$select_fac1,
@@ -1635,10 +1485,58 @@ server <- function(input, output, session) {
   })
   
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Explore Data w/ Table
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # County: Maps ------------------------------------------------------
   
+  # Determine which variable to plot
+  y_to_plot <- reactive({ input$select_y_plot })
+  
+  # Plot map
+  output$county_maps <- renderLeaflet({
+    
+    if (y_to_plot() == "Releases") {
+      sum_sjc_num_df <- sum_sjc_num_df %>%
+        mutate(value = all_released)
+      y_axis_label <- "Number Released"
+    } else if (y_to_plot() == "Tests") {
+      sum_sjc_num_df <- sum_sjc_num_df %>%
+        mutate(value = all_tested)
+      y_axis_label <- "Number Tested"
+    } else if (y_to_plot() == "Positive Cases") {
+      sum_sjc_num_df <- sum_sjc_num_df %>%
+        mutate(value = all_positive)
+      y_axis_label <- "Number Tested Positive"
+    }
+    
+    mass_cntys_joined <- tigris::geo_join(mass_cntys, sum_sjc_num_df, "NAME", "County")
+    
+    pal <- colorNumeric(
+      palette = "YlGnBu",
+      domain = sum_sjc_num_df$value
+    )
+    
+    leaflet(mass_cntys_joined) %>% 
+      addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
+      addPolygons(fillColor = ~pal(value),
+                  fillOpacity = .6,
+                  weight=1,
+                  color = "#b2aeae",
+                  label = ~paste(NAME, "County:", value, y_to_plot()),
+                  group="circle_marks") %>%
+      addLegend(pal = pal, 
+                values = sum_sjc_num_df$value, 
+                position = "bottomleft", 
+                title = y_axis_label
+      )  %>%
+      addEasyButton(easyButton(
+        icon="fa-home", title="Reset",
+        onClick=JS("function(btn, map){
+               var groupLayer = map.layerManager.getLayerGroup('circle_marks');
+               map.fitBounds(groupLayer.getBounds());
+           }")))
+    
+  })
+  
+   # Explore Data -----------------------------------------------------
   output$df_table <- renderDataTable(
     {sjc_df},
     options = list(scrollX = TRUE), 
@@ -1651,10 +1549,7 @@ server <- function(input, output, session) {
     filter = 'top'
   )
   
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # ⬇️ Download XLSX ⬇️
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  
+  # Download Data -----------------------------------------------------
   observeEvent(input$link_to_external, {
     updateTabsetPanel(session, "panels", "External Resources")
   })
