@@ -56,8 +56,8 @@ pop_choices <- c("--", 'All', 'All Counties', "DOC", 'DOC: Boston Pre', 'DOC: BS
 
 cty_facs <- c('Bristol - Ash Street Jail', 'Bristol - DHOC', 'Essex - Middleton', 
               'Essex - Prerelease', 'Essex - Women in Transition', 'Hampden - Ludlow', 
-               'Hampden - Mill Street', "Hampden - Women's Facility", 'Suffolk - HOC', 
-               'Suffolk - Jail')
+               'Hampden - Mill Street', "Hampden - Women's Facility", "Hampden - Section 35", 
+              'Suffolk - HOC', 'Suffolk - Jail')
 ctyfac_choices <- c("--", "All Counties", cty_facs)
 
 # UI --------------------------------------------------------------------------
