@@ -184,3 +184,7 @@ a[data-value="County Facilities"]
 .selectize-control {
     white-space: normal;
 }
+
+.checkbox {
+  text-align: center;
+}

@@ -193,6 +193,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county3_pop", label = NULL, choices = pop_choices,
                                        selected = "--", multiple=FALSE)
                          )),
+               checkboxInput("checkbox_pop", label = "Show transition to weekly reporting", value = TRUE),
                withSpinner(plotlyOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
@@ -212,6 +213,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                          em("*The DOC only began reporting facility-level prisoner positives on April 13,",
                             "facility-level staff positives on April 15, and facility-level testing data on April 25.")
                ),
+               checkboxInput("checkbox_both", label = "Show transition to weekly reporting", value = TRUE,
+                             width="100%"),
                withSpinner(plotlyOutput("both_plot"), type=4, color="#b5b5b5", size=0.5),
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
@@ -243,6 +246,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                      selectInput("select_county3_rel", label = NULL, choices = county_choices,
                                  selected = "DOC", multiple=FALSE)
                    )),
+                 checkboxInput("checkbox_rel", label = "Show transition to weekly reporting", value = TRUE),
                  withSpinner(plotlyOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                  em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
         ),
@@ -282,6 +286,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                      selectInput("select_county3_test", label = NULL, choices = county_choices,
                                  selected = "DOC", multiple=FALSE)
                    )),
+                 checkboxInput("checkbox_test", label = "Show transition to weekly reporting", value = TRUE),
                  withSpinner(plotlyOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                  em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
         ),
@@ -321,6 +326,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                      selectInput("select_county3_pos", label = NULL, choices = county_choices,
                                  selected = "DOC", multiple=FALSE)
                    )),
+                 checkboxInput("checkbox_pos", label = "Show transition to weekly reporting", value = TRUE),
                  withSpinner(plotlyOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                  em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
         )
@@ -356,6 +362,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                              "reports going back to March 27.",
                              style="display: block; margin-top: 1rem;")
                       ),
+                checkboxInput("checkbox_fac_rel", label = "Show transition to weekly reporting", value = TRUE),
                 withSpinner(plotlyOutput("DOC_releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
        ),
@@ -404,6 +411,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                              "reports going back to March 27.",
                              style="display: block; margin-top: 1rem;")
                           ),
+                checkboxInput("checkbox_fac_test", label = "Show transition to weekly reporting", value = TRUE),
                 withSpinner(plotlyOutput("doc_tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
        ),
@@ -457,6 +465,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                       'while the facility total does not.',
                       style="display: block; margin-top: 1rem;")
                    ),
+                 checkboxInput("checkbox_fac_pos", label = "Show transition to weekly reporting", value = TRUE),
                  withSpinner(plotlyOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
                  em("Please note that prisoner deaths due to COVID-19 are not included in these data."))
      ),
@@ -505,6 +514,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                      "See the Counties + DOC Aggregates: Total Tests page for longer-term totals.",
                                      style="display: block; margin-top: 1rem;")
                         ),
+                        checkboxInput("checkbox_ctyfac_test", label = "Show transition to weekly reporting", value = TRUE),
                         withSpinner(plotlyOutput("cty_tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                         em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
                ),
@@ -553,6 +563,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                      "See the Counties + DOC Aggregates: Total Positive Tests page for longer-term totals.",
                                      style="display: block; margin-top: 1rem;")
                         ),
+                        checkboxInput("checkbox_ctyfac_pos", label = "Show transition to weekly reporting", value = TRUE),
                         withSpinner(plotlyOutput("ctyfac_pos_time_plot"), type=4, color="#b5b5b5", size=0.5),
                         em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
                 ),
@@ -886,7 +897,7 @@ server <- function(input, output, session) {
       coord_cartesian(clip = 'off') 
     
     lines_plotly_style(g, "Incarcerated Population", "County",
-                       subtitle=F)
+                       subtitle=F, show_weekly = input$checkbox_pop)
     
   })
   
@@ -959,7 +970,7 @@ server <- function(input, output, session) {
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
   
-    lines_plotly_style(g, y_label, "Location", pos_and_test=T)
+    lines_plotly_style(g, y_label, "Location", pos_and_test=T, show_weekly=input$checkbox_both)
     
   })
   
@@ -1044,7 +1055,7 @@ server <- function(input, output, session) {
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
     
-    lines_plotly_style(g, "Prisoners Released", "County")
+    lines_plotly_style(g, "Prisoners Released", "County", show_weekly=input$checkbox_rel)
     
   })
   
@@ -1159,7 +1170,7 @@ server <- function(input, output, session) {
         ylim(0, NA)
     
     lines_plotly_style(g, y_label, "County", 
-                       annotation=TRUE)
+                       annotation=TRUE, show_weekly=input$checkbox_pos)
     
   })
   
@@ -1264,7 +1275,7 @@ server <- function(input, output, session) {
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
     
-    lines_plotly_style(g, y_label, "County")
+    lines_plotly_style(g, y_label, "County", show_weekly=input$checkbox_test)
     
     
   })
@@ -1325,7 +1336,8 @@ server <- function(input, output, session) {
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
     
-    lines_plotly_style(g, "Prisoners Released", "Facility")
+    lines_plotly_style(g, "Prisoners Released", "Facility",
+                       show_weekly=input$checkbox_fac_rel)
     
   })
   
@@ -1437,7 +1449,8 @@ server <- function(input, output, session) {
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
     
-    lines_plotly_style(g, y_label, "Facility")
+    lines_plotly_style(g, y_label, "Facility", 
+                       show_weekly=input$checkbox_fac_test)
     
     
   })
@@ -1551,7 +1564,8 @@ server <- function(input, output, session) {
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off')
     
-    lines_plotly_style(g, y_label, "Facility")
+    lines_plotly_style(g, y_label, "Facility", 
+                       show_weekly=input$checkbox_fac_pos)
     
   })
   
@@ -1661,7 +1675,8 @@ server <- function(input, output, session) {
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off')
     
-    lines_plotly_style(g, y_label, "Location")
+    lines_plotly_style(g, y_label, "Location",
+                       show_weekly=input$checkbox_ctyfac_test)
     
   })
   
@@ -1771,7 +1786,8 @@ server <- function(input, output, session) {
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off')
     
-    lines_plotly_style(g, y_label, "Location")
+    lines_plotly_style(g, y_label, "Location",
+                       show_weekly=input$checkbox_ctyfac_pos)
     
   })
   

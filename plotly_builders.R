@@ -210,7 +210,14 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
 
 # Convert lines to ggplotly
 lines_plotly_style <- function(gg_plot, y_label, location_to_plot, 
-  annotation=FALSE, subtitle=TRUE, pos_and_test=FALSE) {
+  annotation=FALSE, subtitle=TRUE, pos_and_test=FALSE,
+  show_weekly=TRUE) {
+  
+  if (show_weekly) {
+    gg_plot <- gg_plot +
+      geom_vline(xintercept=as.numeric(ymd(20200708)), 
+                 color="darkgrey", alpha=.6, size=1.1, linetype="dashed")
+  }
 
   title_html <- paste0("<b>", y_label, "</b>")
 
@@ -234,6 +241,16 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
       layout(title = list(text = title_html, 
                           font=list(family = "gtam")))
   
+  # Add annotation for weekly reporting
+  if (show_weekly) {
+    g <- g %>%
+      layout(annotations = list(x = as.numeric(ymd(20200708)), 
+                                y = 1, text = "Weekly\nReporting\nBegins", 
+                                showarrow = F, xref='x', yref='paper', 
+                                xanchor='center', yanchor='bottom', 
+                                font=list(size=12, color="darkgrey", family="gtam")))
+  }
+             
   if (pos_and_test) {
     # Pull out string for what population we're plotting
     pop_to_annotate <- str_split(y_label, " Tested")[[1]][1]
