@@ -471,7 +471,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
      ),
     
     # UI: County Facilities --------------------------------------------------
-    navbarMenu("County Facilities",
+    navbarMenu("Multi-Facility Counties",
+               "Bristol, Essex, Hampden, & Suffolk",
+               "----",
                
                tabPanel("Total Tests", 
                         wellPanel(id="internal_well",
