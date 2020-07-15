@@ -694,9 +694,10 @@ server <- function(input, output, session) {
   
   # Define file locations
   sjc_googledrive_url <- "https://docs.google.com/spreadsheets/d/1nmZ84rjOxQgdTL0PdV7SrbyDTbD7nROQ/export#gid=1419540291"
-  
+
   # Download excel spreadsheet from URL and read as DF
   GET(sjc_googledrive_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
+  
   sjc_df <- read_excel(tf) %>%
     # Turn string "NA" to real NA
     mutate_if(is.character, ~na_if(., 'NA')) %>%

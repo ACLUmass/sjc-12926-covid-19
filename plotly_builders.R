@@ -219,8 +219,10 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
                  color="darkgrey", alpha=.6, size=1.1, linetype="dashed")
   }
 
+  # Generate bold title from y-axis label
   title_html <- paste0("<b>", y_label, "</b>")
 
+  # If a subtitle is provided, append HTML to title
   if (subtitle) {
     title_html <- paste0(title_html,
                         '<br>',
@@ -229,12 +231,14 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
                         '</sup>')
   }
   
+  # Fix which variables are shown in the tooltip
   if (pos_and_test) {
     g <- ggplotly(gg_plot, tooltip = c("x", "y"))
   } else {
     g <- ggplotly(gg_plot)
   }
 
+  # Remove control buttons, set legend layout and title text
   g <- g %>%
       config(modeBarButtonsToRemove = modeBarButtonsToRemove_time) %>%
       layout(legend = legend_layout_bottom) %>%
