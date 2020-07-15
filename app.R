@@ -881,8 +881,7 @@ server <- function(input, output, session) {
              !is.na(pop)) %>%
       rename(Location = County) %>%
       ggplot(aes(x=Date, y = pop, color=Location)) +
-      geom_path(size=2, show.legend = T, alpha=0.8) +
-      geom_point(size=3) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
       labs(x = "", y = "Total Prisoners", color="",
            title = paste("Incarcerated Populations over Time")) +
       theme(plot.title= element_text(family="gtam", face='bold'),
@@ -953,8 +952,7 @@ server <- function(input, output, session) {
       pivot_longer(cols = starts_with("cumul"), names_to = "type", 
                    names_prefix = "cumul_") %>%
     ggplot(aes(x=Date, y = value, color=type)) +
-      geom_path(size=2, show.legend = T, alpha=0.8) +
-      geom_point(size=3) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
       labs(x = "", y = pop_to_annotate, color="",
            title = paste("Positive COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
@@ -1038,8 +1036,7 @@ server <- function(input, output, session) {
       group_by(County) %>%
       mutate(cumul = cumsum(all_released)) %>%
     ggplot(aes(x=Date, y = cumul, color=County)) +
-      geom_path(size=2, show.legend = T, alpha=0.8) +
-      geom_point(size=3) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
       labs(x = "", y = "Total Prisoners Released", color="",
            title = paste("Prisoners Released over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
@@ -1149,8 +1146,7 @@ server <- function(input, output, session) {
       
     g <- pos_to_plot %>%
       ggplot(aes(x=Date, y = cumul, color=County)) +
-        geom_path(size=2, show.legend = T, alpha=0.8) +
-        geom_point(size=3) +
+        geom_path(size=1.3, show.legend = T, alpha=0.8) +
         # annotate("label", min(pos_to_plot$Date), Inf, label=annotate_tests,
         #          vjust=2, hjust=0, fill="grey", alpha=0.5, 
         #          label.size=NA, label.r=unit(0, "cm"), label.padding = unit(0.5, "lines")) +
@@ -1258,8 +1254,7 @@ server <- function(input, output, session) {
       group_by(County) %>%
       mutate(cumul = cumsum(all_tested)) %>%
     ggplot(aes(x=Date, y = cumul, color=County)) +
-      geom_path(size=2, show.legend = T, alpha=0.8) +
-      geom_point(size=3) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
       labs(x = "", y = y_label, color="",
            title = paste("COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
@@ -1319,8 +1314,7 @@ server <- function(input, output, session) {
       group_by(fac) %>%
       mutate(cumul = cumsum(all_released)) %>%
     ggplot(aes(x=Date, y = cumul, color=fac)) +
-      geom_path(size=2, show.legend = T, alpha=0.8) +
-      geom_point(size=3) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
       labs(x = "", y = "Total Prisoners Released", color="",
            title = paste("Prisoners Released over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
@@ -1432,8 +1426,7 @@ server <- function(input, output, session) {
       group_by(fac) %>%
       mutate(cumul = cumsum(all_tested)) %>%
     ggplot(aes(x=Date, y = cumul, color=fac)) +
-      geom_path(size=2, show.legend = T, alpha=0.8) +
-      geom_point(size=3) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
       labs(x = "", y = y_label, color="",
            title = paste("COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
@@ -1549,7 +1542,6 @@ server <- function(input, output, session) {
     ggplot(aes(x=Date, y = cumul, 
                  color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.7) +
-      geom_point(size = 3) +
       labs(x = "", y = y_label, color="",
            title = paste("Positive COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
@@ -1660,7 +1652,6 @@ server <- function(input, output, session) {
       ggplot(aes(x=Date, y = cumul, 
                  color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.7) +
-      geom_point(size = 3) +
       labs(x = "", y = y_label, color="",
            title = paste("COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
@@ -1771,7 +1762,6 @@ server <- function(input, output, session) {
     ggplot(aes(x=Date, y = cumul, 
                  color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.7) +
-      geom_point(size = 3) +
       labs(x = "", y = y_label, color="",
            title = paste("Positive COVID-19 Tests over Time"),
            subtitle="Cumulative pursuant to SJC 12926") +
