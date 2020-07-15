@@ -158,6 +158,8 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
 
 # Function for plots with multiple bars stacked
 stacked_bar_plot <- function(data, y_label, location_to_plot) {
+  
+  doc_releases <- y_label == "Prisoners Released" & location_to_plot == "County"
 
   if (location_to_plot == "County") {
     label_source <- counties
@@ -166,6 +168,21 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
   } else if (location_to_plot == "County Facility") {
     label_source <- cty_facs
     location_to_plot <- "Facility"
+  }
+  
+  if (doc_releases) {
+    traces_to_hide <- 0
+    traces_lightback <- 2:3
+    traces_darkback <- 1
+    
+    data <- data %>%
+      mutate(type=factor(type, levels=c("Pre-Trial", "Sentenced", "Home Confinements")))
+  } else {
+    
+    traces_to_hide <- 0
+    traces_lightback <- 2
+    traces_darkback <- 1
+    
   }
 
   g <- data%>%
@@ -176,10 +193,6 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
                    y=sum_value,
                    fill = type)) +
         geom_col(position = "stack")
-      
-    traces_to_hide <- 0
-    traces_lightback <- 2
-    traces_darkback <- 1
 
     g <- g + 
       labs(y = y_label, x="") +
@@ -201,11 +214,22 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
       gsub("loc", location_to_plot, .) %>%
       gsub("sum_value", y_label, .)
     
-    g %>%
+    g <- g %>%
       style(text = text_rep1, traces=1) %>%
       style(text = text_rep2, traces=2) %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
+    
+    if (doc_releases) {
+      text_rep3 <- g$x$data[[3]]$text %>%
+        gsub("loc", location_to_plot, .) %>%
+        gsub("sum_value", y_label, .)
+      
+      g %>%
+        style(text = text_rep3, traces=3)
+    } else {
+      g
+    }
 }
 
 # Convert lines to ggplotly
