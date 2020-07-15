@@ -79,6 +79,26 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     navlistPanel(widths = c(3, 9), id="panels",
                  
       tabPanel("About", 
+               div(id="dev-info",
+                   wellPanel(
+                     icon('info-circle'),
+                     h4("New Weekly Reporting"),
+                     em("On June 23, the SJC issued an", 
+                        a("order", href="https://data.aclum.org/wp-content/uploads/2020/07/SJC-12926-Order-Appendix-B.pdf"), 
+                        "modifying the DOC and HOC 
+                        reporting responsibilities. Starting the week of July 6,
+                        facilities will submit COVID-19 reports once per week rather 
+                        than once per day. This order also required 
+                        county and state facilities to report additional metrics, 
+                        including:",
+                        tags$ol(tags$li("The number of active COVID-19 cases"),
+                                tags$li("The number of COVID-19 deaths"),
+                                tags$li("[DOC] The number of individuals released to home confinement")),
+                        "As such, starting July 8, this site will be updated on a 
+                        weekly rather than daily basis.")
+                   )
+               ),
+               
                h3("Explore Massachusetts Prisons and Jails' Response to COVID-19"),
                p("View plots in the different tabs to track testing, positive",
                  "cases, and releases in prisons and jail during the COVID-19",
