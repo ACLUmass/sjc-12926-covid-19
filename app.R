@@ -716,8 +716,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                     selectInput("select_active_cty3", label = NULL, choices = ctyfac_choices,
                                                 selected = "Essex - Middleton", multiple=FALSE)
                                   ),
-                                  em("Please note that Hampden County is not reporting active cases by facility."),
-                                       align="center"),
+                                  em("Please note that Hampden County is not reporting active cases by facility.")
+                                  ),
                         withSpinner(plotlyOutput("active_cty_fac_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
                ),
                
@@ -1420,7 +1420,7 @@ server <- function(input, output, session) {
     ggplot(aes(x=Date, y = active, color=County)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8) +
       geom_point(size=1.5) +
-      labs(x = "", y = y_label, color="",
+      labs(x = "", y = "Active Positive Prisoners", color="",
            title="placeholder") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
@@ -1924,7 +1924,7 @@ server <- function(input, output, session) {
     ggplot(aes(x=Date, y = active, color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8) +
       geom_point(size=1.5) +
-      labs(x = "", y = y_label, color="",
+      labs(x = "", y = "Active Positive DOC Prisoners", color="",
            title="placeholder") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
@@ -2237,7 +2237,7 @@ server <- function(input, output, session) {
     ggplot(aes(x=Date, y = active, color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8) +
       geom_point(size=1.5) +
-      labs(x = "", y = y_label, color="",
+      labs(x = "", y = "Active Positive DOC Prisoners", color="",
            title="placeholder") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
