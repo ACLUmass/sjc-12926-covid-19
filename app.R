@@ -820,9 +820,9 @@ server <- function(input, output, session) {
   n_released <- sum(sjc_num_df$all_released)
   n_positive <- sum(sjc_num_df$all_positive)
   n_tested <- sum(sjc_num_df$all_tested)
-  output$n_releases_str <- renderText({n_released})
-  output$n_positive_str <- renderText({n_positive})
-  output$n_tests_str <- renderText({n_tested})
+  output$n_releases_str <- renderText({format(n_released, big.mark=",")})
+  output$n_positive_str <- renderText({format(n_positive, big.mark=",")})
+  output$n_tests_str <- renderText({format(n_tested, big.mark=",")})
   
   # Calculate sums by county
   sum_sjc_num_df <- sjc_num_df %>%
@@ -1053,7 +1053,7 @@ server <- function(input, output, session) {
     
     if (select_release() == "All") {
       
-      output$n_releases_str <- renderText({n_released})
+      output$n_releases_str <- renderText({format(n_released, big.mark=",")})
       
       stacked_bar_plot(released_df, 
                       "Prisoners Released",
@@ -1065,7 +1065,8 @@ server <- function(input, output, session) {
         released_df %>%
           filter(type == select_release()) %>%
           pull(value) %>%
-          sum()
+          sum() %>%
+          format(big.mark=",")
       })
       
       single_bar_plot(released_df, 
@@ -1075,7 +1076,7 @@ server <- function(input, output, session) {
       
     } else if (select_release() == "Total") {
       
-      output$n_releases_str <- renderText({n_released})
+      output$n_releases_str <- renderText({format(n_released, big.mark=",")})
       
       single_bar_plot(released_df, 
                       select_release(), "Prisoners Released",
@@ -1140,7 +1141,7 @@ server <- function(input, output, session) {
   output$all_positives_plot <- renderPlotly({
     
     if (select_positive() == "All") {
-      output$n_positive_str <- renderText({n_positive})
+      output$n_positive_str <- renderText({format(n_positive, big.mark=",")})
       output$type_positive <- renderText({"prisoners and staff"})
       
       stacked_bar_plot(positive_df, 
@@ -1152,7 +1153,8 @@ server <- function(input, output, session) {
         positive_df %>%
           filter(type == select_positive()) %>%
           pull(value) %>%
-          sum()
+          sum() %>%
+          format(big.mark=",")
       })
       output$type_positive <- renderText({tolower(select_positive())})
       
@@ -1162,7 +1164,7 @@ server <- function(input, output, session) {
                       "County")
 
     } else if (select_positive() == "Total") {
-      output$n_positive_str <- renderText({n_positive})
+      output$n_positive_str <- renderText({format(n_positive, big.mark=",")})
       output$type_positive <- renderText({"prisoners and staff"})
       
       single_bar_plot(positive_df, 
@@ -1256,7 +1258,7 @@ server <- function(input, output, session) {
     
     if (select_tested() == "All") {
       
-      output$n_tests_str <- renderText({n_tested})
+      output$n_tests_str <- renderText({format(n_tested, , big.mark=",")})
       output$type_tested <- renderText({"prisoners and staff"})
       
       stacked_bar_plot(tested_df, 
@@ -1268,7 +1270,8 @@ server <- function(input, output, session) {
         tested_df %>%
           filter(type == select_tested()) %>%
           pull(value) %>%
-          sum()
+          sum() %>%
+          format(big.mark=",")
       })
       output$type_tested <- renderText({tolower(select_tested())})
       
@@ -1278,7 +1281,7 @@ server <- function(input, output, session) {
                       "County")
       
     } else if (select_tested() == "Total") {
-      output$n_tests_str <- renderText({n_tested})
+      output$n_tests_str <- renderText({format(n_tested, big.mark=",")})
       output$type_tested <- renderText({"prisoners and staff"})
       
       single_bar_plot(tested_df, 
@@ -1357,7 +1360,7 @@ server <- function(input, output, session) {
   
   # Calculate totals
   n_deaths <- sum(deaths_df$value)
-  output$n_deaths_str <- renderText({n_deaths})
+  output$n_deaths_str <- renderText({format(n_deaths, big.mark=",")})
   
   # Plot deaths
   output$all_deaths_plot <- renderPlotly({
@@ -1377,7 +1380,8 @@ server <- function(input, output, session) {
   # Calculate totals
   n_released_DOC <- sum(DOC_released_df$value)
   output$n_releases_DOC_str <- renderText({
-    paste0(n_released_DOC, "*")
+    paste0(format(n_released_DOC, big.mark=","), 
+           "*")
   })
   
   output$all_releases_DOC_plot <- renderPlotly({
@@ -1447,7 +1451,8 @@ server <- function(input, output, session) {
     if (select_tests_fac() == "All") {
       
       output$n_tests_DOC_str <- renderText({
-        paste0(as.character(sum(sjc_DOC_num_df$all_tested, na.rm=T)), "*")
+        paste0(format(sum(sjc_DOC_num_df$all_tested, na.rm=T), big.mark=","), 
+               "*")
       })
       
       output$type_tests_fac <- renderText({"prisoners and staff"})
@@ -1463,7 +1468,7 @@ server <- function(input, output, session) {
           filter(type == select_tests_fac()) %>%
           pull(value) %>%
           sum(na.rm=T) %>%
-          as.character() %>%
+          format(big.mark=",") %>%
           paste0("*")
       })
       output$type_tests_fac <- renderText({tolower(select_tests_fac())})
@@ -1476,7 +1481,8 @@ server <- function(input, output, session) {
     } else if (select_tests_fac() == "Total") {
       
       output$n_tests_DOC_str <- renderText({
-        paste0(as.character(sum(sjc_DOC_num_df$all_tested, na.rm=T)), "*")
+        paste0(format(sum(sjc_DOC_num_df$all_tested, na.rm=T), big.mark=","), 
+               "*")
       })
       output$type_tests_fac <- renderText({"prisoners and staff"})
       
@@ -1560,7 +1566,8 @@ server <- function(input, output, session) {
     if (select_positive_fac() == "All") {
       
       output$n_positive_DOC_str <- renderText({
-        paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
+        paste0(format(sum(sjc_DOC_num_df$all_positive, na.rm=T), big.mark=","), 
+               "*")
       })
       
       output$type_positive_fac <- renderText({"prisoners and staff"})
@@ -1576,7 +1583,7 @@ server <- function(input, output, session) {
           filter(type == select_positive_fac()) %>%
           pull(value) %>%
           sum(na.rm=T) %>%
-          as.character() %>%
+          format(big.mark=",") %>%
           paste0("*")
       })
       output$type_positive_fac <- renderText({tolower(select_positive_fac())})
@@ -1589,7 +1596,8 @@ server <- function(input, output, session) {
     } else if (select_positive_fac() == "Total") {
       
       output$n_positive_DOC_str <- renderText({
-        paste0(as.character(sum(sjc_DOC_num_df$all_positive, na.rm=T)), "*")
+        paste0(format(sum(sjc_DOC_num_df$all_positive, na.rm=T), big.mark=","),
+               "*")
       })
       output$type_positive_fac <- renderText({"prisoners and staff"})
       
@@ -1664,7 +1672,7 @@ server <- function(input, output, session) {
   
   # Calculate totals
   n_deaths_fac <- sum(deaths_fac_df$value)
-  output$n_deaths_fac_str <- renderText({n_deaths_fac})
+  output$n_deaths_fac_str <- renderText({format(n_deaths_fac, big.mark=",")})
   
   # Plot deaths
   output$all_deaths_fac_plot <- renderPlotly({
@@ -1695,7 +1703,9 @@ server <- function(input, output, session) {
     
     if (select_tests_cty() == "All") {
       output$n_tests_cty_str <- renderText({
-        paste0(as.character(sum(sjc_county_num_df$all_tested, na.rm=T)), "*")
+        paste0(format(sum(sjc_county_num_df$all_tested, na.rm=T), 
+                      big.mark=","), 
+               "*")
       })
       output$type_tests_cty <- renderText({"prisoners and staff"})
       
@@ -1709,7 +1719,7 @@ server <- function(input, output, session) {
           filter(type == select_tests_cty()) %>%
           pull(value) %>%
           sum(na.rm=T) %>%
-          as.character() %>%
+          format(big.mark=",") %>%
           paste0("*")
       })
       output$type_tests_cty <- renderText({tolower(select_tests_cty())})
@@ -1721,7 +1731,9 @@ server <- function(input, output, session) {
       
     } else if (select_tests_cty() == "Total") {
       output$n_tests_cty_str <- renderText({
-        paste0(as.character(sum(sjc_county_num_df$all_tested, na.rm=T)), "*")
+        paste0(format(sum(sjc_county_num_df$all_tested, na.rm=T), 
+                      big.mark=","), 
+               "*")
       })
       output$type_tests_cty <- renderText({"prisoners and staff"})
       
@@ -1805,7 +1817,9 @@ server <- function(input, output, session) {
     
     if (select_positive_cty() == "All") {
       output$n_positive_cty_str <- renderText({
-        paste0(as.character(sum(sjc_county_num_df$all_positive, na.rm=T)), "*")
+        paste0(format(sum(sjc_county_num_df$all_positive, na.rm=T),
+                      big.mark=","), 
+               "*")
       })
       output$type_positive_cty <- renderText({"prisoners and staff"})
       
@@ -1819,7 +1833,7 @@ server <- function(input, output, session) {
           filter(type == select_positive_cty()) %>%
           pull(value) %>%
           sum(na.rm=T) %>%
-          as.character() %>%
+          format(big.mark=",") %>%
           paste0("*")
       })
       output$type_positive_cty <- renderText({tolower(select_positive_cty())})
@@ -1831,7 +1845,9 @@ server <- function(input, output, session) {
       
     } else if (select_positive_cty() == "Total") {
       output$n_positive_cty_str <- renderText({
-        paste0(as.character(sum(sjc_county_num_df$all_positive, na.rm=T)), "*")
+        paste0(format(sum(sjc_county_num_df$all_positive, na.rm=T), 
+                      big.mark=","),
+               "*")
       })
       output$type_positive_cty <- renderText({"prisoners and staff"})
       
