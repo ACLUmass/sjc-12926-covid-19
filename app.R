@@ -329,7 +329,41 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  checkboxInput("checkbox_pos", label = "Show transition to weekly reporting", value = TRUE),
                  withSpinner(plotlyOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                  em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-        )
+        ),
+        
+        "----",
+        
+        tabPanel("Total Deaths", 
+                 h2(textOutput("n_deaths_str"), align="center"),
+                 p("Reports of COVID-19 prisoner deaths pursuant to SJC 12926", align="center"),
+                 withSpinner(plotlyOutput("all_deaths_plot"), type=4, color="#b5b5b5", size=0.5),
+                 h3("Dates & Locations of Deaths:"),
+                 tags$ol(
+                   tags$li(a("April 2, 2020 - DOC - Massachusetts Treatment Center (MTC)", 
+                             href="https://www.wbur.org/commonhealth/2020/04/01/mass-prisons-jails-coronavirus")),
+                   tags$li(a("April 3, 2020 - DOC - Massachusetts Treatment Center (MTC)",
+                             href="https://www.masslive.com/coronavirus/2020/04/coronavirus-2nd-inmate-at-massachusetts-treatment-center-dies-after-testing-positive-for-covid-19.html")),
+                   tags$li(a("April 4, 2020 - DOC - Massachusetts Treatment Center (MTC)",
+                             href="https://www.bostonglobe.com/2020/04/05/metro/third-inmate-bridgewater-treatment-center-dies-covid-19/")),
+                   tags$li(a("April ~13, 2020 - DOC - Massachusetts Treatment Center (MTC)",
+                             href="https://www.wbur.org/news/2020/04/15/jails-prisons-latest-coronavirus-cases-mtc")),
+                   tags$li(a("April 16, 2020 - DOC - MCI – Shirley",
+                             href="https://www.wbur.org/news/2020/04/16/coronavirus-deaths-jails-prisons-update")),
+                   tags$li("April ~22, 2020 - DOC  - Massachusetts Treatment Center (MTC)"),
+                   tags$li(a("April 22, 2020 - DOC - MCI – Shirley", 
+                             href="https://www.masslive.com/coronavirus/2020/04/7th-prisoner-in-massachusetts-dies-from-coronavirus-doc-says-127-inmates-53-correction-staff-in-total-infected.html")),
+                   tags$li(a("April 30, 2020 - Essex County - Middleton House of Correction (HOC)",
+                             href="https://www.wbur.org/commonhealth/2020/04/30/essex-jail-dies-coronavirus")),
+                   tags$li(a("May 15, 2020 - DOC - MCI – Shirley", 
+                             href="https://www.wbur.org/news/2020/05/15/massachusetts-prisoner-dies-covid-19-coronavirus")),
+                   tags$li(a("July 2, 2020 - Norfolk County Jail", 
+                             href="https://www.patriotledger.com/news/20200702/norfolk-county-jail-inmate-dies-in-hospital-from-covid-19-month-after-hospitalization"))
+                 ),
+                 em("Please note that COVID-19-related",
+                 a(href="https://www.wwlp.com/news/local-news/hampshire-county/20-inmates-4-staff-have-tested-positive-for-covid-19-at-hampshire-county-jail/", 
+                   "deaths of previous inmates"), 
+                 "which occurred outside of a correctional facility are not reported here.")
+             )
       ),
       
     # UI: DOC Facilities ------------------------------------------------------
@@ -467,7 +501,38 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    ),
                  checkboxInput("checkbox_fac_pos", label = "Show transition to weekly reporting", value = TRUE),
                  withSpinner(plotlyOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                 em("Please note that prisoner deaths due to COVID-19 are not included in these data."))
+                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+             ),
+       
+       "----",
+       
+       tabPanel("Total Deaths", 
+                h2(textOutput("n_deaths_fac_str"), align="center"),
+                p("Reports of COVID-19 prisoner deaths in DOC facilities pursuant to SJC 12926", align="center"),
+                withSpinner(plotlyOutput("all_deaths_fac_plot"), type=4, color="#b5b5b5", size=0.5),
+                h3("Dates & Locations of DOC Deaths:"),
+                tags$ol(
+                  tags$li(a("April 2, 2020 - DOC - Massachusetts Treatment Center (MTC)", 
+                            href="https://www.wbur.org/commonhealth/2020/04/01/mass-prisons-jails-coronavirus")),
+                  tags$li(a("April 3, 2020 - DOC - Massachusetts Treatment Center (MTC)",
+                            href="https://www.masslive.com/coronavirus/2020/04/coronavirus-2nd-inmate-at-massachusetts-treatment-center-dies-after-testing-positive-for-covid-19.html")),
+                  tags$li(a("April 4, 2020 - DOC - Massachusetts Treatment Center (MTC)",
+                            href="https://www.bostonglobe.com/2020/04/05/metro/third-inmate-bridgewater-treatment-center-dies-covid-19/")),
+                  tags$li(a("April ~13, 2020 - DOC - Massachusetts Treatment Center (MTC)",
+                            href="https://www.wbur.org/news/2020/04/15/jails-prisons-latest-coronavirus-cases-mtc")),
+                  tags$li(a("April 16, 2020 - DOC - MCI – Shirley",
+                            href="https://www.wbur.org/news/2020/04/16/coronavirus-deaths-jails-prisons-update")),
+                  tags$li("April ~22, 2020 - DOC  - Massachusetts Treatment Center (MTC)"),
+                  tags$li(a("April 22, 2020 - DOC - MCI – Shirley", 
+                            href="https://www.masslive.com/coronavirus/2020/04/7th-prisoner-in-massachusetts-dies-from-coronavirus-doc-says-127-inmates-53-correction-staff-in-total-infected.html")),
+                  tags$li(a("May 15, 2020 - DOC - MCI – Shirley", 
+                            href="https://www.wbur.org/news/2020/05/15/massachusetts-prisoner-dies-covid-19-coronavirus"))
+                ),
+                em("Please note that COVID-19-related",
+                   a(href="https://www.wwlp.com/news/local-news/hampshire-county/20-inmates-4-staff-have-tested-positive-for-covid-19-at-hampshire-county-jail/", 
+                     "deaths of previous inmates"), 
+                   "which occurred outside of a correctional facility are not reported here.")
+       )
      ),
     
     # UI: County Facilities --------------------------------------------------
@@ -1275,8 +1340,33 @@ server <- function(input, output, session) {
     
     lines_plotly_style(g, y_label, "County", show_weekly=input$checkbox_test)
     
+  })
+  
+  # Total Deaths -------------------------------------------------------
+  
+  deaths_doc_df_to_add <- sjc_DOC_num_df %>%
+    mutate(value = as.numeric(`Cumulative Deaths`),
+           County = factor("DOC", levels=counties)) %>%
+    dplyr::select(Date, County, value)
+  
+  deaths_df <- sjc_num_df %>%
+    mutate(value = as.numeric(`Cumulative Deaths`)) %>%
+    dplyr::select(Date, County, value) %>%
+    bind_rows(deaths_doc_df_to_add) %>%
+    mutate(value = replace_na(value, 0))
+  
+  # Calculate totals
+  n_deaths <- sum(deaths_df$value)
+  output$n_deaths_str <- renderText({n_deaths})
+  
+  # Plot deaths
+  output$all_deaths_plot <- renderPlotly({
+    
+    single_bar_plot(deaths_df, 
+                    "Total", "Prisoner Deaths", "County")
     
   })
+  
  # DOC: Total Releases -----------------------------------------------------
   DOC_released_df <- sjc_DOC_num_df %>%
     rename(value = all_released,
@@ -1561,6 +1651,26 @@ server <- function(input, output, session) {
     
     lines_plotly_style(g, y_label, "Facility", 
                        show_weekly=input$checkbox_fac_pos)
+    
+  })
+  
+  # DOC: Total Deaths -------------------------------------------------------
+  
+  deaths_fac_df <- sjc_DOC_num_df %>%
+    mutate(value = as.numeric(`Cumulative Deaths`),
+           value = replace_na(value, 0),
+           Facility = factor(fac, levels=fac_staff)) %>%
+    dplyr::select(Date, Facility, value)
+  
+  # Calculate totals
+  n_deaths_fac <- sum(deaths_fac_df$value)
+  output$n_deaths_fac_str <- renderText({n_deaths_fac})
+  
+  # Plot deaths
+  output$all_deaths_fac_plot <- renderPlotly({
+    
+    single_bar_plot(deaths_fac_df, 
+                    "Total", "Prisoner Deaths", "Facility")
     
   })
   
