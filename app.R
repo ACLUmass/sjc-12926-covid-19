@@ -333,6 +333,33 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
         
         "----",
         
+        tabPanel("Active Positive Cases", 
+                 h2(textOutput("n_active_str"), align="center"),
+                 p("Reports of prisoners currently infected with COVID-19, pursuant to SJC 12926",
+                   br(),
+                   em("Showing active cases as reported on", 
+                      textOutput("last_date_str", inline=T),
+                      align="center"),
+                   align="center"),
+                 withSpinner(plotlyOutput("all_active_plot"), type=4, color="#b5b5b5", size=0.5)
+                 ),
+        
+        tabPanel("Active Positive Cases Over Time",
+                 wellPanel(id="internal_well",
+                           p("Select up to three locations to plot versus time."),
+                           splitLayout(
+                             selectInput("select_active1", label = NULL, choices = county_choices,
+                                         selected = "All", multiple=FALSE),
+                             selectInput("select_active2", label = NULL, choices = county_choices,
+                                         selected = "All Counties", multiple=FALSE),
+                             selectInput("select_active3", label = NULL, choices = county_choices,
+                                         selected = "DOC", multiple=FALSE)
+                           )),
+                 withSpinner(plotlyOutput("active_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+        ),
+        
+        "----",
+        
         tabPanel("Total Deaths", 
                  h2(textOutput("n_deaths_str"), align="center"),
                  p("Reports of COVID-19 prisoner deaths pursuant to SJC 12926", align="center"),
@@ -506,6 +533,35 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
        
        "----",
        
+       tabPanel("Active Positive Cases", 
+                h2(textOutput("n_active_fac_str"), align="center"),
+                p("Reports of DOC prisoners currently infected with COVID-19, pursuant to SJC 12926",
+                  br(),
+                  em("Showing active DOC cases as reported on", 
+                     textOutput("last_date_DOC_str", inline=T)),
+                  align="center"),
+                withSpinner(plotlyOutput("all_active_fac_plot"), type=4, color="#b5b5b5", size=0.5)
+       ),
+       
+       tabPanel("Active Positive Cases Over Time",
+                wellPanel(id="internal_well",
+                          p("Select up to three locations to plot versus time."),
+                          splitLayout(
+                            selectInput("select_active_fac1", label = NULL, 
+                                        choices = fac_choices[fac_choices != "DOC Total**"],
+                                        selected = "All DOC Facilities", multiple=FALSE),
+                            selectInput("select_active_fac2", label = NULL, 
+                                        choices = fac_choices[fac_choices != "DOC Total**"],
+                                        selected = "MCI-Norfolk", multiple=FALSE),
+                            selectInput("select_active_fac3", label = NULL, 
+                                        choices = fac_choices[fac_choices != "DOC Total**"],
+                                        selected = "MCI-F", multiple=FALSE)
+                          )),
+                withSpinner(plotlyOutput("active_v_time_fac_plot"), type=4, color="#b5b5b5", size=0.5)
+       ),
+       
+       "----",
+       
        tabPanel("Total Deaths", 
                 h2(textOutput("n_deaths_fac_str"), align="center"),
                 p("Reports of COVID-19 prisoner deaths in DOC facilities pursuant to SJC 12926", align="center"),
@@ -634,6 +690,35 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                         withSpinner(plotlyOutput("ctyfac_pos_time_plot"), type=4, color="#b5b5b5", size=0.5),
                         em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
                 ),
+               
+               "----",
+
+               tabPanel("Active Positive Cases",
+                        p(em("Showing active cases as reported on"),
+                           textOutput("last_date_str2", inline=T),
+                          br(),
+                          em("Please note that Hampden County is not reporting active cases by facility."),
+                           align="center"
+                          ),
+                        withSpinner(plotlyOutput("all_active_cty_plot"), type=4, color="#b5b5b5", size=0.5)
+               ),
+
+               tabPanel("Active Positive Cases Over Time",
+                        wellPanel(id="internal_well",
+                                  p("Select up to three locations to plot versus time."),
+                                  splitLayout(
+                                    selectInput("select_active_cty1", label = NULL, choices = ctyfac_choices,
+                                                selected = "All Counties", multiple=FALSE),
+                                    selectInput("select_active_cty2", label = NULL, choices = ctyfac_choices,
+                                                selected = "Bristol - DHOC", multiple=FALSE),
+                                    selectInput("select_active_cty3", label = NULL, choices = ctyfac_choices,
+                                                selected = "Essex - Middleton", multiple=FALSE)
+                                  ),
+                                  em("Please note that Hampden County is not reporting active cases by facility."),
+                                       align="center"),
+                        withSpinner(plotlyOutput("active_cty_fac_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+               ),
+               
                "----",
                
                tabPanel("Mapping County Trends", 
@@ -770,7 +855,7 @@ server <- function(input, output, session) {
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     # Make all count columns numeric
     mutate_at(vars(starts_with("N "), starts_with("Total"), 
-                   matches("Population")), 
+                   matches("Population"), matches("Active"), matches("Death")), 
               as.numeric) %>%
     # Render dates as such
     mutate(Date = as.Date(Date)) %>%
@@ -837,7 +922,8 @@ server <- function(input, output, session) {
   sjc_DOC_df <- read_excel(tf, sheet=2) %>%
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     mutate(Date = as.Date(Date)) %>%
-    mutate_at(vars(starts_with("N "), starts_with("Total")),
+    mutate_at(vars(starts_with("N "), starts_with("Total"), 
+                   matches("Active"), matches("Death")),
               as.numeric)
   
   sjc_DOC_num_df <- sjc_DOC_df %>%
@@ -854,7 +940,8 @@ server <- function(input, output, session) {
   sjc_county_df <- read_excel(tf, sheet=3) %>%
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     mutate(Date = as.Date(Date)) %>%
-    mutate_at(vars(starts_with("N "), starts_with("Total")),
+    mutate_at(vars(starts_with("N "), starts_with("Total"), 
+                   matches("Active"), matches("Death")),
               as.numeric)
   
   sjc_county_num_df <- sjc_county_df %>%
@@ -1240,6 +1327,106 @@ server <- function(input, output, session) {
     
   })
   
+  # Active Positives -------------------------------------------------------
+  
+  active_doc_df_to_add <- sjc_DOC_num_df %>%
+    group_by(fac) %>%
+    filter(Date == max(Date)) %>%
+    mutate(value = as.numeric(`Active Prisoner Cases`),
+           County = factor("DOC", levels=counties),
+           value = replace_na(value, 0))
+  
+  active_df <- sjc_num_df %>%
+    filter_at(vars(-County, -Date), any_vars(. != 0)) %>%
+    group_by(County) %>%
+    filter(Date == max(Date)) %>%
+    mutate(value = as.numeric(`Active Prisoner Cases`)) %>%
+    bind_rows(active_doc_df_to_add)
+  
+  output$last_date_str <- renderText({
+    strftime(last_date_entered, format="%B %d, %Y"
+    )})
+  
+  output$all_active_plot <- renderPlotly({
+    
+    n_active <- sum(active_df$value)
+    output$n_active_str <- renderText({format(n_active, big.mark=",")})
+    
+    single_bar_plot(active_df, "Total", "Active Positive Prisoners", "County")
+  
+  })
+  
+  # Active Positives v. Time -------------------------------------------------------
+  
+  # Determine which counties to plot
+  cnty_to_plot_active <- reactive({
+    c(input$select_active1,
+      input$select_active2,
+      input$select_active3)
+  })
+  
+  active_DOC_to_add <- sjc_DOC_num_df %>%
+    filter(Date >= ymd(20200707)) %>%
+    mutate(active = `Active Prisoner Cases`,
+           County = factor("DOC", levels=counties)) %>%
+    filter(!is.na(active)) %>%
+    dplyr::select(Date, County, active)
+  
+  active_v_time <- sjc_num_df %>%
+    filter(Date >= ymd(20200707),
+           County != "DOC") %>%
+    mutate(active = `Active Prisoner Cases`) %>%
+    filter(!is.na(active)) %>%
+    dplyr::select(Date, County, active) %>%
+    bind_rows(active_DOC_to_add) %>%
+    group_by(Date, County) %>%
+    summarize(active=sum(active))
+  
+  all_active_v_time <- active_v_time %>%
+    ungroup() %>%
+    mutate(Date = if_else(County == "DOC", Date + days(1), Date),
+           County = "All") %>%
+    group_by(Date, County) %>%
+    summarize(active = sum(active))
+  
+  all_cty_active_v_time <- active_v_time %>%
+    ungroup() %>%
+    filter(County != "DOC") %>%
+    mutate(County = "All Counties") %>%
+    group_by(Date, County) %>%
+    summarize(active = sum(active))
+  
+  active_v_time <- active_v_time %>%
+    bind_rows(all_active_v_time) %>%
+    bind_rows(all_cty_active_v_time)
+  
+  # Plot
+  output$active_v_time_plot <- renderPlotly({
+    
+    g <- active_v_time %>%
+      filter(County %in% cnty_to_plot_active()) %>%
+    ggplot(aes(x=Date, y = active, color=County)) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
+      geom_point(size=1.5) +
+      labs(x = "", y = y_label, color="",
+           title="placeholder") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), 
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') +
+      ylim(0, NA)
+    
+    lines_plotly_style(g, "Active Positive Prisoners", "County", 
+                       show_weekly=F)
+    
+  })
+  
   # Total Tests -------------------------------------------------------
   
   tested_df <- sjc_num_df %>%
@@ -1258,7 +1445,7 @@ server <- function(input, output, session) {
     
     if (select_tested() == "All") {
       
-      output$n_tests_str <- renderText({format(n_tested, , big.mark=",")})
+      output$n_tests_str <- renderText({format(n_tested, big.mark=",")})
       output$type_tested <- renderText({"prisoners and staff"})
       
       stacked_bar_plot(tested_df, 
@@ -1662,6 +1849,80 @@ server <- function(input, output, session) {
     
   })
   
+  # DOC: Active Positives -------------------------------------------------------
+  
+  active_fac_df <- sjc_DOC_num_df %>%
+    group_by(fac) %>%
+    filter(Date == max(Date)) %>%
+    mutate(value = `Active Prisoner Cases`,
+           value = replace_na(value, 0),
+           Facility = fac)
+  
+  output$all_active_fac_plot <- renderPlotly({
+    
+    output$last_date_DOC_str <- renderText({
+      strftime(max(sjc_DOC_num_df$Date), format="%B %d, %Y"
+      )})
+    
+    n_active_fac <- sum(active_fac_df$value)
+    output$n_active_fac_str <- renderText({format(n_active_fac, big.mark=",")})
+    
+    single_bar_plot(active_fac_df, "Total", "Active Positive Prisoners", "Facility")
+    
+  })
+  
+  # DOC: Active Positives v. Time -------------------------------------------------------
+  
+  # Determine which counties to plot
+  fac_to_plot_active <- reactive({
+    c(input$select_active_fac1,
+      input$select_active_fac2,
+      input$select_active_fac3)
+  })
+  
+  active_fac_v_time <- sjc_DOC_num_df %>%
+    filter(Date >= ymd(20200707)) %>%
+    mutate(active = `Active Prisoner Cases`,
+           fac = as.character(fac)) %>%
+    filter(!is.na(active)) %>%
+    dplyr::select(Date, fac, active)
+  
+  all_active_fac_v_time <- active_fac_v_time %>%
+    ungroup() %>%
+    mutate(fac = "All DOC Facilities") %>%
+    group_by(Date, fac) %>%
+    summarize(active = sum(active))
+  
+  active_fac_v_time <- active_fac_v_time %>%
+    bind_rows(all_active_fac_v_time)
+  
+  # Plot
+  output$active_v_time_fac_plot <- renderPlotly({
+    
+    g <- active_fac_v_time %>%
+      filter(fac %in% fac_to_plot_active()) %>%
+    ggplot(aes(x=Date, y = active, color=fac)) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
+      geom_point(size=1.5) +
+      labs(x = "", y = y_label, color="",
+           title="placeholder") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), 
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') +
+      ylim(0, NA)
+    
+    lines_plotly_style(g, "Active Positive DOC Prisoners", "Facility", 
+                       show_weekly=F)
+    
+  })
+  
   # DOC: Total Deaths -------------------------------------------------------
   
   deaths_fac_df <- sjc_DOC_num_df %>%
@@ -1907,6 +2168,71 @@ server <- function(input, output, session) {
     
     lines_plotly_style(g, y_label, "Location",
                        show_weekly=input$checkbox_ctyfac_pos)
+    
+  })
+  
+  # # Counties: Active Positives -------------------------------------------------------
+  
+  active_cty_df <- sjc_county_num_df %>%
+    group_by(fac) %>%
+    filter(Date == max(Date)) %>%
+    mutate(value = `Active Prisoner Cases`,
+           Facility = fac) %>%
+    filter(!is.na(value))
+  
+  output$last_date_str2 <- renderText({
+    strftime(last_date_entered, format="%B %d, %Y"
+    )})
+
+  output$all_active_cty_plot <- renderPlotly({
+
+    single_bar_plot(active_cty_df, "Total",
+                    "Active Positive Prisoners", "County Facility")
+
+  })
+  
+  # Counties: Active Positives v. Time -------------------------------------------------------
+  
+  # Determine which counties to plot
+  cty_fac_to_plot_active <- reactive({
+    c(input$select_active_cty1,
+      input$select_active_cty2,
+      input$select_active_cty3)
+  })
+  
+  active_cty_fac_v_time <- sjc_county_num_df %>%
+    filter(Date >= ymd(20200708)) %>%
+    mutate(active = `Active Prisoner Cases`,
+           fac = as.character(fac)) %>%
+    dplyr::select(Date, fac, active) %>%
+    bind_rows(active_v_time %>% rename(fac=County)) %>%
+    filter(fac %in% ctyfac_choices,
+           !is.na(active))
+  
+  # Plot
+  output$active_cty_fac_v_time_plot <- renderPlotly({
+    
+    g <- active_cty_fac_v_time %>%
+      filter(fac %in% cty_fac_to_plot_active()) %>%
+    ggplot(aes(x=Date, y = active, color=fac)) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
+      geom_point(size=1.5) +
+      labs(x = "", y = y_label, color="",
+           title="placeholder") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), 
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off') +
+      ylim(0, NA)
+    
+    lines_plotly_style(g, "Active Positive DOC Prisoners", "County Facility", 
+                       show_weekly=F)
     
   })
   
