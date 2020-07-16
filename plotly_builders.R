@@ -295,11 +295,35 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
   } else {
     # Replace tooltip key with better names
     for (i in 1:length(g$x$data)) {
-        text_rep <- g$x$data[[i]]$text %>%
-          gsub("pop", y_label, .) %>%
-          gsub("cumul", y_label, .) %>%
-          gsub("fac", location_to_plot, .) %>%
-          gsub("active", "Active Prisoner Cases", .)
+      
+      # If the data is from after 7/14, show date range
+      tooltip_text <- g$x$data[[i]]$text
+      
+      if (!str_detect(y_label, "Active") & !str_detect(y_label, "Population")) {
+        for (t in tooltip_text) {
+          
+          data_date <- t %>%
+            str_extract("(?<=Date: ).*?(?=<br \\/>c)") %>%
+            ymd()
+          
+          if (!is.na(data_date) & data_date >= ymd(20200707)) {
+            date_replace <- paste("Week of", data_date)
+          } else {
+            date_replace <- data_date
+          } 
+          
+          tooltip_text[tooltip_text == t] <- t %>%
+            gsub(data_date, date_replace, .)
+          
+        }
+      }
+      
+      # Replace tooltip key with better names
+      text_rep <- tooltip_text %>%
+        gsub("pop", y_label, .) %>%
+        gsub("cumul", y_label, .) %>%
+        gsub("fac", location_to_plot, .) %>%
+        gsub("active", "Active Prisoner Cases", .)
 
       g <- g %>%
         style(text = text_rep, traces=i)
