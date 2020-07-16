@@ -262,6 +262,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    em('Exact number of tests per county annotated in "Prisoners",',
                       '"Staff", and "Total" plots.')
                  ),
+                 checkboxInput("checkbox_hideDOC_tests", label = "Hide DOC column", value = F),
                  h2(textOutput("n_tests_str"), align="center"),
                  p("Reports of",
                    textOutput("type_tested", inline=T),
@@ -302,6 +303,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            em('Exact number of positive tests per county annotated in',
                               '"Prisoners", "Staff", and "Total" plots.')
                  ),
+                 checkboxInput("checkbox_hideDOC_pos", label = "Hide DOC column", value = F),
                  h2(textOutput("n_positive_str"), align="center"),
                  p("Reports of",
                    textOutput("type_positive", inline=T),
@@ -1123,7 +1125,8 @@ server <- function(input, output, session) {
       coord_cartesian(clip = 'off') +
       ylim(0, NA)
   
-    lines_plotly_style(g, y_label, "Location", pos_and_test=T, show_weekly=input$checkbox_both)
+    lines_plotly_style(g, y_label, "Location", pos_and_test=T, 
+                       show_weekly=input$checkbox_both)
     
   })
   
@@ -1227,11 +1230,20 @@ server <- function(input, output, session) {
 
   output$all_positives_plot <- renderPlotly({
     
+    # Hide DOC column?
+    if (input$checkbox_hideDOC_pos) {
+      positive_df_to_plot <- positive_df %>%
+        filter(County != "DOC")
+    } else {
+      positive_df_to_plot <- positive_df
+    }
+    
+    
     if (select_positive() == "All") {
       output$n_positive_str <- renderText({format(n_positive, big.mark=",")})
       output$type_positive <- renderText({"prisoners and staff"})
       
-      stacked_bar_plot(positive_df, 
+      stacked_bar_plot(positive_df_to_plot, 
                        "Tested Positive",
                        "County")
       
@@ -1245,7 +1257,7 @@ server <- function(input, output, session) {
       })
       output$type_positive <- renderText({tolower(select_positive())})
       
-      single_bar_plot(positive_df, 
+      single_bar_plot(positive_df_to_plot, 
                       select_positive(), 
                       paste(select_positive(), "Tested Positive"),
                       "County")
@@ -1254,7 +1266,7 @@ server <- function(input, output, session) {
       output$n_positive_str <- renderText({format(n_positive, big.mark=",")})
       output$type_positive <- renderText({"prisoners and staff"})
       
-      single_bar_plot(positive_df, 
+      single_bar_plot(positive_df_to_plot, 
                       select_positive(), "Prisoners & Staff Tested Positive",
                       "County")
     }
@@ -1443,12 +1455,20 @@ server <- function(input, output, session) {
   
   output$all_tests_plot <- renderPlotly({
     
+    # Hide DOC column?
+    if (input$checkbox_hideDOC_tests) {
+      tested_df_to_plot <- tested_df %>%
+        filter(County != "DOC")
+    } else {
+      tested_df_to_plot <- tested_df
+    }
+    
     if (select_tested() == "All") {
       
       output$n_tests_str <- renderText({format(n_tested, big.mark=",")})
       output$type_tested <- renderText({"prisoners and staff"})
       
-      stacked_bar_plot(tested_df, 
+      stacked_bar_plot(tested_df_to_plot, 
                        "Tested",
                        "County")
       
@@ -1462,7 +1482,7 @@ server <- function(input, output, session) {
       })
       output$type_tested <- renderText({tolower(select_tested())})
       
-      single_bar_plot(tested_df, 
+      single_bar_plot(tested_df_to_plot, 
                       select_tested(), 
                       paste(select_tested(), "Tested"),
                       "County")
@@ -1471,7 +1491,7 @@ server <- function(input, output, session) {
       output$n_tests_str <- renderText({format(n_tested, big.mark=",")})
       output$type_tested <- renderText({"prisoners and staff"})
       
-      single_bar_plot(tested_df, 
+      single_bar_plot(tested_df_to_plot, 
                       select_tested(),
                       "Prisoners & Staff Tested",
                       "County")
