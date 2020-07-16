@@ -225,10 +225,10 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  wellPanel(id="internal_well",
                    p("Select kind of prisoner:"),
                    selectInput("select_release", label = NULL, 
-                             choices = c("All", "Pre-Trial", "Sentenced", "Total"),
+                             choices = c("All", "Pre-Trial", "Sentenced","Home Confinements", "Total"),
                              selected = "All", multiple=FALSE),
                    em('Exact number of releases per county annotated in',
-                      '"Pre-Trial", "Sentenced", and "Total" plots.')
+                      '"Pre-Trial", "Sentenced", "Home Confinements", and "Total" plots.')
                    ),
                  h2(textOutput("n_releases_str"), align="center"),
                  p("Prisoners released pursuant to SJC 12926", align="center"),
@@ -1059,7 +1059,7 @@ server <- function(input, output, session) {
                       "Prisoners Released",
                       "County")
       
-    } else if (select_release() %in% c("Pre-Trial", "Sentenced")) {
+    } else if (select_release() %in% c("Pre-Trial", "Sentenced", "Home Confinements")) {
       
       output$n_releases_str <- renderText({
         released_df %>%
