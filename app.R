@@ -398,6 +398,16 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  h2(textOutput("n_deaths_str"), align="center"),
                  p("Reports of COVID-19 prisoner deaths pursuant to SJC 12926", align="center"),
                  withSpinner(plotlyOutput("all_deaths_plot"), type=4, color="#b5b5b5", size=0.5),
+                 h3("Dates & Locations of COVID-19 Deaths"),
+                 tags$ul(
+                   tags$li("Before June 23: 10 deaths"),
+                     tags$ul(
+                       tags$li("DOC: MTC -  5 deaths"),
+                       tags$li("DOC: MCI-Shirley -  3 deaths"),
+                       tags$li("Essex - 1 deaths"),
+                       tags$li("Norfolk - 1 deaths")
+                     )
+                 ),
                  em("For information regarding the dates and locations of deaths before
                     June 23, please visit our",
                     actionLink("link_to_external2", "external resources page."))
@@ -578,6 +588,14 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                 h2(textOutput("n_deaths_fac_str"), align="center"),
                 p("Reports of COVID-19 prisoner deaths in DOC facilities pursuant to SJC 12926", align="center"),
                 withSpinner(plotlyOutput("all_deaths_fac_plot"), type=4, color="#b5b5b5", size=0.5),
+                h3("Dates & Locations of DOC COVID-19 Deaths"),
+                tags$ul(
+                  tags$li("Before June 23: 8 deaths"),
+                  tags$ul(
+                    tags$li("DOC: MTC -  5 deaths"),
+                    tags$li("DOC: MCI-Shirley -  3 deaths")
+                  )
+                ),
                 em("For information regarding the dates and locations of deaths before
                     June 23, please visit our",
                    actionLink("link_to_external3", "external resources page."))
