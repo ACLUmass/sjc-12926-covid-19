@@ -803,7 +803,10 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     ),
   
   div(id="footer",
-    em("\n\nData last downloaded:", textOutput("latest_time_str", inline=T), 
+      em("\n\nMost recent report:", textOutput("last_date_str3", inline=T), 
+         align="right", style="opacity: 0.6;"),
+      br(),
+      em("Database last accessed:", textOutput("latest_time_str", inline=T), 
          align="right", style="opacity: 0.6;"),
     br(),
     hr(),
@@ -854,6 +857,11 @@ server <- function(input, output, session) {
       write(line, file = "n_sessions.txt", append=TRUE)
     })
   })
+  
+  # Define last date entered for page footer
+  output$last_date_str3 <- renderText({
+    strftime(last_date_entered, format="%A, %B %d, %Y"
+    )})
 
   # Load Data -----------------------------------------------------------
   
