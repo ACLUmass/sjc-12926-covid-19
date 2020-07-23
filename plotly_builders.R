@@ -129,7 +129,8 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
       scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3")) + 
-      ylim(0, NA)
+      scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
+                         limits= c(0, NA))
     
     traces_to_hide <- 2:3
     traces_lightback <- 0
@@ -199,7 +200,9 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
       theme(axis.text.x = element_text(angle=45, hjust=1),
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3")) +
+      scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
+                         limits= c(0, NA))
     
     g <- ggplotly(g, tooltip=c("x", "y")) %>%
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
@@ -236,6 +239,11 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
 lines_plotly_style <- function(gg_plot, y_label, location_to_plot, 
   annotation=FALSE, subtitle=TRUE, pos_and_test=FALSE,
   show_weekly=TRUE) {
+  
+  # Make sure the y axis is always integers
+  gg_plot <- gg_plot +
+    scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
+                       limits= c(0, NA))
   
   if (show_weekly) {
     gg_plot <- gg_plot +

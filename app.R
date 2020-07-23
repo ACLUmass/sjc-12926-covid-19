@@ -1131,8 +1131,7 @@ server <- function(input, output, session) {
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+      coord_cartesian(clip = 'off')
   
     lines_plotly_style(g, y_label, "Location", pos_and_test=T, 
                        show_weekly=input$checkbox_both)
@@ -1217,8 +1216,7 @@ server <- function(input, output, session) {
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+      coord_cartesian(clip = 'off')
     
     lines_plotly_style(g, "Prisoners Released", "County", show_weekly=input$checkbox_rel)
     
@@ -1340,8 +1338,7 @@ server <- function(input, output, session) {
               legend.text = element_text(size=16)) +
         scale_x_date(date_labels = "%b %e ") +
         scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-        coord_cartesian(clip = 'off') +
-        ylim(0, NA)
+        coord_cartesian(clip = 'off')
     
     lines_plotly_style(g, y_label, "County", 
                        annotation=TRUE, show_weekly=input$checkbox_pos)
@@ -1440,8 +1437,7 @@ server <- function(input, output, session) {
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+      coord_cartesian(clip = 'off')
     
     lines_plotly_style(g, "Active Positive Prisoners", "County", 
                        show_weekly=F)
@@ -1554,8 +1550,7 @@ server <- function(input, output, session) {
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+      coord_cartesian(clip = 'off')
     
     lines_plotly_style(g, y_label, "County", show_weekly=input$checkbox_test)
     
@@ -1640,8 +1635,7 @@ server <- function(input, output, session) {
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+      coord_cartesian(clip = 'off')
     
     lines_plotly_style(g, "Prisoners Released", "Facility",
                        show_weekly=input$checkbox_fac_rel)
@@ -1754,8 +1748,7 @@ server <- function(input, output, session) {
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+      coord_cartesian(clip = 'off')
     
     lines_plotly_style(g, y_label, "Facility", 
                        show_weekly=input$checkbox_fac_test)
@@ -1944,8 +1937,7 @@ server <- function(input, output, session) {
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+      coord_cartesian(clip = 'off')
     
     lines_plotly_style(g, "Active Positive DOC Prisoners", "Facility", 
                        show_weekly=F)
@@ -2257,8 +2249,7 @@ server <- function(input, output, session) {
             legend.text = element_text(size=16)) +
       scale_x_date(date_labels = "%b %e ") +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') +
-      ylim(0, NA)
+      coord_cartesian(clip = 'off')
     
     lines_plotly_style(g, "Active Positive DOC Prisoners", "County Facility", 
                        show_weekly=F)
