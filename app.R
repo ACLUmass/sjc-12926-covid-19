@@ -95,7 +95,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                 tags$li("The number of COVID-19 deaths recorded by the counties/DOC"),
                                 tags$li("[DOC] The number of individuals released to home confinement recorded by the DOC")),
                         "As such, starting July 8, this site will be updated on a 
-                        weekly rather than daily basis, on Thursday mornings.")
+                        weekly rather than daily basis, with new data published Thursday mornings.")
                    )
                ),
                
@@ -152,6 +152,38 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
            ),
       
       tabPanel("External Resources", 
+               h3("Dates & Locations of COVID Deaths"),
+               p("Though the June 23 amendment requires reporting of deaths going forward,
+                 it did not require retroactive reporting of the time and place of COVID-19
+                 related deaths of incarcerated folks in Massachusetts. The below list reflects
+                 the ACLU-MA's best recreation of when and where these deaths occurred, as 
+                 reported in the media."),
+               tags$ol(
+                 tags$li(a("April 2, 2020 - DOC - Massachusetts Treatment Center (MTC)", 
+                           href="https://www.wbur.org/commonhealth/2020/04/01/mass-prisons-jails-coronavirus")),
+                 tags$li(a("April 3, 2020 - DOC - Massachusetts Treatment Center (MTC)",
+                           href="https://www.masslive.com/coronavirus/2020/04/coronavirus-2nd-inmate-at-massachusetts-treatment-center-dies-after-testing-positive-for-covid-19.html")),
+                 tags$li(a("April 4, 2020 - DOC - Massachusetts Treatment Center (MTC)",
+                           href="https://www.bostonglobe.com/2020/04/05/metro/third-inmate-bridgewater-treatment-center-dies-covid-19/")),
+                 tags$li(a("April ~13, 2020 - DOC - Massachusetts Treatment Center (MTC)",
+                           href="https://www.wbur.org/news/2020/04/15/jails-prisons-latest-coronavirus-cases-mtc")),
+                 tags$li(a("April 16, 2020 - DOC - MCI – Shirley",
+                           href="https://www.wbur.org/news/2020/04/16/coronavirus-deaths-jails-prisons-update")),
+                 tags$li("April ~22, 2020 - DOC  - Massachusetts Treatment Center (MTC)"),
+                 tags$li(a("April 22, 2020 - DOC - MCI – Shirley", 
+                           href="https://www.masslive.com/coronavirus/2020/04/7th-prisoner-in-massachusetts-dies-from-coronavirus-doc-says-127-inmates-53-correction-staff-in-total-infected.html")),
+                 tags$li(a("April 30, 2020 - Essex County - Middleton House of Correction (HOC)",
+                           href="https://www.wbur.org/commonhealth/2020/04/30/essex-jail-dies-coronavirus")),
+                 tags$li(a("May 15, 2020 - DOC - MCI – Shirley", 
+                           href="https://www.wbur.org/news/2020/05/15/massachusetts-prisoner-dies-covid-19-coronavirus")),
+                 tags$li(a("July 2, 2020 - Norfolk County Jail", 
+                           href="https://www.patriotledger.com/news/20200702/norfolk-county-jail-inmate-dies-in-hospital-from-covid-19-month-after-hospitalization"))
+               ),
+               em("Please note that potentially COVID-19-related",
+                  a(href="https://www.wwlp.com/news/local-news/hampshire-county/20-inmates-4-staff-have-tested-positive-for-covid-19-at-hampshire-county-jail/", 
+                    "deaths of previous inmates"), 
+                  "which occurred outside of a correctional facility are not reported here."),
+               
                h3("Inconsistencies in Reporting"),
                p("This site exists as a resource to document data which Massachusets",
                  "prisons, jails, and houses of corrections report to the SJC",
@@ -159,7 +191,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                p("However, it became evident in the first few days of reports that",
                  "there were inconsistencies in data collection from the various",
                  "institutions."),
-               h3("Recommended Resources"),
+               h4("Recommended Resources"),
                p("To gain additional perspectives on how the COVID-19 crisis is",
                  "affecting incarcerated people in Massachusetts, we recommend",
                  "the following resources:"),
@@ -366,32 +398,10 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  h2(textOutput("n_deaths_str"), align="center"),
                  p("Reports of COVID-19 prisoner deaths pursuant to SJC 12926", align="center"),
                  withSpinner(plotlyOutput("all_deaths_plot"), type=4, color="#b5b5b5", size=0.5),
-                 h3("Dates & Locations of Deaths:"),
-                 tags$ol(
-                   tags$li(a("April 2, 2020 - DOC - Massachusetts Treatment Center (MTC)", 
-                             href="https://www.wbur.org/commonhealth/2020/04/01/mass-prisons-jails-coronavirus")),
-                   tags$li(a("April 3, 2020 - DOC - Massachusetts Treatment Center (MTC)",
-                             href="https://www.masslive.com/coronavirus/2020/04/coronavirus-2nd-inmate-at-massachusetts-treatment-center-dies-after-testing-positive-for-covid-19.html")),
-                   tags$li(a("April 4, 2020 - DOC - Massachusetts Treatment Center (MTC)",
-                             href="https://www.bostonglobe.com/2020/04/05/metro/third-inmate-bridgewater-treatment-center-dies-covid-19/")),
-                   tags$li(a("April ~13, 2020 - DOC - Massachusetts Treatment Center (MTC)",
-                             href="https://www.wbur.org/news/2020/04/15/jails-prisons-latest-coronavirus-cases-mtc")),
-                   tags$li(a("April 16, 2020 - DOC - MCI – Shirley",
-                             href="https://www.wbur.org/news/2020/04/16/coronavirus-deaths-jails-prisons-update")),
-                   tags$li("April ~22, 2020 - DOC  - Massachusetts Treatment Center (MTC)"),
-                   tags$li(a("April 22, 2020 - DOC - MCI – Shirley", 
-                             href="https://www.masslive.com/coronavirus/2020/04/7th-prisoner-in-massachusetts-dies-from-coronavirus-doc-says-127-inmates-53-correction-staff-in-total-infected.html")),
-                   tags$li(a("April 30, 2020 - Essex County - Middleton House of Correction (HOC)",
-                             href="https://www.wbur.org/commonhealth/2020/04/30/essex-jail-dies-coronavirus")),
-                   tags$li(a("May 15, 2020 - DOC - MCI – Shirley", 
-                             href="https://www.wbur.org/news/2020/05/15/massachusetts-prisoner-dies-covid-19-coronavirus")),
-                   tags$li(a("July 2, 2020 - Norfolk County Jail", 
-                             href="https://www.patriotledger.com/news/20200702/norfolk-county-jail-inmate-dies-in-hospital-from-covid-19-month-after-hospitalization"))
-                 ),
-                 em("Please note that COVID-19-related",
-                 a(href="https://www.wwlp.com/news/local-news/hampshire-county/20-inmates-4-staff-have-tested-positive-for-covid-19-at-hampshire-county-jail/", 
-                   "deaths of previous inmates"), 
-                 "which occurred outside of a correctional facility are not reported here.")
+                 em("For information regarding the dates and locations of deaths before
+                    June 23, please visit our",
+                    actionLink("link_to_external2", "external resources page."))
+                 
              )
       ),
       
@@ -568,28 +578,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                 h2(textOutput("n_deaths_fac_str"), align="center"),
                 p("Reports of COVID-19 prisoner deaths in DOC facilities pursuant to SJC 12926", align="center"),
                 withSpinner(plotlyOutput("all_deaths_fac_plot"), type=4, color="#b5b5b5", size=0.5),
-                h3("Dates & Locations of DOC Deaths:"),
-                tags$ol(
-                  tags$li(a("April 2, 2020 - DOC - Massachusetts Treatment Center (MTC)", 
-                            href="https://www.wbur.org/commonhealth/2020/04/01/mass-prisons-jails-coronavirus")),
-                  tags$li(a("April 3, 2020 - DOC - Massachusetts Treatment Center (MTC)",
-                            href="https://www.masslive.com/coronavirus/2020/04/coronavirus-2nd-inmate-at-massachusetts-treatment-center-dies-after-testing-positive-for-covid-19.html")),
-                  tags$li(a("April 4, 2020 - DOC - Massachusetts Treatment Center (MTC)",
-                            href="https://www.bostonglobe.com/2020/04/05/metro/third-inmate-bridgewater-treatment-center-dies-covid-19/")),
-                  tags$li(a("April ~13, 2020 - DOC - Massachusetts Treatment Center (MTC)",
-                            href="https://www.wbur.org/news/2020/04/15/jails-prisons-latest-coronavirus-cases-mtc")),
-                  tags$li(a("April 16, 2020 - DOC - MCI – Shirley",
-                            href="https://www.wbur.org/news/2020/04/16/coronavirus-deaths-jails-prisons-update")),
-                  tags$li("April ~22, 2020 - DOC  - Massachusetts Treatment Center (MTC)"),
-                  tags$li(a("April 22, 2020 - DOC - MCI – Shirley", 
-                            href="https://www.masslive.com/coronavirus/2020/04/7th-prisoner-in-massachusetts-dies-from-coronavirus-doc-says-127-inmates-53-correction-staff-in-total-infected.html")),
-                  tags$li(a("May 15, 2020 - DOC - MCI – Shirley", 
-                            href="https://www.wbur.org/news/2020/05/15/massachusetts-prisoner-dies-covid-19-coronavirus"))
-                ),
-                em("Please note that COVID-19-related",
-                   a(href="https://www.wwlp.com/news/local-news/hampshire-county/20-inmates-4-staff-have-tested-positive-for-covid-19-at-hampshire-county-jail/", 
-                     "deaths of previous inmates"), 
-                   "which occurred outside of a correctional facility are not reported here.")
+                em("For information regarding the dates and locations of deaths before
+                    June 23, please visit our",
+                   actionLink("link_to_external3", "external resources page."))
        )
      ),
     
@@ -2328,6 +2319,12 @@ server <- function(input, output, session) {
   
   # Download Data -----------------------------------------------------
   observeEvent(input$link_to_external, {
+    updateTabsetPanel(session, "panels", "External Resources")
+  })
+  observeEvent(input$link_to_external2, {
+    updateTabsetPanel(session, "panels", "External Resources")
+  })
+  observeEvent(input$link_to_external3, {
     updateTabsetPanel(session, "panels", "External Resources")
   })
   
