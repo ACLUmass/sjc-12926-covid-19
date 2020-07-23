@@ -1561,12 +1561,12 @@ server <- function(input, output, session) {
   # Total Deaths -------------------------------------------------------
   
   deaths_doc_df_to_add <- sjc_DOC_num_df %>%
-    mutate(value = as.numeric(`Cumulative Deaths`),
+    mutate(value = as.numeric(`N Deaths`),
            County = factor("DOC", levels=counties)) %>%
     dplyr::select(Date, County, value)
   
   deaths_df <- sjc_num_df %>%
-    mutate(value = as.numeric(`Cumulative Deaths`)) %>%
+    mutate(value = as.numeric(`N Deaths`)) %>%
     dplyr::select(Date, County, value) %>%
     bind_rows(deaths_doc_df_to_add) %>%
     mutate(value = replace_na(value, 0))
@@ -1949,7 +1949,7 @@ server <- function(input, output, session) {
   # DOC: Total Deaths -------------------------------------------------------
   
   deaths_fac_df <- sjc_DOC_num_df %>%
-    mutate(value = as.numeric(`Cumulative Deaths`),
+    mutate(value = as.numeric(`N Deaths`),
            value = replace_na(value, 0),
            Facility = factor(fac, levels=fac_staff)) %>%
     dplyr::select(Date, Facility, value)
