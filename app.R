@@ -230,6 +230,17 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
+      tabPanel("Compare Active Cases & Recent Tests", 
+               wellPanel(id="internal_well",
+                         p("Select location to plot versus time.*"),
+                         splitLayout(
+                           selectInput("select_both_active", label = NULL, choices = tail(pop_choices, -1),
+                                       selected = "All", multiple=FALSE)
+                         ),
+                         em("*Facilities only began reporting active cases on July 8.")
+               ),
+               withSpinner(plotlyOutput("both_plot_active"), type=4, color="#b5b5b5", size=0.5)),
+      
       tabPanel("Compare Tests & Positives", 
                wellPanel(id="internal_well",
                          p("Select population to plot.", id="radio_prompt"),
@@ -1073,6 +1084,106 @@ server <- function(input, output, session) {
     
     lines_plotly_style(g, "Incarcerated Population", "County",
                        subtitle=F, show_weekly = input$checkbox_pop)
+    
+  })
+  
+  # Compare Active Cases & Recent Tests -------------------------------------------------
+  
+  # Determine which counties to plot
+  loc_to_plot_both_active <- reactive({input$select_both_active})
+  
+  all_df_all_counties_active <- sjc_num_df %>%
+    filter(County != "DOC") %>%
+    group_by(Date) %>%
+    summarize(all_released = sum(all_released),
+              all_positive = sum(all_positive),
+              all_tested = sum(all_tested),
+              all_active = sum(`Active Prisoner Cases`)) %>%
+    mutate(County = "All Counties")
+  
+  df_by_county_active <- sjc_num_df %>%
+    filter(County != "DOC") %>%
+    mutate(all_active = `Active Prisoner Cases`) %>%
+    dplyr::select(Date, County, all_positive, all_tested, all_released, all_active) %>%
+    rbind(all_df_all_counties_active)
+  
+  DOC_total_df_active <- sjc_DOC_num_df %>%
+    mutate(all_active = `Active Prisoner Cases`,
+           all_active = replace_na(all_active, 0)) %>%
+    group_by(Date) %>%
+    summarize(all_positive=sum(all_positive),
+              all_tested=sum(all_tested), 
+              all_released=sum(all_released), 
+              all_active=sum(all_active)) %>%
+    mutate(fac="DOC")
+  
+  df_by_fac_active <- sjc_DOC_num_df %>%
+    mutate(all_active = `Active Prisoner Cases`) %>%
+    dplyr::select(Date, fac, all_positive, all_tested, all_released, all_active) %>%
+    filter(fac != "Non-Facility") %>%
+    filter(!is.na(fac)) %>%
+    mutate(fac = paste("DOC:", fac))%>%
+    rbind(DOC_total_df_active) %>%
+    rename(loc = fac) %>%
+    mutate(Date = Date + days(1))
+  
+  # Combine fac & county data
+  df_by_loc_active <- df_by_county_active %>%
+    mutate(loc=County) %>%
+    bind_rows(df_by_fac_active) %>%
+    filter(Date >= ymd(20200624)) %>%
+    dplyr::select(Date, loc, all_tested, all_active)
+  
+  df_all_all_active <- df_by_loc_active %>%
+    filter(startsWith(loc, "All")) %>%
+    group_by(Date) %>%
+    summarize(all_tested = sum(all_tested),
+              all_active = sum(all_active)) %>%
+    mutate(loc = "All")
+  
+  df_by_loc_active <- df_by_loc_active %>%
+    bind_rows(df_all_all_active) %>%
+    group_by(loc) %>%
+    complete(Date = full_seq(Date, period = 1), fill = list(all_tested = 0)) %>%
+    mutate(all_tested_rolling14 = zoo::rollapplyr(all_tested, width = 14, FUN = sum, partial = TRUE)) %>%
+    filter((interval(ymd(20200708), Date) / days(1)) %% 7 == 0,
+           Date >= ymd(20200708)) %>%
+    dplyr::select(-all_tested)
+  
+  output$both_plot_active <- renderPlotly({
+      
+    y_label = "Active Cases and Recent Testing"
+    
+    # Pull out string for what population we're plotting
+    
+    g <- df_by_loc_active %>%
+      filter(loc == loc_to_plot_both_active()) %>%
+      pivot_longer(cols = starts_with("all"), names_to = "type", 
+                   names_prefix = "all_") %>%
+      mutate(type = case_when(
+        type == "active" ~ "Active Cases",
+        type == "tested_rolling14" ~ "Tested in Previous 2 Weeks",
+        T ~ type
+      )
+      ) %>%
+      ggplot(aes(x=Date, y = value, color=type)) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
+      labs(x = "", y = "Prisoners", color="",
+           title = ("placeholder"),
+           subtitle="Cumulative pursuant to SJC 12926") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22), 
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off')
+    
+    lines_plotly_style(g, y_label, "Location", active_and_recent=T, 
+                       show_weekly=F)
     
   })
   

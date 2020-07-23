@@ -237,7 +237,7 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
 
 # Convert lines to ggplotly
 lines_plotly_style <- function(gg_plot, y_label, location_to_plot, 
-  annotation=FALSE, subtitle=TRUE, pos_and_test=FALSE,
+  annotation=FALSE, subtitle=TRUE, pos_and_test=FALSE, active_and_recent=FALSE,
   show_weekly=TRUE) {
   
   # Make sure the y axis is always integers
@@ -264,7 +264,7 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
   }
   
   # Fix which variables are shown in the tooltip
-  if (pos_and_test) {
+  if (pos_and_test | active_and_recent) {
     g <- ggplotly(gg_plot, tooltip = c("x", "y"))
   } else {
     g <- ggplotly(gg_plot)
@@ -300,6 +300,17 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
         style(text = text_rep, traces=i)
     }
     
+  } else if (active_and_recent) {
+    # Replace "value" with population tested or positive
+    for (i in 1:length(g$x$data)) {
+      text_rep <- g$x$data[[i]]$text %>%
+        gsub("value", "Number of Prisoners", .) %>%
+        gsub("tested_rolling14", "Tested in Past 2 Weeks", .) %>%
+        gsub("type", "Type", .)
+
+      g <- g %>%
+        style(text = text_rep, traces=i)
+    }
   } else {
     # Replace tooltip key with better names
     for (i in 1:length(g$x$data)) {
