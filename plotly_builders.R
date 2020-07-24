@@ -240,11 +240,6 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
   annotation=FALSE, subtitle=TRUE, pos_and_test=FALSE, active_and_recent=FALSE,
   show_weekly=TRUE) {
   
-  # Make sure the y axis is always integers
-  gg_plot <- gg_plot +
-    scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))))#,
-                       # limits= c(0, NA))
-  
   if (show_weekly) {
     gg_plot <- gg_plot +
       geom_vline(xintercept=as.numeric(ymd(20200708)), 
