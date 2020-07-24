@@ -242,8 +242,8 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
   
   # Make sure the y axis is always integers
   gg_plot <- gg_plot +
-    scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
-                       limits= c(0, NA))
+    scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))))#,
+                       # limits= c(0, NA))
   
   if (show_weekly) {
     gg_plot <- gg_plot +

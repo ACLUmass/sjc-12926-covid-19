@@ -1025,7 +1025,12 @@ server <- function(input, output, session) {
       input$select_county3_pop)
   })
   
-  all_pop_df <- sjc_num_df %>%
+  sjc_df_fix_date_pop <- sjc_num_df %>%
+    filter(`Total Population` != 0) %>%
+    mutate(Date = if_else(County == "DOC" & Date >= ymd(20200707),
+                         Date + days(1), Date))
+  
+  all_pop_df <- sjc_df_fix_date_pop %>%
     mutate(pop = `Total Population`) %>%
     filter(pop != 0) %>%
     group_by(Date) %>%
@@ -1033,7 +1038,7 @@ server <- function(input, output, session) {
     summarize(pop = sum(pop)) %>%
     mutate(County = "All")
   
-  all_counties_pop_df <- sjc_num_df %>%
+  all_counties_pop_df <- sjc_df_fix_date_pop %>%
     mutate(pop = `Total Population`) %>%
     filter(pop != 0,
            County != "DOC") %>%
@@ -1044,12 +1049,14 @@ server <- function(input, output, session) {
   
   doc_fac_pop_df <- sjc_DOC_num_df %>%
     mutate(pop = `Total Population`,
-           County = paste("DOC:", fac)) %>%
+           County = paste("DOC:", fac),
+           Date = if_else(Date >= ymd(20200707),
+                         Date + days(1), Date)) %>%
     filter(!is.na(pop)) %>%
     group_by(Date, County) %>%
     summarize(pop = sum(pop)) 
   
-  pop_df <-  sjc_num_df %>%
+  pop_df <-  sjc_df_fix_date_pop %>%
     mutate(pop = `Total Population`,
            County = as.character(County)) %>%
     group_by(Date, County) %>%
