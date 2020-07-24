@@ -1151,7 +1151,7 @@ server <- function(input, output, session) {
       filter(loc == loc_to_plot_both_active()) %>%
       ggplot(aes(x=Date, y = all_tested_rolling14)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8, color="#0055aa") +
-      geom_point(size=1.5) +
+      geom_point(size=1.5, color="#0055aa") +
       labs(x = "", y = "Prisoners", color="",
            title = y_label_tests,
            subtitle="Cumulative pursuant to SJC 12926") +
@@ -1186,7 +1186,7 @@ server <- function(input, output, session) {
       filter(loc == loc_to_plot_both_active()) %>%
       ggplot(aes(x=Date, y = all_active)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8, color="#fbb416") +
-      geom_point(size=1.5) +
+      geom_point(size=1.5, color="#fbb416") +
       labs(x = "", y = "Prisoners", color="",
            title = y_label_active,
            subtitle="Cumulative pursuant to SJC 12926") +
