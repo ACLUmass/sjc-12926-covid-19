@@ -1595,7 +1595,7 @@ server <- function(input, output, session) {
       coord_cartesian(clip = 'off')
     
     lines_plotly_style(g, "Active Positive Prisoners", "County", 
-                       show_weekly=F)
+                       show_weekly=F, subtitle=F)
     
   })
   
@@ -2095,7 +2095,7 @@ server <- function(input, output, session) {
       coord_cartesian(clip = 'off')
     
     lines_plotly_style(g, "Active Positive DOC Prisoners", "Facility", 
-                       show_weekly=F)
+                       show_weekly=F, subtitle=F)
     
   })
   
@@ -2393,7 +2393,7 @@ server <- function(input, output, session) {
     ggplot(aes(x=Date, y = active, color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8) +
       geom_point(size=1.5) +
-      labs(x = "", y = "Active Positive DOC Prisoners", color="",
+      labs(x = "", y = "Active Positive = Prisoners", color="",
            title="placeholder") +
       theme(plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size = 16),
@@ -2406,8 +2406,8 @@ server <- function(input, output, session) {
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off')
     
-    lines_plotly_style(g, "Active Positive DOC Prisoners", "County Facility", 
-                       show_weekly=F)
+    lines_plotly_style(g, "Active Positive Prisoners", "County Facility", 
+                       show_weekly=F, subtitle=F)
     
   })
   
