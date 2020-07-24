@@ -304,9 +304,8 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
     # Replace "value" with population tested or positive
     for (i in 1:length(g$x$data)) {
       text_rep <- g$x$data[[i]]$text %>%
-        gsub("value", "Number of Prisoners", .) %>%
-        gsub("tested_rolling14", "Tested in Past 2 Weeks", .) %>%
-        gsub("type", "Type", .)
+        gsub("all_tested_rolling14", "Prisoners Tested in Preceding 14 Days", .) %>%
+        gsub("all_active", "Prisoners with Active Cases", .)
 
       g <- g %>%
         style(text = text_rep, traces=i)

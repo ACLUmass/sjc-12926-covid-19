@@ -23,7 +23,8 @@ get_df_by_county <- function(sjc_num_df, population) {
     group_by(Date) %>%
     summarize(all_released = sum(all_released),
               all_positive = sum(all_positive),
-              all_tested = sum(all_tested)) %>%
+              all_tested = sum(all_tested),
+              all_active = sum(`Active Prisoner Cases`)) %>%
     mutate(County = "All")
   
   all_df_all_counties <- sjc_num_df %>%
@@ -31,11 +32,13 @@ get_df_by_county <- function(sjc_num_df, population) {
     group_by(Date) %>%
     summarize(all_released = sum(all_released),
               all_positive = sum(all_positive),
-              all_tested = sum(all_tested)) %>%
+              all_tested = sum(all_tested),
+              all_active = sum(`Active Prisoner Cases`)) %>%
     mutate(County = "All Counties")
   
   df_by_county <- sjc_num_df %>%
-    dplyr::select(Date, County, all_positive, all_tested, all_released) %>%
+    mutate(all_active = `Active Prisoner Cases`) %>%
+    dplyr::select(Date, County, all_positive, all_tested, all_released, all_active) %>%
     rbind(all_df_all) %>%
     rbind(all_df_all_counties)
   
@@ -72,18 +75,23 @@ get_df_by_fac <- function(sjc_num_df, sjc_DOC_num_df, population) {
   DOC_total_df <- sjc_num_df %>%
     filter(County == "DOC") %>%
     rename(fac = County) %>%
-    mutate(fac = "DOC Total**") %>%
-    dplyr::select(Date, fac, all_positive, all_tested, all_released)
+    mutate(fac = "DOC Total**",
+           all_active = `Active Prisoner Cases`) %>%
+    dplyr::select(Date, fac, all_positive, all_tested, all_released, all_active)
   
   DOC_fac_total_df <- sjc_DOC_num_df %>%
+    mutate(all_active = `Active Prisoner Cases`,
+           all_active = replace_na(all_active, 0)) %>%
     group_by(Date) %>%
     summarize(all_released = sum(all_released),
               all_positive = sum(all_positive),
-              all_tested = sum(all_tested)) %>%
+              all_tested = sum(all_tested),
+              all_active = sum(all_active)) %>%
     mutate(fac = "All DOC Facilities")
   
   df_by_fac <- sjc_DOC_num_df %>%
-    dplyr::select(Date, fac, all_positive, all_tested, all_released) %>%
+    mutate(all_active = `Active Prisoner Cases`) %>%
+    dplyr::select(Date, fac, all_positive, all_tested, all_released, all_active) %>%
     rbind(DOC_total_df) %>%
     rbind(DOC_fac_total_df)
   
