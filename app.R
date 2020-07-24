@@ -234,7 +234,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                wellPanel(id="internal_well",
                          p("Select location to plot versus time.*"),
                          splitLayout(
-                           selectInput("select_both_active", label = NULL, choices = tail(pop_choices, -1),
+                           selectInput("select_both_active", label = NULL, 
+                                       choices = tail(pop_choices, -1),
                                        selected = "All", multiple=FALSE)
                          ),
                          em("*Facilities only began reporting active cases on July 8.")
@@ -270,7 +271,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                           withSpinner(plotlyOutput("all_deaths_plot"), type=4, color="#b5b5b5", size=0.5),
                           h3("Dates & Locations of COVID-19 Deaths"),
                           tags$ul(
-                            tags$li("Before June 23: 10 deaths"),
+                            tags$li("Before June 23: 10 deaths:"),
                             tags$ul(
                               tags$li("DOC: MTC -  5 deaths"),
                               tags$li("DOC: MCI-Shirley -  3 deaths"),
@@ -290,7 +291,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                           withSpinner(plotlyOutput("all_deaths_fac_plot"), type=4, color="#b5b5b5", size=0.5),
                           h3("Dates & Locations of DOC COVID-19 Deaths"),
                           tags$ul(
-                            tags$li("Before June 23: 8 deaths"),
+                            tags$li("Before June 23: 8 deaths:"),
                             tags$ul(
                               tags$li("DOC: MTC -  5 deaths"),
                               tags$li("DOC: MCI-Shirley -  3 deaths")
@@ -923,14 +924,14 @@ server <- function(input, output, session) {
   all_reports_in <- sjc_num_df %>%
     filter(Date == last_date_entered) %>%
     nrow() > 12
-  
+
   more_than_2_days_since <- as.Date(now()) - last_date_entered >= days(2)
-  
+
   show_last_day <- all_reports_in | more_than_2_days_since
-  
+
   if (!show_last_day) {
     sjc_num_df <- sjc_num_df %>%
-      filter(Date < last_date_entered) 
+      filter(Date < last_date_entered)
   }
   
   # Calculate totals
@@ -1085,7 +1086,7 @@ server <- function(input, output, session) {
             legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
             legend.key.width = unit(1, "cm"),
             legend.text = element_text(size=16)) +
-      scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200407),NA)) +
+      scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200407), NA)) +
       scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
       coord_cartesian(clip = 'off') 
     
@@ -1150,6 +1151,7 @@ server <- function(input, output, session) {
       filter(loc == loc_to_plot_both_active()) %>%
       ggplot(aes(x=Date, y = all_tested_rolling14)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8, color="#0055aa") +
+      geom_point(size=1.5) +
       labs(x = "", y = "Prisoners", color="",
            title = y_label_tests,
            subtitle="Cumulative pursuant to SJC 12926") +
@@ -1184,6 +1186,7 @@ server <- function(input, output, session) {
       filter(loc == loc_to_plot_both_active()) %>%
       ggplot(aes(x=Date, y = all_active)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8, color="#fbb416") +
+      geom_point(size=1.5) +
       labs(x = "", y = "Prisoners", color="",
            title = y_label_active,
            subtitle="Cumulative pursuant to SJC 12926") +
