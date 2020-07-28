@@ -767,17 +767,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     "Data Source",
       
       tabPanel("Explore Data",
-               div(id="dev-warning",
-                   wellPanel(
-                     fluidRow(
-                       column(1, icon('exclamation-triangle')),
-                       column(11, h4("Hampshire County Releases"),
-                              em("We are awaiting verification from Hampshire County",
-                                 "that might lead to changes in their daily reports of releases.", 
-                                 style="margin-top:0px"))
-                     )
-                   )
-               ),
                div(id="dev-info",
                    wellPanel(
                      fluidRow(
