@@ -91,9 +91,9 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                         than once per day. This order also required 
                         county and state facilities to report additional metrics, 
                         including:",
-                        tags$ol(tags$li("The number of active COVID-19 case recorded by the counties/DOC"),
-                                tags$li("The number of COVID-19 deaths recorded by the counties/DOC"),
-                                tags$li("[DOC] The number of individuals released to home confinement recorded by the DOC")),
+                        tags$ol(tags$li("The number of active COVID-19 case reported by the counties/DOC"),
+                                tags$li("The number of COVID-19 deaths reported by the counties/DOC"),
+                                tags$li("[DOC] The number of individuals released to home confinement reported by the DOC")),
                         "As such, starting July 8, this site will be updated on a 
                         weekly rather than daily basis, with new data published Thursday mornings.")
                    )
