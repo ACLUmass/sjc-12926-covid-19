@@ -230,17 +230,17 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
       ),
       
-      tabPanel("Compare Active Cases & Recent Tests", 
-               wellPanel(id="internal_well",
-                         p("Select location to plot versus time.*"),
-                         splitLayout(
-                           selectInput("select_both_active", label = NULL, 
-                                       choices = tail(pop_choices, -1),
-                                       selected = "All", multiple=FALSE)
-                         ),
-                         em("*Facilities only began reporting active cases on July 8.")
-               ),
-               withSpinner(plotlyOutput("both_plot_active"), type=4, color="#b5b5b5", size=0.5)),
+      # tabPanel("Compare Active Cases & Recent Tests", 
+      #          wellPanel(id="internal_well",
+      #                    p("Select location to plot versus time.*"),
+      #                    splitLayout(
+      #                      selectInput("select_both_active", label = NULL, 
+      #                                  choices = tail(pop_choices, -1),
+      #                                  selected = "All", multiple=FALSE)
+      #                    ),
+      #                    em("*Facilities only began reporting active cases on July 8.")
+      #          ),
+      #          withSpinner(plotlyOutput("both_plot_active"), type=4, color="#b5b5b5", size=0.5)),
       
       tabPanel("Compare Tests & Positives", 
                wellPanel(id="internal_well",
@@ -1095,131 +1095,131 @@ server <- function(input, output, session) {
     
   })
   
-  # Compare Active Cases & Recent Tests -------------------------------------------------
-  
-  # Determine which counties to plot
-  loc_to_plot_both_active <- reactive({input$select_both_active})
-  
-  # Get testing/active cases data by county
-  df_by_county_active <- get_df_by_county(sjc_num_df, "ps") %>%
-    filter(!County %in% c("All", "DOC"))
-  
-  # Get testing/active cases data by DOC facility
-  df_by_fac_active <- get_df_by_fac(sjc_num_df, sjc_DOC_num_df, "ps") %>%
-    filter(!fac %in% c("DOC Total**", "Non-Facility"),
-           !is.na(fac)) %>%
-    mutate(fac = 
-     case_when(
-        !str_detect(fac, "DOC") ~ paste("DOC:", fac),
-        T ~ as.character(fac)
-      ),
-      all_active = replace_na(all_active, 0),
-      Date = Date + days(1)
-      ) %>%
-    rename(loc = fac)
-  
-  # Combine fac & county data
-  df_by_loc_active <- df_by_county_active %>%
-    mutate(loc = as.character(County)) %>%
-    bind_rows(df_by_fac_active) %>%
-    dplyr::select(Date, loc, all_tested, all_active)
-  
-  df_all_all_active <- df_by_loc_active %>%
-    filter(startsWith(loc, "All")) %>%
-    group_by(Date) %>%
-    summarize(all_tested = sum(all_tested),
-              all_active = sum(all_active)) %>%
-    mutate(loc = "All")
-  
-  df_by_loc_active <- df_by_loc_active %>%
-    bind_rows(df_all_all_active) %>%
-    mutate(loc = ifelse(loc == "All DOC Facilities", "DOC", loc)) %>%
-    group_by(loc) %>%
-    # Calculate number of tests in the last 2 weeks
-    complete(Date = full_seq(Date, period = 1), fill = list(all_tested = 0)) %>%
-    mutate(all_tested_rolling14 = zoo::rollapplyr(all_tested, width = 14, FUN = sum, partial = TRUE)) %>%
-    # Only plot the weekly number
-    filter((interval(ymd(20200708), Date) / days(1)) %% 7 == 0,
-           Date >= ymd(20200708)) %>%
-    dplyr::select(-all_tested)
-  
-  output$both_plot_active <- renderPlotly({
-      
-    y_label_tests = "Prisoners Tested in Preceding 2 Weeks"
-    
-    gg_plot_tests <- df_by_loc_active %>%
-      filter(loc == loc_to_plot_both_active()) %>%
-      ggplot(aes(x=Date, y = all_tested_rolling14)) +
-      geom_path(size=1.3, show.legend = T, alpha=0.8, color="#0055aa") +
-      geom_point(size=1.5, color="#0055aa") +
-      labs(x = "", y = "Prisoners", color="",
-           title = y_label_tests,
-           subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
-            plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22), 
-            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
-            legend.key.width = unit(1, "cm"),
-            legend.text = element_text(size=16)) +
-      scale_x_date(date_labels = "%b %e ") +
-      coord_cartesian(clip = 'off')
-    
-    plotly_tests <- lines_plotly_style(gg_plot_tests, y_label_tests, 
-                                       "Location", active_and_recent=T, 
-                                       show_weekly=F) %>%
-      add_annotations(
-        text = "<b>Prisoners Tested in Preceding 2 Weeks</b>",
-        x = 0,
-        y = 1.05,
-        yref = "paper",
-        xref = "paper",
-        xanchor = "middle",
-        yanchor = "bottom",
-        showarrow = FALSE,
-        font = list(size = 20, color="#0055aa")
-      )
-    
-    y_label_active = "Prisoners with Active Cases"
-    
-    gg_plot_active <- df_by_loc_active %>%
-      filter(loc == loc_to_plot_both_active()) %>%
-      ggplot(aes(x=Date, y = all_active)) +
-      geom_path(size=1.3, show.legend = T, alpha=0.8, color="#fbb416") +
-      geom_point(size=1.5, color="#fbb416") +
-      labs(x = "", y = "Prisoners", color="",
-           title = y_label_active,
-           subtitle="Cumulative pursuant to SJC 12926") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
-            plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22), 
-            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
-            legend.key.width = unit(1, "cm"),
-            legend.text = element_text(size=16)) +
-      scale_x_date(date_labels = "%b %e ") +
-      coord_cartesian(clip = 'off')
-    
-    plotly_active <- lines_plotly_style(gg_plot_active, "", 
-                                        "Location", active_and_recent=T, 
-                                        show_weekly=F, subtitle=F) %>%
-      add_annotations(
-        text = "<b>Prisoners with Active Cases</b>",
-        x = 0,
-        y = 1.05,
-        yref = "paper",
-        xref = "paper",
-        xanchor = "middle",
-        yanchor = "bottom",
-        showarrow = FALSE,
-        font = list(size = 20, color="#fbb416")
-      )
-    
-    subplot(plotly_tests, plotly_active, 
-            nrows = 2, margin = 0.07, shareX = TRUE)%>%
-      layout(height = 500)
-    
-  })
+  # # Compare Active Cases & Recent Tests -------------------------------------------------
+  # 
+  # # Determine which counties to plot
+  # loc_to_plot_both_active <- reactive({input$select_both_active})
+  # 
+  # # Get testing/active cases data by county
+  # df_by_county_active <- get_df_by_county(sjc_num_df, "ps") %>%
+  #   filter(!County %in% c("All", "DOC"))
+  # 
+  # # Get testing/active cases data by DOC facility
+  # df_by_fac_active <- get_df_by_fac(sjc_num_df, sjc_DOC_num_df, "ps") %>%
+  #   filter(!fac %in% c("DOC Total**", "Non-Facility"),
+  #          !is.na(fac)) %>%
+  #   mutate(fac = 
+  #    case_when(
+  #       !str_detect(fac, "DOC") ~ paste("DOC:", fac),
+  #       T ~ as.character(fac)
+  #     ),
+  #     all_active = replace_na(all_active, 0),
+  #     Date = Date + days(1)
+  #     ) %>%
+  #   rename(loc = fac)
+  # 
+  # # Combine fac & county data
+  # df_by_loc_active <- df_by_county_active %>%
+  #   mutate(loc = as.character(County)) %>%
+  #   bind_rows(df_by_fac_active) %>%
+  #   dplyr::select(Date, loc, all_tested, all_active)
+  # 
+  # df_all_all_active <- df_by_loc_active %>%
+  #   filter(startsWith(loc, "All")) %>%
+  #   group_by(Date) %>%
+  #   summarize(all_tested = sum(all_tested),
+  #             all_active = sum(all_active)) %>%
+  #   mutate(loc = "All")
+  # 
+  # df_by_loc_active <- df_by_loc_active %>%
+  #   bind_rows(df_all_all_active) %>%
+  #   mutate(loc = ifelse(loc == "All DOC Facilities", "DOC", loc)) %>%
+  #   group_by(loc) %>%
+  #   # Calculate number of tests in the last 2 weeks
+  #   complete(Date = full_seq(Date, period = 1), fill = list(all_tested = 0)) %>%
+  #   mutate(all_tested_rolling14 = zoo::rollapplyr(all_tested, width = 14, FUN = sum, partial = TRUE)) %>%
+  #   # Only plot the weekly number
+  #   filter((interval(ymd(20200708), Date) / days(1)) %% 7 == 0,
+  #          Date >= ymd(20200708)) %>%
+  #   dplyr::select(-all_tested)
+  # 
+  # output$both_plot_active <- renderPlotly({
+  #     
+  #   y_label_tests = "Prisoners Tested in Preceding 2 Weeks"
+  #   
+  #   gg_plot_tests <- df_by_loc_active %>%
+  #     filter(loc == loc_to_plot_both_active()) %>%
+  #     ggplot(aes(x=Date, y = all_tested_rolling14)) +
+  #     geom_path(size=1.3, show.legend = T, alpha=0.8, color="#0055aa") +
+  #     geom_point(size=1.5, color="#0055aa") +
+  #     labs(x = "", y = "Prisoners", color="",
+  #          title = y_label_tests,
+  #          subtitle="Cumulative pursuant to SJC 12926") +
+  #     theme(plot.title= element_text(family="gtam", face='bold'),
+  #           text = element_text(family="gtam", size = 16),
+  #           plot.margin = unit(c(1,1,4,1), "lines"),
+  #           legend.position = c(.5, -.22), 
+  #           legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+  #           legend.key.width = unit(1, "cm"),
+  #           legend.text = element_text(size=16)) +
+  #     scale_x_date(date_labels = "%b %e ") +
+  #     coord_cartesian(clip = 'off')
+  #   
+  #   plotly_tests <- lines_plotly_style(gg_plot_tests, y_label_tests, 
+  #                                      "Location", active_and_recent=T, 
+  #                                      show_weekly=F) %>%
+  #     add_annotations(
+  #       text = "<b>Prisoners Tested in Preceding 2 Weeks</b>",
+  #       x = 0,
+  #       y = 1.05,
+  #       yref = "paper",
+  #       xref = "paper",
+  #       xanchor = "middle",
+  #       yanchor = "bottom",
+  #       showarrow = FALSE,
+  #       font = list(size = 20, color="#0055aa")
+  #     )
+  #   
+  #   y_label_active = "Prisoners with Active Cases"
+  #   
+  #   gg_plot_active <- df_by_loc_active %>%
+  #     filter(loc == loc_to_plot_both_active()) %>%
+  #     ggplot(aes(x=Date, y = all_active)) +
+  #     geom_path(size=1.3, show.legend = T, alpha=0.8, color="#fbb416") +
+  #     geom_point(size=1.5, color="#fbb416") +
+  #     labs(x = "", y = "Prisoners", color="",
+  #          title = y_label_active,
+  #          subtitle="Cumulative pursuant to SJC 12926") +
+  #     theme(plot.title= element_text(family="gtam", face='bold'),
+  #           text = element_text(family="gtam", size = 16),
+  #           plot.margin = unit(c(1,1,4,1), "lines"),
+  #           legend.position = c(.5, -.22), 
+  #           legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+  #           legend.key.width = unit(1, "cm"),
+  #           legend.text = element_text(size=16)) +
+  #     scale_x_date(date_labels = "%b %e ") +
+  #     coord_cartesian(clip = 'off')
+  #   
+  #   plotly_active <- lines_plotly_style(gg_plot_active, "", 
+  #                                       "Location", active_and_recent=T, 
+  #                                       show_weekly=F, subtitle=F) %>%
+  #     add_annotations(
+  #       text = "<b>Prisoners with Active Cases</b>",
+  #       x = 0,
+  #       y = 1.05,
+  #       yref = "paper",
+  #       xref = "paper",
+  #       xanchor = "middle",
+  #       yanchor = "bottom",
+  #       showarrow = FALSE,
+  #       font = list(size = 20, color="#fbb416")
+  #     )
+  #   
+  #   subplot(plotly_tests, plotly_active, 
+  #           nrows = 2, margin = 0.07, shareX = TRUE)%>%
+  #     layout(height = 500)
+  #   
+  # })
   
   # Compare Tests & Positives -------------------------------------------------
   
