@@ -919,19 +919,6 @@ server <- function(input, output, session) {
     pull(Date) %>%
     max()
   
-  all_reports_in <- sjc_num_df %>%
-    filter(Date == last_date_entered) %>%
-    nrow() > 12
-
-  more_than_2_days_since <- as.Date(now()) - last_date_entered >= days(2)
-
-  show_last_day <- all_reports_in | more_than_2_days_since
-
-  if (!show_last_day) {
-    sjc_num_df <- sjc_num_df %>%
-      filter(Date < last_date_entered)
-  }
-  
   # Calculate totals
   n_released <- sum(sjc_num_df$all_released)
   n_positive <- sum(sjc_num_df$all_positive)
