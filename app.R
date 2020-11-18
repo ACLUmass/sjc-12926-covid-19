@@ -422,7 +422,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                  p("Reports of prisoners currently infected with COVID-19, pursuant to SJC 12926",
                    br(),
                    em("Showing active cases as reported on", 
-                      textOutput("last_date_str", inline=T),
+                      textOutput("last_date_str_DOC", inline=T), "(DOC),",
+                      textOutput("last_date_str_counties", inline=T), "(counties)",
                       align="center"),
                    align="center"),
                  withSpinner(plotlyOutput("all_active_plot"), type=4, color="#b5b5b5", size=0.5)
@@ -716,8 +717,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                "----",
 
                tabPanel("Active Positive Cases",
-                        p(em("Showing active cases as reported on"),
-                           textOutput("last_date_str2", inline=T),
+                        p(em("Showing active cases as reported on",
+                          textOutput("last_date_str2_counties", inline=T)),   
                            align="center"
                           ),
                         withSpinner(plotlyOutput("all_active_cty_plot"), type=4, color="#b5b5b5", size=0.5)
@@ -798,7 +799,10 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     ),
   
   div(id="footer",
-      em("\n\nMost recent report:", textOutput("last_date_str3", inline=T), 
+      em("\n\nMost recent DOC reports:", textOutput("last_date_str3_DOC", inline=T), 
+         align="right", style="opacity: 0.6;"),
+      br(),
+      em("\n\nMost recent county reports:", textOutput("last_date_str3_counties", inline=T), 
          align="right", style="opacity: 0.6;"),
       br(),
       em("Database last accessed:", textOutput("latest_time_str", inline=T), 
@@ -854,8 +858,11 @@ server <- function(input, output, session) {
   })
   
   # Define last date entered for page footer
-  output$last_date_str3 <- renderText({
-    strftime(last_date_entered, format="%A, %B %d, %Y"
+  output$last_date_str3_DOC <- renderText({
+    strftime(last_date_entered_DOC, format="%B %d, %Y"
+    )})
+  output$last_date_str3_counties <- renderText({
+    strftime(last_date_entered_counties, format="%B %d, %Y"
     )})
 
   # Load Data -----------------------------------------------------------
@@ -903,6 +910,14 @@ server <- function(input, output, session) {
   
   # Determine whether to plot last day
   last_date_entered <- max(sjc_num_df$Date, na.rm=T)
+  last_date_entered_DOC <- sjc_num_df %>%
+    filter(County == "DOC") %>%
+    pull(Date) %>%
+    max()
+  last_date_entered_counties <- sjc_num_df %>%
+    filter(County != "DOC") %>%
+    pull(Date) %>%
+    max()
   
   all_reports_in <- sjc_num_df %>%
     filter(Date == last_date_entered) %>%
@@ -1499,8 +1514,11 @@ server <- function(input, output, session) {
     mutate(value = as.numeric(`Active Prisoner Cases`)) %>%
     bind_rows(active_doc_df_to_add)
   
-  output$last_date_str <- renderText({
-    strftime(last_date_entered, format="%B %d, %Y"
+  output$last_date_str_DOC <- renderText({
+    strftime(last_date_entered_DOC, format="%B %d, %Y"
+    )})
+  output$last_date_str_counties <- renderText({
+    strftime(last_date_entered_counties, format="%B %d, %Y"
     )})
   
   output$all_active_plot <- renderPlotly({
@@ -2339,8 +2357,11 @@ server <- function(input, output, session) {
            Facility = fac) %>%
     filter(!is.na(value))
   
-  output$last_date_str2 <- renderText({
-    strftime(last_date_entered, format="%B %d, %Y"
+  output$last_date_str2_DOC <- renderText({
+    strftime(last_date_entered_DOC, format="%B %d, %Y"
+    )})
+  output$last_date_str2_counties <- renderText({
+    strftime(last_date_entered_counties, format="%B %d, %Y"
     )})
 
   output$all_active_cty_plot <- renderPlotly({
