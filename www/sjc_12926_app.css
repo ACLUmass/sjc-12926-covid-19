@@ -55,7 +55,7 @@ h2 {
   background-color: #fadf7c;
 }
 
-#dev-warning p, #dev-info p {
+#dev-warning p, #dev-info p, #dev-info2 p {
   display: inline;
 }
 
@@ -64,12 +64,12 @@ h2 {
   font-size: 20px;
 }
 
-#dev-warning h4, #dev-info h4 {
+#dev-warning h4, #dev-info h4, #dev-info2 h4 {
   display: inline;
   margin-left: 1rem;
 }
 
-#dev-warning em, #dev-info em {
+#dev-warning em, #dev-info em, #dev-info2 em {
   display: block;
   margin-top: 1rem;
 }
@@ -82,6 +82,17 @@ h2 {
 
 #dev-info i {
   color: LightSeaGreen;
+  font-size: 20px;
+}
+
+#dev-info2 .well {
+  border-radius: 0px;
+  margin-top: 2rem;
+  background-color: #fabeaf;
+}
+
+#dev-info2 i {
+  color: Coral;
   font-size: 20px;
 }
 

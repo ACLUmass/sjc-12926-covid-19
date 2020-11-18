@@ -79,23 +79,18 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     navlistPanel(widths = c(3, 9), id="panels",
                  
       tabPanel("About", 
-               div(id="dev-info",
+               div(id="dev-info2",
                    wellPanel(
                      icon('info-circle'),
-                     h4("New Weekly Reporting"),
-                     em("On June 23, the SJC issued an", 
-                        a("order", href="https://data.aclum.org/wp-content/uploads/2020/07/SJC-12926-Order-Appendix-B.pdf"), 
-                        "modifying the DOC and HOC 
-                        reporting responsibilities. Starting the week of July 6,
-                        facilities will submit COVID-19 reports once per week rather 
-                        than once per day. This order also required 
-                        county and state facilities to report additional metrics, 
-                        including:",
-                        tags$ol(tags$li("The number of active COVID-19 case reported by the counties/DOC"),
-                                tags$li("The number of COVID-19 deaths reported by the counties/DOC"),
-                                tags$li("[DOC] The number of individuals released to home confinement reported by the DOC")),
-                        "As such, starting July 8, this site will be updated on a 
-                        weekly rather than daily basis, with new data published Thursday mornings.")
+                     h4("New Daily DOC Reporting"),
+                     em("On November 9, in response to multiple new outbreaks, the 
+                        Department of Corrections agreed to return to daily reporting from its facilities. 
+                        (Recall that counties and the DOC have been reporting weekly since an", 
+                        a("SJC order", href="https://data.aclum.org/wp-content/uploads/2020/07/SJC-12926-Order-Appendix-B.pdf"), 
+                        "on June 23.)"), 
+                        em("As such, starting November 11, DOC data on this site will be updated on a 
+                        daily rather than weekly basis (excluding weekends and holidays). County 
+                        data will still update weekly, published by Thursday mornings.")
                    )
                ),
                
@@ -499,7 +494,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                      p("Reports of",
                        textOutput("type_tests_fac", inline=T),
                        "tested for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
-                     em("*The DOC only began reporting facility-level testing data on April 25.",
+                     em("*The DOC only began reporting facility-level testing data for prisoners and 
+                             DOC staff on April 25, and for non-DOC staff on November 11.",
                         "See the Total Tests page for longer-term totals.")
                  ),
                  withSpinner(plotlyOutput("DOC_tests_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -521,10 +517,12 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                             selectInput("select_fac3_test", label = NULL, choices = fac_choices,
                                         selected = "MCI-Shirley", multiple=FALSE)
                           ),
-                          em("*The DOC only began reporting facility-level testing data on April 25.",
+                          em("*The DOC only began reporting facility-level testing data for prisoners and 
+                             DOC staff on April 25, and for non-DOC staff on November 11.",
                              "See the Counties + DOC Tests Over Time page for longer-term DOC tracking"),
-                          em('**DOC Total reflects the cumulative count of prisoner tests submitted in DOC-wide',
-                             "reports going back to March 27.",
+                          em('**DOC Total reflects DOC-wide reports, and might undercount',
+                             "cases as compared to the facility total due to the DOC-wide data reporting",
+                             "active, rather than total, cases.",
                              style="display: block; margin-top: 1rem;")
                           ),
                 checkboxInput("checkbox_fac_test", label = "Show transition to weekly reporting", value = TRUE),
@@ -549,7 +547,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                      textOutput("type_positive_fac", inline=T),
                      "tested", strong("positive"),
                      "for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
-                   em("*The DOC only began reporting facility-level positive data on April 13.",
+                   em("*The DOC only began reporting facility-level prisoner data on April 13,",
+                      "facility-level DOC staff data on April 15, and facility-level non-DOC staff data on November 11.",
                       "See the Total Positive Tests page for longer-term totals.")
                    ),
                  withSpinner(plotlyOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -572,13 +571,11 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                  selected = "MTC", multiple=FALSE) 
                    ),
                    em("*The DOC only began reporting facility-level prisoner data on April 13,",
-                      "and facility-level staff data on April 15.",
+                      "facility-level DOC staff data on April 15, and facility-level non-DOC staff data on November 11.",
                       "See the Counties + DOC Positive Tests Over Time page for longer-term DOC tracking"),
-                   em('**DOC Total reflects DOC-wide reports, and might undercount prisoner',
-                      "cases as compared to the facility total due to the DOC reporting",
+                   em('**DOC Total reflects DOC-wide reports, and might undercount',
+                      "cases as compared to the facility total due to the DOC-wide data reporting",
                       "active, rather than total, cases.",
-                      'Additionally, DOC Total staff includes staff categorized as "Other"',
-                      'while the facility total does not.',
                       style="display: block; margin-top: 1rem;")
                    ),
                  checkboxInput("checkbox_fac_pos", label = "Show transition to weekly reporting", value = TRUE),
@@ -721,8 +718,6 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                tabPanel("Active Positive Cases",
                         p(em("Showing active cases as reported on"),
                            textOutput("last_date_str2", inline=T),
-                          br(),
-                          em("Please note that Hampden County is not reporting active cases by facility."),
                            align="center"
                           ),
                         withSpinner(plotlyOutput("all_active_cty_plot"), type=4, color="#b5b5b5", size=0.5)
@@ -738,8 +733,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                                 selected = "Bristol - DHOC", multiple=FALSE),
                                     selectInput("select_active_cty3", label = NULL, choices = ctyfac_choices,
                                                 selected = "Essex - Middleton", multiple=FALSE)
-                                  ),
-                                  em("Please note that Hampden County is not reporting active cases by facility.")
+                                  )
                                   ),
                         withSpinner(plotlyOutput("active_cty_fac_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
                ),
