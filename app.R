@@ -1026,7 +1026,7 @@ server <- function(input, output, session) {
   
   sjc_df_fix_date_pop <- sjc_num_df %>%
     filter(`Total Population` != 0) %>%
-    mutate(Date = if_else(County == "DOC" & Date >= ymd(20200707),
+    mutate(Date = if_else(County == "DOC" & Date >= ymd(20200707) & Date < ymd(20201109),
                          Date + days(1), Date))
   
   all_pop_df <- sjc_df_fix_date_pop %>%

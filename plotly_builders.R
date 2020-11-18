@@ -319,7 +319,13 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
             str_extract("(?<=Date: ).*?(?=<br \\/>c)") %>%
             ymd()
           
-          if (!is.na(data_date) & data_date >= ymd(20200707)) {
+          is_DOC <- location_to_plot == "Facility" | str_detect(t, "DOC|All$")
+          
+          weekly <- !is.na(data_date) & 
+            ((is_DOC & data_date >= ymd(20200707) & data_date < ymd(20201111)) |
+            (!is_DOC & data_date >= ymd(20200707)))
+          
+          if (weekly) {
             date_replace <- paste("Week of", data_date)
           } else {
             date_replace <- data_date
