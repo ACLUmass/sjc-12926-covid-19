@@ -1788,6 +1788,7 @@ server <- function(input, output, session) {
   # DOC: Total Tests -----------------------------------------------------
   fac_tests_df <- sjc_DOC_num_df %>%
     rename(`N Tested - Prisoners`=`N Tested - Detainees/Inmates`,
+           `N Tested - Staff`=`N Tested - COs`,
            Facility = fac) %>%
     pivot_longer(cols=matches("N Tested", ignore.case=F),
                  names_to="type",
@@ -1901,6 +1902,11 @@ server <- function(input, output, session) {
   
   # DOC: Total Positives -----------------------------------------------------
   fac_positive_df <- sjc_DOC_num_df %>%
+    # TEMPORARY combine DOC & Non-DOC staff
+    rowwise() %>%
+    mutate(`N Positive - Staff` = sum(`N Positive - COs`, `N Positive - Other Staff`, na.rm=T)) %>%
+    dplyr::select(-`N Positive - COs`, -`N Positive - Other Staff`) %>%
+    # Rename prisoner column to work with bar_plot() functions
     rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`,
            Facility = fac) %>%
     pivot_longer(cols=matches("N Positive", ignore.case=F),

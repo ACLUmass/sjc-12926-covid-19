@@ -67,8 +67,9 @@ get_df_by_fac <- function(sjc_num_df, sjc_DOC_num_df, population) {
     
     sjc_DOC_num_df <- sjc_DOC_num_df %>%
       dplyr::select(-all_positive, -all_tested) %>%
-      mutate(all_positive = `N Positive - Staff`,
-             all_tested = `N Tested - Staff`) %>%
+      rowwise() %>%
+      mutate(all_positive = sum(`N Positive - COs`, `N Positive - Other Staff`, na.rm=T),
+             all_tested = `N Tested - COs`) %>%
       filter(!is.na(all_positive))
   }
   
