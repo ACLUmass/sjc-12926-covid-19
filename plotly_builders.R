@@ -156,7 +156,8 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
   g <- ggplotly(g, tooltip=c("text"),
                 dynamicTicks = T) %>%
     config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
-    style(hoverinfo = "none", traces = traces_to_hide)
+    style(hoverinfo = "none", traces = traces_to_hide) %>%
+    layout(yaxis = list(tickformat=",.0f"))
   
   if (!all_zeros) {
     g %>%
@@ -226,7 +227,8 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
                   dynamicTicks = T) %>%
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       style(hoverinfo = "none", traces = traces_to_hide) %>%
-      layout(legend = legend_layout_top)  
+      layout(legend = legend_layout_top,
+             yaxis = list(tickformat=",.0f"))  
     
     g %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
@@ -270,7 +272,9 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
       config(modeBarButtonsToRemove = modeBarButtonsToRemove_time) %>%
       layout(legend = legend_layout_bottom) %>%
       layout(title = list(text = title_html, 
-                          font=list(family = "gtam")))
+                          font=list(family = "gtam")),
+             xaxis = list(tickformat="%b %e "),
+             yaxis = list(tickformat=",.0f"))
   
   # Add annotation for weekly reporting
   if (show_weekly) {
