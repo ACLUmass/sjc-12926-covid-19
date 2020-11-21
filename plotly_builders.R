@@ -275,10 +275,10 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
   # Add annotation for weekly reporting
   if (show_weekly) {
     g <- g %>%
-      layout(annotations = list(x = as.numeric(ymd(20200708)), 
-                                y = 1, text = "Weekly\nReporting\nBegins", 
+      layout(annotations = list(x = ymd(20200708), 
+                                y = 1, text = "Weekly  \nReporting  \nBegins  ", 
                                 showarrow = F, xref='x', yref='paper', 
-                                xanchor='center', yanchor='bottom', 
+                                xanchor='right', yanchor='top', align="right",
                                 font=list(size=12, color="darkgrey", family="gtam")))
   }
              
