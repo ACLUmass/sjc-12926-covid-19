@@ -342,7 +342,7 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
         gsub("pop", y_label, .) %>%
         gsub("cumul", y_label, .) %>%
         gsub("fac", location_to_plot, .) %>%
-        gsub("active", "Active Prisoner Cases", .)
+        gsub("active", y_label, .)
 
       g <- g %>%
         style(text = text_rep, traces=i)
