@@ -20,12 +20,16 @@ get_df_by_county <- function(sjc_num_df, population) {
   }
   
   all_df_all <- sjc_num_df %>%
+    # fix DOC date to be the same as county dates for weekly reports
+    mutate(Date = if_else(County == "DOC" & Date >= ymd(20200707) & Date < ymd(20201109),
+                          Date + days(1), Date)) %>%
     group_by(Date) %>%
     summarize(all_released = sum(all_released),
               all_positive = sum(all_positive),
               all_tested = sum(all_tested),
               all_active = sum(`Active Prisoner Cases`)) %>%
     mutate(County = "All")
+    
   
   all_df_all_counties <- sjc_num_df %>%
     filter(County != "DOC") %>%
@@ -70,6 +74,7 @@ get_df_by_fac <- function(sjc_num_df, sjc_DOC_num_df, population) {
       rowwise() %>%
       mutate(all_positive = sum(`N Positive - COs`, `N Positive - Other Staff`, na.rm=T),
              all_tested = `N Tested - COs`) %>%
+      ungroup() %>%
       filter(!is.na(all_positive))
   }
   
