@@ -87,7 +87,9 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
     g <- data.frame(loc = label_source, sum_value = 0) %>%
     ggplot(aes(x=loc, 
                y=sum_value, 
-               label = 0)) +
+               label = 0,
+               text = paste0(location_to_plot, ": ", loc, "\n",
+                             y_label, ": 0"))) +
       geom_col(show.legend=F) +
       geom_text(label=0) + 
       ylim(0, 10) +
@@ -112,15 +114,19 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
       group_by(loc) %>%
       summarize(sum_value = sum(value)) %>%
       ungroup() %>%
-      mutate(label_vjust = ifelse(sum_value < label_threshold, 
+      mutate(label_vjust = ifelse(sum_value < label_threshold | sum_value > 1000, 
                                   sum_value + max(sum_value) * .025, 
                                   sum_value - max(sum_value) * .0375),
-             label_color = ifelse(sum_value < label_threshold, "black", "white")) %>%
+             label_color = ifelse(sum_value < label_threshold | sum_value > 1000, 
+                                  "black", "white")) %>%
     ggplot(aes(x=loc,
                y=sum_value,
-               fill = as.factor(1))) +
+               fill = as.factor(1),
+               text = paste0(location_to_plot, ": ", loc, "\n",
+                             y_label, ": ", number(sum_value, big.mark=",")))) +
       geom_col(position = "stack", show.legend = F) +
-      geom_text(aes(label=sum_value, color=label_color, y = label_vjust),
+      geom_text(aes(label=number(sum_value, big.mark=","), 
+                    color=label_color, y = label_vjust),
                 family="gtam") +
       theme(legend.position = "none") +
       scale_color_manual(values = c("black", "white")) + 
@@ -128,30 +134,32 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
       theme(axis.text.x = element_text(angle=45, hjust=1),
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3")) + 
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3")) +
       scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
                          limits= c(0, NA))
     
-    traces_to_hide <- 2:3
     traces_lightback <- 0
     traces_darkback <- 1
     
+    p_json <- ggplotly(g) %>%
+      plotly_json()
+    n_traces <- fromJSON(p_json$x$data)$data$type %>%
+      length()
+    
+    if (n_traces == 2) {
+      traces_to_hide <- 2
+    } else {
+      traces_to_hide <- 2:3
+    }
   }
   
-  g <- ggplotly(g, tooltip=c("x", "y")) %>%
+  g <- ggplotly(g, tooltip=c("text"),
+                dynamicTicks = T) %>%
     config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
     style(hoverinfo = "none", traces = traces_to_hide)
-
-  text_rep <- g$x$data[[1]]$text %>%
-    gsub("loc", location_to_plot, .) %>%
-    gsub("sum_value", y_label, .)
   
-  if (all_zeros) {
+  if (!all_zeros) {
     g %>%
-      style(hovertext = text_rep, traces = 2)
-  } else {
-    g %>%
-      style(text = text_rep, traces = 1) %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
   }
@@ -187,15 +195,15 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
   }
 
   g <- data%>%
-        rename(loc = location_to_plot) %>%
-        group_by(loc, type) %>%
-        summarize(sum_value = sum(value)) %>%
-      ggplot(aes(x=loc,
-                   y=sum_value,
-                   fill = type)) +
-        geom_col(position = "stack")
-
-    g <- g + 
+      rename(loc = location_to_plot) %>%
+      group_by(loc, type) %>%
+      summarize(sum_value = sum(value)) %>%
+    ggplot(aes(x=loc,
+               y=sum_value,
+               fill = type,
+               text = paste0(location_to_plot, ": ", loc, "\n",
+                            paste(type, y_label), ": ", number(sum_value, big.mark=",")))) +
+      geom_col(position = "stack") + 
       labs(y = y_label, x="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
             plot.title= element_text(family="gtam", face='bold'),
@@ -204,35 +212,15 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
       scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
                          limits= c(0, NA))
     
-    g <- ggplotly(g, tooltip=c("x", "y")) %>%
+    g <- ggplotly(g, tooltip=c("text"),
+                  dynamicTicks = T) %>%
       config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       style(hoverinfo = "none", traces = traces_to_hide) %>%
       layout(legend = legend_layout_top)  
     
-    text_rep1 <- g$x$data[[1]]$text %>%
-      gsub("loc", location_to_plot, .) %>%
-      gsub("sum_value", y_label, .)
-    
-    text_rep2 <- g$x$data[[2]]$text %>%
-      gsub("loc", location_to_plot, .) %>%
-      gsub("sum_value", y_label, .)
-    
-    g <- g %>%
-      style(text = text_rep1, traces=1) %>%
-      style(text = text_rep2, traces=2) %>%
+    g %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
-    
-    if (doc_releases) {
-      text_rep3 <- g$x$data[[3]]$text %>%
-        gsub("loc", location_to_plot, .) %>%
-        gsub("sum_value", y_label, .)
-      
-      g %>%
-        style(text = text_rep3, traces=3)
-    } else {
-      g
-    }
 }
 
 # Convert lines to ggplotly
@@ -260,9 +248,11 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
   
   # Fix which variables are shown in the tooltip
   if (pos_and_test | active_and_recent) {
-    g <- ggplotly(gg_plot, tooltip = c("x", "y"))
+    g <- ggplotly(gg_plot, tooltip = c("x", "y"),
+                  dynamicTicks = T)
   } else {
-    g <- ggplotly(gg_plot)
+    g <- ggplotly(gg_plot,
+                  dynamicTicks = T)
   }
 
   # Remove control buttons, set legend layout and title text

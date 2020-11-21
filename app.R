@@ -13,6 +13,8 @@ library(tidyr)
 library(ggfittext)
 library(DT)
 library(plotly)
+library(scales)
+library(jsonlite)
 
 source("plotly_builders.R")
 source("filter_by_pop.R")
