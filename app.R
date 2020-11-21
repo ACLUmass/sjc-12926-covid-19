@@ -551,7 +551,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                      "tested", strong("positive"),
                      "for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
                    em("*The DOC only began reporting facility-level prisoner data on April 13,",
-                      "facility-level DOC staff data on April 15, and facility-level non-DOC staff data on November 11.",
+                      'facility-level DOC staff data on April 15, and facility-level 
+                      non-DOC "other" staff data on November 11.',
                       "See the Total Positive Tests page for longer-term totals.")
                    ),
                  withSpinner(plotlyOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -1904,10 +1905,6 @@ server <- function(input, output, session) {
   
   # DOC: Total Positives -----------------------------------------------------
   fac_positive_df <- sjc_DOC_num_df %>%
-    # TEMPORARY combine DOC & Non-DOC staff
-    rowwise() %>%
-    mutate(`N Positive - Staff` = sum(`N Positive - COs`, `N Positive - Other Staff`, na.rm=T)) %>%
-    dplyr::select(-`N Positive - COs`, -`N Positive - Other Staff`) %>%
     # Rename prisoner column to work with bar_plot() functions
     rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`,
            Facility = fac) %>%
@@ -1916,7 +1913,6 @@ server <- function(input, output, session) {
                  names_prefix="N Positive - ") %>%
     filter(!is.na(value))
     
-  
   # Determine which variable to plot
   select_positive_fac <- reactive({ input$select_positive_fac })
   
@@ -1938,8 +1934,14 @@ server <- function(input, output, session) {
       
     } else if (select_positive_fac() %in% c("Prisoners", "Staff")) {
       
+      p <- fac_positive_df %>%
+        group_by(Date, Facility, type == "Prisoners") %>%
+        mutate(value = ifelse(type != "Prisoners", sum(value), value),
+               type = ifelse(type=="Other Staff", "Staff", type)) %>%
+        filter(type != "COs")
+      
       output$n_positive_DOC_str <- renderText({
-        fac_positive_df %>%
+        p %>%
           filter(type == select_positive_fac()) %>%
           pull(value) %>%
           sum(na.rm=T) %>%
@@ -1948,7 +1950,7 @@ server <- function(input, output, session) {
       })
       output$type_positive_fac <- renderText({tolower(select_positive_fac())})
       
-      single_bar_plot(fac_positive_df, 
+      single_bar_plot(p, 
                       select_positive_fac(), 
                       paste(select_positive_fac(), "Tested Positive"),
                       "Facility")
