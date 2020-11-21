@@ -41,16 +41,16 @@ counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex",
 county_choices <- c("--", "All", "All Counties", counties)
 fac_choices <- c("--", "DOC Total**", "All DOC Facilities", 'Boston Pre', 'BSH', 
                  'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
-                 'MCI-Shirley', 'MCI-Shirley Min', 'MTC',  "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
+                 'MCI-Shirley', 'MTC',  "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
                  'SBCC', 'SMCC')
 fac_staff <- c('Boston Pre', 'BSH', 
                'LSH', 'MASAC', 'MCI-C', 'MCI-CJ', 'MCI-F', 'MCI-Norfolk', 
-               'MCI-Shirley', 'MCI-Shirley Min', 'MTC', "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
+               'MCI-Shirley', 'MTC', "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
                'SBCC', 'SMCC', "Non-Facility")
 
 pop_choices <- c("--", 'All', 'All Counties', "DOC", 'DOC: Boston Pre', 'DOC: BSH', 
                  'DOC: LSH', 'DOC: MASAC', 'DOC: MCI-C', 'DOC: MCI-CJ', 'DOC: MCI-F', 
-                 'DOC: MCI-Norfolk', 'DOC: MCI-Shirley', 'DOC: MCI-Shirley Min', 'DOC: MTC', 
+                 'DOC: MCI-Norfolk', 'DOC: MCI-Shirley', 'DOC: MTC', 
                  'DOC: NCCI-Gardn', 'DOC: NECC', 'DOC: OCCC', 'DOC: Pondville', 
                  'DOC: SBCC', 'DOC: SMCC', 'Barnstable', 'Berkshire', 'Bristol',
                  'Dukes', 'Essex', 'Franklin', 'Hampden', 'Hampshire', 'Middlesex', 
