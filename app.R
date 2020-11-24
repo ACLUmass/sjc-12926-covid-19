@@ -252,7 +252,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                        selected = "All", multiple=FALSE)
                          ),
                          em("*The DOC only began reporting facility-level prisoner positives on April 13,",
-                            "facility-level staff positives on April 15, and facility-level testing data on April 25.")
+                            "facility-level staff positives on April 15, and facility-level testing data on April 25."),
+                         em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" includes both DOC correctional officers and other non-DOC staff.')
                ),
                checkboxInput("checkbox_both", label = "Show transition to weekly reporting", value = TRUE,
                              width="100%"),
@@ -344,7 +345,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                choices = c("All", "Prisoners", "Staff", "Total"),
                                selected = "All", multiple=FALSE),
                    em('Exact number of tests per county annotated in "Prisoners",',
-                      '"Staff", and "Total" plots.')
+                      '"Staff", and "Total" plots.'),
+                   em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')
                  ),
                  checkboxInput("checkbox_hideDOC_tests", label = "Hide DOC column", value = F),
                  h2(textOutput("n_tests_str"), align="center"),
@@ -370,7 +372,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                  selected = "All Counties", multiple=FALSE),
                      selectInput("select_county3_test", label = NULL, choices = county_choices,
                                  selected = "DOC", multiple=FALSE)
-                   )),
+                   ),
+                   em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')),
                  checkboxInput("checkbox_test", label = "Show transition to weekly reporting", value = TRUE),
                  withSpinner(plotlyOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                  em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
@@ -385,7 +388,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                        choices = c("All", "Prisoners", "Staff", "Total"),
                                        selected = "All", multiple=FALSE),
                            em('Exact number of positive tests per county annotated in',
-                              '"Prisoners", "Staff", and "Total" plots.')
+                              '"Prisoners", "Staff", and "Total" plots.'),
+                           em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" includes both DOC correctional officers and other non-DOC staff.')
                  ),
                  checkboxInput("checkbox_hideDOC_pos", label = "Hide DOC column", value = F),
                  h2(textOutput("n_positive_str"), align="center"),
@@ -411,7 +415,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                  selected = "All Counties", multiple=FALSE),
                      selectInput("select_county3_pos", label = NULL, choices = county_choices,
                                  selected = "DOC", multiple=FALSE)
-                   )),
+                   ),
+                   em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" includes both DOC correctional officers and other non-DOC staff.')),
                  checkboxInput("checkbox_pos", label = "Show transition to weekly reporting", value = TRUE),
                  withSpinner(plotlyOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
                  em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
@@ -427,7 +432,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                        selected = "All", multiple=FALSE),
                            em('Exact number of tests per county annotated in "Prisoners",',
                               '"Staff", and "Total" plots. Note that the DOC is not 
-                              reporting active staff cases.')
+                              reporting active staff cases. County "staff" includes correctional officers, contractors, and other staff.')
                  ),
                  h2(textOutput("n_active_str"), align="center"),
                  p("Reports of",
@@ -458,7 +463,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                              selectInput("select_active3", label = NULL, choices = county_choices,
                                          selected = "DOC", multiple=FALSE)
                            ),
-                           em("Note that the DOC is not reporting active staff cases.")),
+                           em('Note that the DOC is not reporting active staff cases. County "staff" includes correctional officers, contractors, and other staff.')),
                  withSpinner(plotlyOutput("active_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
         )
       ),
@@ -490,8 +495,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                           em("*The DOC only began reporting facility-level releases on April 29.",
                              "See the Counties + DOC: Releases Over Time page for longer-term totals."),
                           em('**DOC Total reflects the cumulative count of prisoner releases submitted in DOC-wide',
-                             "reports going back to March 27.",
-                             style="display: block; margin-top: 1rem;")
+                             "reports going back to March 27.")
                       ),
                 checkboxInput("checkbox_fac_rel", label = "Show transition to weekly reporting", value = TRUE),
                 withSpinner(plotlyOutput("DOC_releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -507,7 +511,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                        choices = c("All", "Prisoners", "Staff", "Total"),
                                        selected = "All", multiple=FALSE),
                            em('Exact number of tests per facility annotated in',
-                              '"Prisoners", "Staff", and "Total" plots.')
+                              '"Prisoners", "Staff", and "Total" plots.'),
+                           em('DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')
                  ),
                  div(align="center",
                      h2(textOutput("n_tests_DOC_str")),
@@ -543,8 +548,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                              "See the Counties + DOC Tests Over Time page for longer-term DOC tracking"),
                           em('**DOC Total reflects DOC-wide reports, and might undercount',
                              "cases as compared to the facility total due to the DOC-wide data reporting",
-                             "active, rather than total, cases.",
-                             style="display: block; margin-top: 1rem;")
+                             "active, rather than total, cases."),
+                          em('DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')
                           ),
                 checkboxInput("checkbox_fac_test", label = "Show transition to weekly reporting", value = TRUE),
                 withSpinner(plotlyOutput("doc_tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -560,7 +565,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                        choices = c("All", "Prisoners", "Staff", "Total"),
                                        selected = "All", multiple=FALSE),
                            em('Exact number of positive tests per facility annotated in',
-                              '"Prisoners", "Staff", and "Total" plots.')
+                              '"Prisoners", "Staff", and "Total" plots.'),
+                           em('DOC "staff" includes both DOC correctional officers and other non-DOC staff.')
                  ),
                  div(align="center",
                    h2(textOutput("n_positive_DOC_str")),
@@ -597,8 +603,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                       "See the Counties + DOC Positive Tests Over Time page for longer-term DOC tracking"),
                    em('**DOC Total reflects DOC-wide reports, and might undercount',
                       "cases as compared to the facility total due to the DOC-wide data reporting",
-                      "active, rather than total, cases.",
-                      style="display: block; margin-top: 1rem;")
+                      "active, rather than total, cases."),
+                   em('DOC "staff" includes both DOC correctional officers and other non-DOC staff.')
                    ),
                  checkboxInput("checkbox_fac_pos", label = "Show transition to weekly reporting", value = TRUE),
                  withSpinner(plotlyOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -649,7 +655,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                               choices = c("All", "Prisoners", "Staff", "Total"),
                                               selected = "All", multiple=FALSE),
                                   em('Exact number of tests per facility annotated in',
-                                     '"Prisoners", "Staff", and "Total" plots.')
+                                     '"Prisoners", "Staff", and "Total" plots.'),
+                                  em('County "staff" includes correctional officers, contractors, and other staff.')
                         ),
                         div(align="center",
                             h2(textOutput("n_tests_cty_str")),
@@ -680,8 +687,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                                 multiple=FALSE)
                                   ),
                                   em("*Only some counties began reporting facility-level testing data on May 8.",
-                                     "See the Counties + DOC Aggregates: Total Tests page for longer-term totals.",
-                                     style="display: block; margin-top: 1rem;")
+                                     "See the Counties + DOC Aggregates: Total Tests page for longer-term totals."),
+                                  em('County "staff" includes correctional officers, contractors, and other staff.')
                         ),
                         checkboxInput("checkbox_ctyfac_test", label = "Show transition to weekly reporting", value = TRUE),
                         withSpinner(plotlyOutput("cty_tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -697,7 +704,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                               choices = c("All", "Prisoners", "Staff", "Total"),
                                               selected = "All", multiple=FALSE),
                                   em('Exact number of positive tests per facility annotated in',
-                                     '"Prisoners", "Staff", and "Total" plots.')
+                                     '"Prisoners", "Staff", and "Total" plots.'),
+                                  em('County "staff" includes correctional officers, contractors, and other staff.')
                         ),
                         div(align="center",
                             h2(textOutput("n_positive_cty_str")),
@@ -729,8 +737,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                                 multiple=FALSE)
                                   ),
                                   em("*Only some counties began reporting facility-level positive data on May 8.",
-                                     "See the Counties + DOC Aggregates: Total Positive Tests page for longer-term totals.",
-                                     style="display: block; margin-top: 1rem;")
+                                     "See the Counties + DOC Aggregates: Total Positive Tests page for longer-term totals."),
+                                  em('County "staff" includes correctional officers, contractors, and other staff.')
                         ),
                         checkboxInput("checkbox_ctyfac_pos", label = "Show transition to weekly reporting", value = TRUE),
                         withSpinner(plotlyOutput("ctyfac_pos_time_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -747,7 +755,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                               selected = "All", multiple=FALSE),
                                   em('Exact number of tests per facility annotated in',
                                      '"Prisoner", "Staff", and "Total" plots. Essex County
-                                     does not report staff positives by facility.')
+                                     does not report staff positives by facility.'),
+                                  em('County "staff" includes correctional officers, contractors, and other staff.')
                         ),
                         p(em("Showing active cases as reported on",
                           textOutput("last_date_str2_counties", inline=T)),   
@@ -773,7 +782,8 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                     selectInput("select_active_cty3", label = NULL, choices = ctyfac_choices,
                                                 selected = "Essex - Middleton", multiple=FALSE)
                                   ),
-                                  em("Essex County does not report staff positives by facility.")
+                                  em("Essex County does not report staff positives by facility."),
+                                  em('County "staff" includes correctional officers, contractors, and other staff.')
                                   ),
                         withSpinner(plotlyOutput("active_cty_fac_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
                ),
