@@ -86,7 +86,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                      icon('info-circle'),
                      h4("New Daily DOC Reporting"),
                      em("On November 9, in response to multiple new outbreaks, the 
-                        Department of Corrections agreed to return to daily reporting from its facilities. 
+                        Department of Correction agreed to return to daily reporting from its facilities. 
                         (Recall that counties and the DOC have been reporting weekly since an", 
                         a("SJC order", href="https://data.aclum.org/wp-content/uploads/2020/07/SJC-12926-Order-Appendix-B.pdf"), 
                         "on June 23.)"), 
