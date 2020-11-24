@@ -2016,6 +2016,12 @@ server <- function(input, output, session) {
     # Rename prisoner column to work with bar_plot() functions
     rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`,
            Facility = fac) %>%
+    # Sum together various staff
+    rowwise() %>%
+    mutate(`N Positive - Staff` = sum(`N Positive - COs`, 
+                                      `N Positive - Other Staff`, na.rm=T)) %>%
+    ungroup() %>%
+    dplyr::select(-`N Positive - COs`, -`N Positive - Other Staff`) %>%
     pivot_longer(cols=matches("N Positive", ignore.case=F),
                  names_to="type",
                  names_prefix="N Positive - ") %>%
@@ -2042,14 +2048,8 @@ server <- function(input, output, session) {
       
     } else if (select_positive_fac() %in% c("Prisoners", "Staff")) {
       
-      p <- fac_positive_df %>%
-        group_by(Date, Facility, type == "Prisoners") %>%
-        mutate(value = ifelse(type != "Prisoners", sum(value), value),
-               type = ifelse(type=="Other Staff", "Staff", type)) %>%
-        filter(type != "COs")
-      
       output$n_positive_DOC_str <- renderText({
-        p %>%
+        fac_positive_df %>%
           filter(type == select_positive_fac()) %>%
           pull(value) %>%
           sum(na.rm=T) %>%
@@ -2058,7 +2058,7 @@ server <- function(input, output, session) {
       })
       output$type_positive_fac <- renderText({tolower(select_positive_fac())})
       
-      single_bar_plot(p, 
+      single_bar_plot(fac_positive_df, 
                       select_positive_fac(), 
                       paste(select_positive_fac(), "Tested Positive"),
                       "Facility")

@@ -170,7 +170,6 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
 stacked_bar_plot <- function(data, y_label, location_to_plot) {
   
   doc_releases <- y_label == "Prisoners Released" & location_to_plot == "County"
-  doc_positives <- y_label == "Tested Positive" & location_to_plot == "Facility"
 
   if (location_to_plot == "County") {
     label_source <- counties
@@ -188,14 +187,6 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
     
     data <- data %>%
       mutate(type=factor(type, levels=c("Pre-Trial", "Sentenced", "Home Confinements")))
-    
-  } else if (doc_positives) {
-    traces_to_hide <- 0
-    traces_lightback <- 2:3
-    traces_darkback <- 1
-    
-    data <- data %>%
-      mutate(type=factor(type, levels=c("Prisoners", "COs", "Other Staff")))
     
   } else {
     
