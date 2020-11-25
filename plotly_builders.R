@@ -119,24 +119,24 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
                                   sum_value - max(sum_value) * .0375),
              label_color = ifelse(sum_value < label_threshold | sum_value > 1000, 
                                   "black", "white")) %>%
-    ggplot(aes(x=loc,
+      ggplot(aes(x=loc,
                y=sum_value,
                fill = as.factor(1),
                text = paste0(location_to_plot, ": ", loc, "\n",
                              y_label, ": ", number(sum_value, big.mark=",")))) +
-      geom_col(position = "stack", show.legend = F) +
-      geom_text(aes(label=number(sum_value, big.mark=","), 
-                    color=label_color, y = label_vjust),
-                family="gtam") +
-      theme(legend.position = "none") +
-      scale_color_manual(values = c("black", "white")) + 
-      labs(y = y_label, x="") +
-      theme(axis.text.x = element_text(angle=45, hjust=1),
-            plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3")) +
-      scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
-                         limits= c(0, NA))
+        geom_col(position = "stack", show.legend = F) +
+        geom_text(aes(label=number(sum_value, big.mark=","), 
+                      color=label_color, y = label_vjust),
+                  family="gtam") +
+        theme(legend.position = "none") +
+        scale_color_manual(values = c("black", "white")) + 
+        labs(y = y_label, x="") +
+        theme(axis.text.x = element_text(angle=45, hjust=1),
+              plot.title= element_text(family="gtam", face='bold'),
+              text = element_text(family="gtam", size=14)) +
+        scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3")) +
+        scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
+                           limits= c(0, NA))
     
     traces_lightback <- 0
     traces_darkback <- 1

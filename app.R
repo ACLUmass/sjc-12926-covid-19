@@ -209,7 +209,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                ),
 
       "Data by County/Facility",
-      
+      # UI: Population -----
       tabPanel("Incarcerated Population Over Time",
                wellPanel(id="internal_well",
                          p("Select up to three locations to plot versus time."),
@@ -2035,6 +2035,7 @@ server <- function(input, output, session) {
   })
   
   # DOC: Total Positives -----------------------------------------------------
+
   fac_positive_df <- sjc_DOC_num_df %>%
     # Rename prisoner column to work with bar_plot() functions
     rename(`N Positive - Prisoners`=`N Positive - Detainees/Inmates`,
