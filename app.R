@@ -1675,26 +1675,50 @@ server <- function(input, output, session) {
       y_label <- "Active Prisoner & Staff Cases"
     }
     
-    g <- a %>%
-      filter(County %in% cnty_to_plot_active()) %>%
-    ggplot(aes(x=Date, y = active, color=County)) +
-      geom_path(size=1.3, show.legend = T, alpha=0.8) +
-      geom_point(size=1.5) +
-      labs(x = "", y = y_label, color="",
-           title="placeholder") +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
-            plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22), 
-            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
-            legend.key.width = unit(1, "cm"),
-            legend.text = element_text(size=16)) +
-      scale_x_date(date_labels = "%b %e ") +
-      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off')
+    # Determine if it's trying to show only DOC staff (no such data)
+    only_doc_staff <- pop_to_plot_active() == "s" & 
+      identical(setdiff(cnty_to_plot_active(), c("DOC", "--", "--")), character(0))
     
-    lines_plotly_style(g, y_label, "County", 
-                       show_weekly=F, subtitle=F)
+    if (only_doc_staff) {
+      
+      g <- data.frame(Date="", active="", County="") %>%
+      ggplot(aes(x=Date, y = active, color=County)) +
+        annotate("text", x=.5, y=.5, label="No Active DOC staff data.",
+                 fontface="italic") +
+        labs(x = "", y = y_label, color="",
+             title="placeholder") +
+        theme(plot.title= element_text(family="gtam", face='bold'),
+              text = element_text(family="gtam", size = 16),
+              plot.margin = unit(c(1,1,4,1), "lines"),
+              axis.text = element_blank()) +
+        coord_cartesian(clip = 'off')
+      
+      lines_plotly_style(g, y_label, "County", 
+                         show_weekly=F, no_data=T)
+      
+    } else {
+    
+      g <- a %>%
+        filter(County %in% cnty_to_plot_active()) %>%
+      ggplot(aes(x=Date, y = active, color=County)) +
+        geom_path(size=1.3, show.legend = T, alpha=0.8) +
+        geom_point(size=1.5) +
+        labs(x = "", y = y_label, color="",
+             title="placeholder") +
+        theme(plot.title= element_text(family="gtam", face='bold'),
+              text = element_text(family="gtam", size = 16),
+              plot.margin = unit(c(1,1,4,1), "lines"),
+              legend.position = c(.5, -.22), 
+              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+              legend.key.width = unit(1, "cm"),
+              legend.text = element_text(size=16)) +
+        scale_x_date(date_labels = "%b %e ") +
+        scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+        coord_cartesian(clip = 'off')
+      
+      lines_plotly_style(g, y_label, "County", 
+                         show_weekly=F, subtitle=F)
+    }
     
   })
   
