@@ -14,7 +14,6 @@ library(ggfittext)
 library(DT)
 library(plotly)
 library(scales)
-library(jsonlite)
 
 source("plotly_builders.R")
 source("filter_by_pop.R")
@@ -1694,7 +1693,7 @@ server <- function(input, output, session) {
         coord_cartesian(clip = 'off')
       
       lines_plotly_style(g, y_label, "County", 
-                         show_weekly=F, no_data=T)
+                         show_weekly=F)
       
     } else {
     

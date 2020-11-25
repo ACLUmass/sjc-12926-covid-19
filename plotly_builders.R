@@ -140,17 +140,8 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
     
     traces_lightback <- 0
     traces_darkback <- 1
+    traces_to_hide <- 2:3
     
-    p_json <- ggplotly(g) %>%
-      plotly_json()
-    n_traces <- fromJSON(p_json$x$data)$data$type %>%
-      length()
-    
-    if (n_traces == 2) {
-      traces_to_hide <- 2
-    } else {
-      traces_to_hide <- 2:3
-    }
   }
   
   g <- ggplotly(g, tooltip=c("text"),
@@ -163,6 +154,8 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
     g %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
+  } else {
+    g
   }
 }
 
