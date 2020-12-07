@@ -1637,8 +1637,13 @@ server <- function(input, output, session) {
   
   all_active_v_time <- active_v_time %>%
     ungroup() %>%
-    mutate(Date = if_else(County == "DOC", Date + days(1), Date),
-           County = "All") %>%
+    mutate(Date = if_else(County == "DOC", Date + days(1), Date)) %>%
+    complete(Date = seq.Date(ymd(20201109), max(Date), by="day"), County, type) %>%
+    group_by(County, type) %>%
+    tidyr::fill(active) %>%
+    filter(!is.na(active)) %>%
+    ungroup() %>%
+    mutate(County = "All") %>%
     group_by(Date, County, type) %>%
     summarize(active = sum(active))
   
