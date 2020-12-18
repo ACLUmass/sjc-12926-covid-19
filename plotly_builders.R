@@ -138,9 +138,19 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
         scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
                            limits= c(0, NA))
     
+    p_json <- g %>% 
+      ggplotly() %>%
+      plotly_json()
+    n_traces <- length(jsonlite::fromJSON(p_json$x$data)$data$type)
+    
+    if (n_traces == 2) {
+      traces_to_hide <- 2
+    } else {
+      traces_to_hide <- 2:3
+    }
+    
     traces_lightback <- 0
     traces_darkback <- 1
-    traces_to_hide <- 2:3
     
   }
   
