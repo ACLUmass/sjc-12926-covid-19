@@ -140,8 +140,9 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
     
     p_json <- g %>% 
       ggplotly() %>%
-      plotly_json()
-    n_traces <- length(jsonlite::fromJSON(p_json[["x"]][["data"]])$data$type)
+      plotly_json(jsonedit=T)
+    
+    n_traces <- length(jsonlite::fromJSON(p_json$x$data)$data$type)
     
     if (n_traces == 2) {
       traces_to_hide <- 2
