@@ -268,7 +268,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                           withSpinner(plotlyOutput("all_deaths_plot"), type=4, color="#b5b5b5", size=0.5),
                           h3("Dates & Locations of COVID-19 Deaths"),
                           tags$ul(
-                            tags$li("December 4: [DOC] MCI-Norfolk - 1 death"),
+                            htmlOutput("deaths_list"),
                             tags$li("Before June 23: 10 deaths:"),
                             tags$ul(
                               tags$li("[DOC] MTC -  5 deaths"),
@@ -289,7 +289,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                           withSpinner(plotlyOutput("all_deaths_fac_plot"), type=4, color="#b5b5b5", size=0.5),
                           h3("Dates & Locations of DOC COVID-19 Deaths"),
                           tags$ul(
-                            tags$li("December 4: MCI-Norfolk - 1 death"),
+                            htmlOutput("deaths_list_DOC"),
                             tags$li("Before June 23: 8 deaths:"),
                             tags$ul(
                               tags$li("MTC -  5 deaths"),
@@ -1865,6 +1865,45 @@ server <- function(input, output, session) {
     
   })
   
+  # Include death date & locations
+  death_dates_df <- sjc_num_df %>%
+    filter(`N Deaths` > 0,
+           Date > ymd(20200708)) %>%
+    select(Date, County, `N Deaths`) %>%
+    mutate(DOC=F) %>%
+    rename(loc=County) %>%
+    rbind(
+      sjc_DOC_num_df %>% 
+        filter(`N Deaths` > 0,
+               Date > ymd(20200708)) %>%
+        select(Date, fac, `N Deaths`) %>%
+        mutate(DOC=T) %>%
+        rename(loc=fac)
+    ) %>%
+    arrange(desc(Date))
+  
+  output$deaths_list <- renderUI({
+    get_death_li <- function(row) {
+      DOC <- row["DOC"]
+      date <- row["Date"] %>%
+        strftime(format="%B %e")
+      
+      if (DOC) {
+        paste0(date, ": [DOC] ", row["loc"], " - ", row["N Deaths"], " death") %>%
+          tags$li() %>%
+          return()
+      } else {
+        paste0(date, ": ", row["loc"], " - ", row["N Deaths"], " death") %>%
+          tags$li() %>%
+          return()
+      }
+    }
+    
+    apply(death_dates_df, MARGIN = 1, get_death_li) %>%
+      tagList()
+    
+  })
+  
  # DOC: Total Releases -----------------------------------------------------
   DOC_released_df <- sjc_DOC_num_df %>%
     rename(value = all_released,
@@ -2253,6 +2292,23 @@ server <- function(input, output, session) {
     
     single_bar_plot(deaths_fac_df, 
                     "Total", "Prisoner Deaths", "Facility")
+    
+  })
+  
+  # Include death dates & locations
+  output$deaths_list_DOC <- renderUI({
+    
+    get_death_li_DOC <- function(row) {
+      date <- row["Date"] %>%
+        strftime(format="%B %e")
+
+      paste0(date, ": ", row["loc"], " - ", row["N Deaths"], " death") %>%
+        tags$li() %>%
+        return()
+    }
+    
+    apply(death_dates_df %>% filter(DOC==T), MARGIN = 1, get_death_li_DOC) %>%
+      tagList()
     
   })
   
