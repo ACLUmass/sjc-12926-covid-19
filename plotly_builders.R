@@ -125,7 +125,7 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
                text = paste0(location_to_plot, ": ", loc, "\n",
                              y_label, ": ", number(sum_value, big.mark=",")))) +
         geom_col(position = "stack", show.legend = F) +
-        geom_text(aes(label=number(sum_value, big.mark=","), 
+        geom_text(aes(label=number(sum_value, big.mark=",", accuracy=1), 
                       color=label_color, y = label_vjust),
                   family="gtam") +
         theme(legend.position = "none") +
