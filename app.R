@@ -47,7 +47,7 @@ fac_staff <- c('Boston Pre', 'BSH',
                'MCI-Shirley', 'MTC', "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
                'SBCC', 'SMCC', "Non-Facility")
 
-pop_choices <- c("--", 'All', 'All Counties', "DOC", 'DOC: Boston Pre', 'DOC: BSH', 
+pop_choices <- c("--", 'All', 'All Counties', "DOC Aggregate", 'DOC: Boston Pre', 'DOC: BSH', 
                  'DOC: LSH', 'DOC: MASAC', 'DOC: MCI-C', 'DOC: MCI-CJ', 'DOC: MCI-F', 
                  'DOC: MCI-Norfolk', 'DOC: MCI-Shirley', 'DOC: MTC', 
                  'DOC: NCCI-Gardn', 'DOC: NECC', 'DOC: OCCC', 'DOC: Pondville', 
@@ -218,6 +218,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                       choiceNames = c("Pretrial", "Sentenced", "Other", "Total"),
                                       choiceValues = c("p", "s", "o","pso")),
                          p("Select up to three locations to plot versus time."),
+                         em('While DOC provides', tags$u('total'), 'population counts by facility, its reported numbers of pretrial, sentenced, and other populations are not broken down by facility. As a result, the pretrial, sentenced and other breakdowns under the "All" and "DOC Aggregate" selections below include DOC data in aggregate for all DOC facilities, but this information is not available for each individual DOC facility.'), br(),
                          splitLayout(
                            selectInput("select_county1_pop", label = NULL, choices = pop_choices,
                                        selected = "All", multiple=FALSE),
@@ -226,11 +227,10 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county3_pop", label = NULL, choices = pop_choices,
                                        selected = "--", multiple=FALSE)
                          ),
-                         em('DOC facilities only report population totals, not 
-                            pretrial/sentenced/other populations. Only the following categories report "other" populations, described as:'),
+                         em('Only the following entities report "other" populations:'),
                          tags$ul(
+                           tags$li("DOC (in aggregate, not by individual facility): civil commitments"),
                            tags$li("Bristol: ICE detainees on-site"),
-                           tags$li("DOC: civil commitments"),
                            tags$li("Hampden: Section 35 civil commitments"),
                            tags$li("Plymouth: USMS, ICE, WMS, parole detainer, civil contempt")
                          )),
@@ -1119,7 +1119,8 @@ server <- function(input, output, session) {
     bind_rows(all_pop_df) %>%
     bind_rows(all_counties_pop_df) %>%
     bind_rows(doc_fac_pop_df) %>%
-    mutate(pop_type = str_replace(pop_type, "Pre-Trial", "Pretrial"))
+    mutate(pop_type = str_replace(pop_type, "Pre-Trial", "Pretrial"),
+           County = str_replace(County, "^DOC$", "DOC Aggregate"))
   
   # Plot
   output$pop_v_time_plot <- renderPlotly({
@@ -1170,7 +1171,7 @@ server <- function(input, output, session) {
       g <- data.frame(Date="", active="", County="") %>%
         ggplot(aes(x=Date, y = active, color=County)) +
         annotate("text", x=.5, y=.5, 
-                 label=ifelse(no_pop, "DOC facilities only report total population.",
+                 label=ifelse(no_pop, "Individual DOC facilities only report total population.",
                               'No "other" population at selected location(s)'),
                  fontface="italic") +
         labs(x = "", y = y_label, color="",
@@ -1367,7 +1368,8 @@ server <- function(input, output, session) {
     
     # Combine fac & county data
     df_by_loc <- df_by_county %>%
-      bind_rows(df_by_fac)
+      bind_rows(df_by_fac) %>%
+      mutate(loc = str_replace(loc, "^DOC$", "DOC Aggregate"))
     
     # Determine what label is
     if (pop_to_plot_both() == "ps") {
