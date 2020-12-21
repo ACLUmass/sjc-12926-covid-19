@@ -177,6 +177,11 @@ a[data-value="Multi-Facility Counties"]
   font-weight: bold
 }
 
+#internal_well ul {
+  font-style: italic;
+  margin-bottom: 0px;
+}
+
 #footer {
   margin-top: 20px;
 }

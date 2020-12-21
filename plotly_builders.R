@@ -233,7 +233,7 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
 # Convert lines to ggplotly
 lines_plotly_style <- function(gg_plot, y_label, location_to_plot, 
   annotation=FALSE, subtitle=TRUE, pos_and_test=FALSE, active_and_recent=FALSE,
-  show_weekly=TRUE) {
+  show_weekly=TRUE, pop=FALSE) {
   
   if (show_weekly) {
     gg_plot <- gg_plot +
@@ -256,6 +256,9 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
   # Fix which variables are shown in the tooltip
   if (pos_and_test | active_and_recent) {
     g <- ggplotly(gg_plot, tooltip = c("x", "y"),
+                  dynamicTicks = T)
+  }  else if (pop) {
+    g <- ggplotly(gg_plot, tooltip = c("text"),
                   dynamicTicks = T)
   } else {
     g <- ggplotly(gg_plot,
@@ -304,14 +307,14 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
       g <- g %>%
         style(text = text_rep, traces=i)
     }
-  } else {
+  } else if (!pop) {
     # Replace tooltip key with better names
     for (i in 1:length(g$x$data)) {
       
       # If the data is from after 7/14, show date range
       tooltip_text <- g$x$data[[i]]$text
       
-      if (!str_detect(y_label, "Active") & !str_detect(y_label, "Population")) {
+      if (!str_detect(y_label, "Active") & pop == F) {
         for (t in tooltip_text) {
           
           data_date <- t %>%
@@ -338,7 +341,7 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
       
       # Replace tooltip key with better names
       text_rep <- tooltip_text %>%
-        gsub("pop", y_label, .) %>%
+        gsub("value", y_label, .) %>%
         gsub("cumul", y_label, .) %>%
         gsub("fac", location_to_plot, .) %>%
         gsub("active", y_label, .)

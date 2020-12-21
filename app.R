@@ -212,6 +212,11 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
       # UI: Population -----
       tabPanel("Incarcerated Population Over Time",
                wellPanel(id="internal_well",
+                         p("Select population to plot.", id="radio_prompt"),
+                         radioButtons("pop_radio", label = NULL, 
+                                      selected = "pso" , inline = T, 
+                                      choiceNames = c("Pretrial", "Sentenced", "Other", "Total"),
+                                      choiceValues = c("p", "s", "o","pso")),
                          p("Select up to three locations to plot versus time."),
                          splitLayout(
                            selectInput("select_county1_pop", label = NULL, choices = pop_choices,
@@ -220,10 +225,17 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                                        selected = "--", multiple=FALSE),
                            selectInput("select_county3_pop", label = NULL, choices = pop_choices,
                                        selected = "--", multiple=FALSE)
+                         ),
+                         em('DOC facilities only report population totals, not 
+                            pretrial/sentenced/other populations. Only the following categories report "other" populations, described as:'),
+                         tags$ul(
+                           tags$li("Bristol: ICE detainees on-site"),
+                           tags$li("DOC: civil commitments"),
+                           tags$li("Hampden: Section 35 civil commitments"),
+                           tags$li("Plymouth: USMS, ICE, WMS, parole detainer, civil contempt")
                          )),
                checkboxInput("checkbox_pop", label = "Show transition to weekly reporting", value = TRUE),
-               withSpinner(plotlyOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-               em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+               withSpinner(plotlyOutput("pop_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
       ),
       
       # tabPanel("Compare Active Cases & Recent Tests", 
@@ -1062,72 +1074,145 @@ server <- function(input, output, session) {
       input$select_county3_pop)
   })
   
+  # Determine which population to plot
+  pop_to_plot_pop <- reactive({input$pop_radio})
+  
+  # Pull out all pop data
   sjc_df_fix_date_pop <- sjc_num_df %>%
     filter(`Total Population` != 0) %>%
     mutate(Date = if_else(County == "DOC" & Date >= ymd(20200707) & Date < ymd(20201109),
-                         Date + days(1), Date))
+                          Date + days(1), Date))
   
   all_pop_df <- sjc_df_fix_date_pop %>%
-    mutate(pop = `Total Population`) %>%
-    filter(pop != 0) %>%
-    group_by(Date) %>%
+    select(Date, County, contains("Population"), -`Total Population`) %>%
+    pivot_longer(cols=contains("Population"), names_pattern="(.*) Population", 
+                 names_to = "pop_type") %>%
+    group_by(Date, pop_type) %>%
     filter(n() == 14) %>%
-    summarize(pop = sum(pop)) %>%
+    summarize(value = sum(value)) %>%
     mutate(County = "All")
   
   all_counties_pop_df <- sjc_df_fix_date_pop %>%
-    mutate(pop = `Total Population`) %>%
-    filter(pop != 0,
-           County != "DOC") %>%
-    group_by(Date) %>%
+    filter(County != "DOC") %>%
+    select(Date, County, contains("Population"), -`Total Population`) %>%
+    pivot_longer(cols=contains("Population"), names_pattern="(.*) Population", 
+                 names_to = "pop_type") %>%
+    group_by(Date, pop_type) %>%
     filter(n() == 13) %>%
-    summarize(pop = sum(pop)) %>%
-    mutate(County = "All Counties")
+    summarize(value = sum(value)) %>%
+    mutate(County = "All Counties") %>%
+    filter(value !=0)
   
   doc_fac_pop_df <- sjc_DOC_num_df %>%
-    mutate(pop = `Total Population`,
+    mutate(value = `Total Population`,
+           pop_type = "Total",
            County = paste("DOC:", fac),
-           Date = if_else(Date >= ymd(20200707),
-                         Date + days(1), Date)) %>%
-    filter(!is.na(pop)) %>%
-    group_by(Date, County) %>%
-    summarize(pop = sum(pop)) 
+           Date = if_else(Date >= ymd(20200707) & Date < ymd(20201109),
+                          Date + days(1), Date)) %>%
+    select(Date, County, pop_type, value) %>%
+    filter(!is.na(value))
   
-  pop_df <-  sjc_df_fix_date_pop %>%
-    mutate(pop = `Total Population`,
-           County = as.character(County)) %>%
-    group_by(Date, County) %>%
-    summarize(pop = sum(pop)) %>%
+  pop_df <- sjc_df_fix_date_pop %>%
+    select(Date, County, contains("Population"), -`Total Population`) %>%
+    pivot_longer(cols=contains("Population"), names_pattern="(.*) Population", 
+                 names_to = "pop_type") %>%
     bind_rows(all_pop_df) %>%
     bind_rows(all_counties_pop_df) %>%
-    bind_rows(doc_fac_pop_df)
+    bind_rows(doc_fac_pop_df) %>%
+    mutate(pop_type = str_replace(pop_type, "Pre-Trial", "Pretrial"))
   
   # Plot
   output$pop_v_time_plot <- renderPlotly({
+  
+    # Determine what label is
+    if (pop_to_plot_pop() == "pso") {
+      y_label = "Total Prisoners"
+      
+      pop_df <- pop_df %>%
+        group_by(Date, County) %>%
+        summarize(value = sum(value))
+      
+    } else if (pop_to_plot_pop() == "p") {
+      y_label = "Total Pretrial Prisoners"
+      
+      pop_df <- pop_df %>%
+        filter(pop_type == "Pretrial")
+      
+    } else if (pop_to_plot_pop() == "s") {
+      y_label = "Total Sentenced Prisoners"
+      
+      pop_df <- pop_df %>%
+        filter(pop_type == "Sentenced")
+      
+    } else if (pop_to_plot_pop() == "o") {
+      y_label = "Total Other Prisoners"
+      
+      pop_df <- pop_df %>%
+        filter(pop_type == "Other")
+    }
     
-    g <-pop_df %>%
-      mutate(pop = na_if(pop, 0)) %>%
-      filter(Date >= ymd(20200407),
-             County %in% cnty_to_plot_pop(),
-             !is.na(pop)) %>%
-      rename(Location = County) %>%
-      ggplot(aes(x=Date, y = pop, color=Location)) +
-      geom_path(size=1.3, show.legend = T, alpha=0.8) +
-      labs(x = "", y = "Total Prisoners", color="",
-           title = paste("Incarcerated Populations over Time")) +
-      theme(plot.title= element_text(family="gtam", face='bold'),
-            text = element_text(family="gtam", size = 16),
-            plot.margin = unit(c(1,1,4,1), "lines"),
-            legend.position = c(.5, -.22),
-            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
-            legend.key.width = unit(1, "cm"),
-            legend.text = element_text(size=16)) +
-      scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200407), NA)) +
-      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
-      coord_cartesian(clip = 'off') 
+    # Determine if it's trying to show breakdowns for DOC facilities (no such data)
+    only_doc_facs <- data.frame(locs = cnty_to_plot_pop()) %>%
+      filter(locs != "--",
+             !str_detect(locs, "DOC:")) %>%
+      nrow() == 0
     
-    lines_plotly_style(g, "Incarcerated Population", "County",
-                       subtitle=F, show_weekly = input$checkbox_pop)
+    no_pop <- (pop_to_plot_pop() != "pso") & only_doc_facs
+    
+    # OR if there simply isn't data for the given thing
+    no_data <- pop_df %>%
+      filter(County %in% cnty_to_plot_pop()) %>%
+      filter(value != 0) %>%
+      nrow() == 0
+    
+    if (no_pop | no_data) {
+      
+      g <- data.frame(Date="", active="", County="") %>%
+        ggplot(aes(x=Date, y = active, color=County)) +
+        annotate("text", x=.5, y=.5, 
+                 label=ifelse(no_pop, "DOC facilities only report total population.",
+                              'No "other" population at selected location(s)'),
+                 fontface="italic") +
+        labs(x = "", y = y_label, color="",
+             title="placeholder") +
+        theme(plot.title= element_text(family="gtam", face='bold'),
+              text = element_text(family="gtam", size = 16),
+              plot.margin = unit(c(1,1,4,1), "lines"),
+              axis.text = element_blank()) +
+        coord_cartesian(clip = 'off')
+      
+      lines_plotly_style(g, y_label, "County", 
+                         show_weekly=F, pop=T)
+    } else {
+      
+      g <- pop_df %>%
+        mutate(value = na_if(value, 0)) %>%
+        filter(Date >= ymd(20200405),
+               County %in% cnty_to_plot_pop(),
+               !is.na(value)) %>%
+        rename(Location = County) %>%
+      ggplot(aes(x=Date, y = value, color=Location,
+                 text = paste0("Date: ", Date, "\n",
+                               y_label, ": ", number(value, big.mark=","), "\n",
+                               "Location: ", Location))) +
+        geom_path(size=1.3, show.legend = T, alpha=0.8, group=1) +
+        labs(x = "", y = y_label, color="",
+             title = paste(y_label, "over Time")) +
+        theme(plot.title= element_text(family="gtam", face='bold'),
+              text = element_text(family="gtam", size = 16),
+              plot.margin = unit(c(1,1,4,1), "lines"),
+              legend.position = c(.5, -.22),
+              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+              legend.key.width = unit(1, "cm"),
+              legend.text = element_text(size=16)) +
+        scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200405), NA)) +
+        scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+        coord_cartesian(clip = 'off') 
+      
+      lines_plotly_style(g, y_label, "County",
+                         subtitle=F, show_weekly = input$checkbox_pop,
+                         pop=T)
+    }
     
   })
   
