@@ -80,6 +80,16 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
     navlistPanel(widths = c(3, 9), id="panels",
                  
       tabPanel("About", 
+               div(id="dev-holiday",
+                   wellPanel(
+                     icon('calendar-alt'),
+                     h4("Holiday Break"),
+                     em("Over the winter holidays, from December 23 through January 3, this tracker will not be updated. For the most updated numbers during this period, please see",
+                        a("the Special Master's reports.", href="https://www.mass.gov/service-details/committee-for-public-counsel-services-v-chief-justice-of-the-trial-court-sjc-12926"),
+                        "The SM intends to continue filing weekly reports on Thursday mornings during this period.")
+                   )
+               ),
+               
                div(id="dev-info2",
                    wellPanel(
                      icon('info-circle'),

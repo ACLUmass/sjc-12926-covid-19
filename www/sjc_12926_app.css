@@ -46,12 +46,11 @@ body {
 }
 
 #dev-warning .well {
-  border-radius: 0px;
-  margin-top: 2rem;
   background-color: #fadf7c;
 }
 
-#dev-warning p, #dev-info p, #dev-info2 p {
+#dev-warning p, #dev-info p, 
+#dev-info2 p, #dev-holiday p {
   display: inline;
 }
 
@@ -60,20 +59,26 @@ body {
   font-size: 20px;
 }
 
-#dev-warning h4, #dev-info h4, #dev-info2 h4 {
+#dev-warning h4, #dev-info h4, 
+#dev-info2 h4, #dev-holiday h4 {
   display: inline;
   margin-left: 1rem;
 }
 
-#dev-warning em, #dev-info em, #dev-info2 em,
+#dev-warning em, #dev-info em, 
+#dev-info2 em, #dev-holiday em,
 .well em {
   display: block;
   margin-top: 1rem;
 }
 
-#dev-info .well {
+#dev-info .well, #dev-info2 .well, 
+#dev-holiday .well, #dev-warning .well {
   border-radius: 0px;
   margin-top: 2rem;
+}
+
+#dev-info .well {
   background-color: #bbe9f0;
 }
 
@@ -83,13 +88,20 @@ body {
 }
 
 #dev-info2 .well {
-  border-radius: 0px;
-  margin-top: 2rem;
   background-color: #fabeaf;
 }
 
 #dev-info2 i {
   color: Coral;
+  font-size: 20px;
+}
+
+#dev-holiday .well {
+  background-color: aliceblue;
+}
+
+#dev-holiday i {
+  color: #B4CFEC;
   font-size: 20px;
 }
 
