@@ -923,10 +923,10 @@ server <- function(input, output, session) {
   
   # Define last date entered for page footer
   output$last_date_str3_DOC <- renderText({
-    strftime(last_date_entered_DOC, format="%B %d, %Y"
+    strftime(last_date_entered_DOC, format="%B %e, %Y"
     )})
   output$last_date_str3_counties <- renderText({
-    strftime(last_date_entered_counties, format="%B %d, %Y"
+    strftime(last_date_entered_counties, format="%B %e, %Y"
     )})
 
   # Load Data -----------------------------------------------------------
@@ -1650,10 +1650,10 @@ server <- function(input, output, session) {
   n_active <- sum(active_df$value)
   
   output$last_date_str_DOC <- renderText({
-    strftime(last_date_entered_DOC, format="%B %d, %Y"
+    strftime(last_date_entered_DOC, format="%B %e, %Y"
     )})
   output$last_date_str_counties <- renderText({
-    strftime(last_date_entered_counties, format="%B %d, %Y"
+    strftime(last_date_entered_counties, format="%B %e, %Y"
     )})
   
   output$all_active_plot <- renderPlotly({
@@ -2302,7 +2302,7 @@ server <- function(input, output, session) {
   output$all_active_fac_plot <- renderPlotly({
     
     output$last_date_DOC_str <- renderText({
-      strftime(max(sjc_DOC_num_df$Date), format="%B %d, %Y"
+      strftime(max(sjc_DOC_num_df$Date), format="%B %e, %Y"
       )})
     
     n_active_fac <- sum(active_fac_df$value)
@@ -2643,10 +2643,10 @@ server <- function(input, output, session) {
     filter(!is.na(value))
   
   output$last_date_str2_DOC <- renderText({
-    strftime(last_date_entered_DOC, format="%B %d, %Y"
+    strftime(last_date_entered_DOC, format="%B %e, %Y"
     )})
   output$last_date_str2_counties <- renderText({
-    strftime(last_date_entered_counties, format="%B %d, %Y"
+    strftime(last_date_entered_counties, format="%B %e, %Y"
     )})
 
   output$all_active_cty_plot <- renderPlotly({
