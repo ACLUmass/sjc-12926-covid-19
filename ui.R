@@ -816,10 +816,13 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                    wellPanel(
                      fluidRow(
                      column(1, icon('info-circle')),
-                     column(11, em("Please be aware that the data below is entered in a",
+                     column(11, em("Please be aware that the below data on tests, positive cases,",
+                        "releases, and deaths are entered in a",
                         "non-cumulative manner. Values in each row reflect not updated tallies of",
-                        "cases, tests, or releases on the noted day, but rather the number of", strong("new"),
-                        "cases, tests, or releases in a 24-hour period.", style="margin-top:0px"))
+                        "tests/cases/releases/deaths on the noted day, but rather the number of", strong("new"),
+                        "tests/cases/releases/deaths in a 24-hour period.", br(), br(),
+                        "The exception is the active cases columns, which reflect the total number of",
+                        "known individuals infected with COVID-19 on a given day.", style="margin-top:0px"))
                      )
                    )
                ),
