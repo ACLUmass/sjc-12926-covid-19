@@ -51,7 +51,7 @@ ctyfac_choices <- c("--", "All Counties", cty_facs)
 
 # UI --------------------------------------------------------------------------
 
-ui <- fluidPage(theme = "sjc_12926_app.css",
+fluidPage(theme = "sjc_12926_app.css",
       
   # Add favicon          
   tags$head(
