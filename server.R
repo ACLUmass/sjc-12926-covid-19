@@ -1968,19 +1968,19 @@ function(input, output, session) {
   })
   
    # Explore Data -----------------------------------------------------
-  output$df_table <- renderDataTable(
+  output$df_table <- DT::renderDataTable(
     {sjc_df},
     options = list(scrollX = TRUE), 
     filter = 'top'
     )
   
-  output$DOC_df_table <- renderDataTable(
+  output$DOC_df_table <- DT::renderDataTable(
     {sjc_DOC_df},
     options = list(scrollX = TRUE), 
     filter = 'top'
   )
   
-  output$cty_df_table <- renderDataTable(
+  output$cty_df_table <- DT::renderDataTable(
     {sjc_county_df},
     options = list(scrollX = TRUE), 
     filter = 'top'
