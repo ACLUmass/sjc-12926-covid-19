@@ -112,6 +112,7 @@ function(input, output, session) {
   GET(sjc_googledrive_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
   
   sjc_df <- read_excel(tf) %>%
+    select(-matches(".*Hospitalizations|.*Medical Parole")) %>%
     # Turn string "NA" to real NA
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     # Make all count columns numeric
@@ -194,6 +195,7 @@ function(input, output, session) {
   # Load County Data -----------------------------------------------------------
   
   sjc_county_df <- read_excel(tf, sheet=3) %>%
+    select(-contains("Population")) %>%
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     mutate(Date = as.Date(Date)) %>%
     mutate_at(vars(starts_with("N "), starts_with("Total"), 
@@ -1966,19 +1968,19 @@ function(input, output, session) {
   })
   
    # Explore Data -----------------------------------------------------
-  output$df_table <- renderDataTable(
+  output$df_table <- DT::renderDataTable(
     {sjc_df},
     options = list(scrollX = TRUE), 
     filter = 'top'
     )
   
-  output$DOC_df_table <- renderDataTable(
+  output$DOC_df_table <- DT::renderDataTable(
     {sjc_DOC_df},
     options = list(scrollX = TRUE), 
     filter = 'top'
   )
   
-  output$cty_df_table <- renderDataTable(
+  output$cty_df_table <- DT::renderDataTable(
     {sjc_county_df},
     options = list(scrollX = TRUE), 
     filter = 'top'

@@ -1,8 +1,10 @@
+library(ggplot2)
 library(shiny)
 library(shinycssloaders)
 library(showtext)
 library(leaflet)
 library(leafsync)
+library(plotly)
 
 # Initialization --------------------------------------------------------------
 
@@ -49,7 +51,7 @@ ctyfac_choices <- c("--", "All Counties", cty_facs)
 
 # UI --------------------------------------------------------------------------
 
-ui <- fluidPage(theme = "sjc_12926_app.css",
+fluidPage(theme = "sjc_12926_app.css",
       
   # Add favicon          
   tags$head(
@@ -840,11 +842,11 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                br(), br(),
                tabsetPanel(type = "tabs",
                            tabPanel("Counties and DOC", 
-                                    withSpinner(dataTableOutput("df_table"), type=4, color="#b5b5b5", size=0.5)),
+                                    withSpinner(DT::dataTableOutput("df_table"), type=4, color="#b5b5b5", size=0.5)),
                            tabPanel("DOC Facilities", 
-                                    withSpinner(dataTableOutput("DOC_df_table"), type=4, color="#b5b5b5", size=0.5)),
+                                    withSpinner(DT::dataTableOutput("DOC_df_table"), type=4, color="#b5b5b5", size=0.5)),
                            tabPanel("County Facilities", 
-                                    withSpinner(dataTableOutput("cty_df_table"), type=4, color="#b5b5b5", size=0.5))
+                                    withSpinner(DT::dataTableOutput("cty_df_table"), type=4, color="#b5b5b5", size=0.5))
                            )
       ),
       

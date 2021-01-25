@@ -4,6 +4,7 @@
 # Author: Lauren Chambers
 # Update Date: April 2020
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+library(plotly)
 
 # Load ggplot-friendly font using show_text
 font_add("gtam", "GT-America-Standard-Regular.ttf",
@@ -157,7 +158,7 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
   
   g <- ggplotly(g, tooltip=c("text"),
                 dynamicTicks = T) %>%
-    config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
+    plotly::config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
     style(hoverinfo = "none", traces = traces_to_hide) %>%
     layout(yaxis = list(tickformat=",.0f"))
   
@@ -220,7 +221,7 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
     
     g <- ggplotly(g, tooltip=c("text"),
                   dynamicTicks = T) %>%
-      config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
+      plotly::config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
       style(hoverinfo = "none", traces = traces_to_hide) %>%
       layout(legend = legend_layout_top,
              yaxis = list(tickformat=",.0f"))  
@@ -267,7 +268,7 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
 
   # Remove control buttons, set legend layout and title text
   g <- g %>%
-      config(modeBarButtonsToRemove = modeBarButtonsToRemove_time) %>%
+      plotly::config(modeBarButtonsToRemove = modeBarButtonsToRemove_time) %>%
       layout(legend = legend_layout_bottom) %>%
       layout(title = list(text = title_html, 
                           font=list(family = "gtam")),
