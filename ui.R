@@ -1,8 +1,10 @@
+library(ggplot2)
 library(shiny)
 library(shinycssloaders)
 library(showtext)
 library(leaflet)
 library(leafsync)
+library(plotly)
 
 # Initialization --------------------------------------------------------------
 
