@@ -259,7 +259,7 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
       
       # UI: Deaths ---------------------------------------------
-      navbarMenu("Deaths",
+      navbarMenu("Deaths & Hospitalizations",
                  
                  tabPanel("County + DOC Deaths", 
                           h2(textOutput("n_deaths_str"), align="center"),
@@ -280,6 +280,14 @@ ui <- fluidPage(theme = "sjc_12926_app.css",
                     June 23, please visit our",
                              actionLink("link_to_external2", "external resources page."))
                           
+                 ),
+
+                 "----",
+
+                 tabPanel("DOC Hospitalizations", 
+                          h2(textOutput("n_hospitalizations_str"), align="center"),
+                          p("Reports of DOC prisoners currently hospitalized with COVID-19", align="center"),
+                          withSpinner(plotlyOutput("hosp_plot"), type=4, color="#b5b5b5", size=0.5)
                  ),
                  
                  tabPanel("DOC Facility Deaths", 
