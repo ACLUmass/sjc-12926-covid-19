@@ -323,6 +323,22 @@ fluidPage(theme = "sjc_12926_app.css",
                           p("Reports of DOC prisoners approved for medical parole", align="center"),
                           withSpinner(plotlyOutput("med_par_plot"), 
                                       type=4, color="#b5b5b5", size=0.5)
+                 ),
+      
+                  "----",
+                 
+                 tabPanel("Total Releases on Parole",
+                          h3("Counties + DOC Aggregate", style= "color: rgba(0, 85, 170, .5);"),
+                          h2(textOutput("n_par_rels_str"), align="center"),
+                          p("Reports of prisoners released on parole", align="center"),
+                          withSpinner(plotlyOutput("par_rels_counties_plot"), 
+                                      type=4, color="#b5b5b5", size=0.5),
+                          h3("DOC Facilities", style= "color: rgba(0, 85, 170, .5);"),
+                          withSpinner(plotlyOutput("par_rels_DOC_plot"), 
+                                      type=4, color="#b5b5b5", size=0.5),
+                          h3("Multi-Facility Counties", style= "color: rgba(0, 85, 170, .5);"),
+                          withSpinner(plotlyOutput("par_rels_countyfacs_plot"), 
+                                      type=4, color="#b5b5b5", size=0.5)
                  )
       ),
       

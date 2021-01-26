@@ -240,6 +240,19 @@ function(input, output, session) {
     
   })
   
+  # Load Parole Data ----------------------------------------------------------
+  
+  facs_df <- read.csv("parole_locs.csv")
+  
+  # parole_df <- read_excel(tf, sheet=4) %>%
+  parole_df <- read_excel('../data/PAROLE_prison_data_SJC12926.xlsx', sheet=4) %>%
+    rename(date = `Date (Friday)`, value = `N Released Parole`) %>%
+    mutate(Date = as.Date(date),
+           value = as.numeric(value)) %>%
+    filter(!is.na(value)) %>%
+    merge(facs_df, by.x=c("Facility", "County"), 
+          by.y=c("facility_raw", "County"), all.x=T)
+  
   # Population v. Time -------------------------------------------------------
   
   # Determine which counties to plot
@@ -597,6 +610,46 @@ function(input, output, session) {
     lines_plotly_style(g, y_label, "Location", pos_and_test=T, 
                        show_weekly=input$checkbox_both)
     
+  })
+  
+  # Parole Releases -----------------------------------------------------------
+  
+  # Plot DOC Facilities
+  output$par_rels_DOC_plot <- renderPlotly({
+    parole_df %>%
+      filter(County == "DOC") %>%
+      select(Date, Facility = facility_match, value) %>%
+      single_bar_plot("Total", 
+                      "Total Released on Parole",
+                      "Facility")
+  })
+  
+  # Plot Counties
+  output$par_rels_counties_plot <- renderPlotly({
+    
+    output$n_par_rels_str <- renderText({
+      parole_df %>%
+        pull(value) %>%
+        sum() %>%
+        number(big.mark=",")
+    })
+    
+    parole_df %>%
+      group_by(County, Date) %>%
+      summarize(value = sum(value)) %>%
+      single_bar_plot("Total", 
+                      "Total Released on Parole",
+                      "County")
+  })
+  
+  # Plot county facilities
+  output$par_rels_countyfacs_plot <- renderPlotly({
+    parole_df %>%
+      filter(County %in% c("Bristol", "Essex", "Hampden", "Suffolk")) %>%
+      select(Date, Facility = facility_match, value) %>%
+      single_bar_plot("Total", 
+                      "Total Released on Parole",
+                      "Facility")
   })
   
   # Total Releases -------------------------------------------------------
