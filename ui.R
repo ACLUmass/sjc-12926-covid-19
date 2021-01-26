@@ -40,8 +40,12 @@ pop_choices <- c("--", 'All', 'All Counties', "DOC Aggregate", 'DOC: Boston Pre'
                  'DOC: MCI-Norfolk', 'DOC: MCI-Shirley', 'DOC: MTC', 
                  'DOC: NCCI-Gardn', 'DOC: NECC', 'DOC: OCCC', 'DOC: Pondville', 
                  'DOC: SBCC', 'DOC: SMCC', 'Barnstable', 'Berkshire', 'Bristol',
-                 'Dukes', 'Essex', 'Franklin', 'Hampden', 'Hampshire', 'Middlesex', 
-                 'Norfolk', 'Plymouth', 'Suffolk', 'Worcester')
+                 'Bristol - Ash Street Jail', 'Bristol - DHOC',
+                 'Dukes', 'Essex', 'Essex - Middleton', 'Essex - Prerelease', 
+                 'Essex - Women in Transition','Franklin', 'Hampden', 
+                 'Hampden - Ludlow', 'Hampden - Mill Street', "Hampden - Women's Facility", 
+                 "Hampden - Section 35", 'Hampshire', 'Middlesex', 
+                 'Norfolk', 'Plymouth', 'Suffolk', 'Suffolk - HOC', 'Suffolk - Jail', 'Worcester')
 
 cty_facs <- c('Bristol - Ash Street Jail', 'Bristol - DHOC', 'Essex - Middleton', 
               'Essex - Prerelease', 'Essex - Women in Transition', 'Hampden - Ludlow', 

@@ -194,11 +194,10 @@ function(input, output, session) {
   # Load County Data -----------------------------------------------------------
   
   sjc_county_df <- read_excel(tf, sheet=3) %>%
-    select(-contains("Population")) %>%
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     mutate(Date = as.Date(Date)) %>%
     mutate_at(vars(starts_with("N "), starts_with("Total"), 
-                   matches("Active"), matches("Death")),
+                   matches("Active"), matches("Death"), contains("Population")),
               as.numeric)
   
   sjc_county_num_df <- sjc_county_df %>%
@@ -288,6 +287,13 @@ function(input, output, session) {
     select(Date, County, pop_type, value) %>%
     filter(!is.na(value))
   
+  county_fac_pop_df <- sjc_county_df %>%
+    mutate(County = factor(`County Facility`, levels=cty_facs)) %>%
+    select(Date, County, contains("Population"), -`Total Population`) %>%
+    pivot_longer(cols=contains("Population"), names_pattern="(.*) Population", 
+                 names_to = "pop_type") %>%
+    filter(!is.na(value)) 
+  
   pop_df <- sjc_df_fix_date_pop %>%
     select(Date, County, contains("Population"), -`Total Population`) %>%
     pivot_longer(cols=contains("Population"), names_pattern="(.*) Population", 
@@ -295,6 +301,7 @@ function(input, output, session) {
     bind_rows(all_pop_df) %>%
     bind_rows(all_counties_pop_df) %>%
     bind_rows(doc_fac_pop_df) %>%
+    bind_rows(county_fac_pop_df) %>%
     mutate(pop_type = str_replace(pop_type, "Pre-Trial", "Pretrial"),
            County = str_replace(County, "^DOC$", "DOC Aggregate"))
   
