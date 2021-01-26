@@ -69,18 +69,17 @@ fluidPage(theme = "sjc_12926_app.css",
                  
       tabPanel("About", 
                
-               div(id="dev-info2",
+               div(id="dev-info",
                    wellPanel(
                      icon('info-circle'),
-                     h4("New Daily DOC Reporting"),
-                     em("On November 9, in response to multiple new outbreaks, the 
-                        Department of Correction agreed to return to daily reporting from its facilities. 
-                        (Recall that counties and the DOC have been reporting weekly since an", 
-                        a("SJC order", href="https://data.aclum.org/wp-content/uploads/2020/07/SJC-12926-Order-Appendix-B.pdf"), 
-                        "on June 23.)"), 
-                        em("As such, starting November 11, DOC data on this site will be updated on a 
-                        daily rather than weekly basis (excluding weekends and holidays). County 
-                        data will still update weekly, published by Thursday mornings.")
+                     h4("Winter 2021 Updates"),
+                     em("In response to continuing changes in county and state reporting, please note that multiple new metrics have been added to this site as of [January 29, 2021], including:",
+                        tags$ul(
+                          tags$li("[DOC only] Hospitalizations of prisoners, retroactive to December"),
+                          tags$li("[DOC only] Medical parole approval for prisoners, retroactive to April"),
+                          tags$li("Weekly parole releases, retroactive to April"),
+                          tags$li("Jail populations at the facility level (applies for counties with multiple facilities: Bristol, Essex, Hampden, Suffolk), retroactive to September")
+                        ))
                    )
                ),
                
