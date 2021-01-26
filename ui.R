@@ -312,6 +312,16 @@ fluidPage(theme = "sjc_12926_app.css",
                  
       ),
       
+      # UI: Parole ---------------------------------------------
+      navbarMenu("Parole",
+                 
+                 tabPanel("Medical Parole", 
+                          h2(textOutput("n_med_par_str"), align="center"),
+                          p("Reports of DOC prisoners approved for medical parole", align="center"),
+                          withSpinner(plotlyOutput("med_par_plot"), 
+                                      type=4, color="#b5b5b5", size=0.5)
+                 )
+      ),
       
     # UI: DOC + County Aggregates ---------------------------------------------
     navbarMenu("Counties + DOC Aggregates",

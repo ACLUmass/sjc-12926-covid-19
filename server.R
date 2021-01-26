@@ -112,7 +112,6 @@ function(input, output, session) {
   GET(sjc_googledrive_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
   
   sjc_df <- read_excel(tf) %>%
-    select(-matches(".*Medical Parole")) %>%
     # Turn string "NA" to real NA
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     # Make all count columns numeric
@@ -1612,6 +1611,40 @@ function(input, output, session) {
     
     lines_plotly_style(g, y_label, "County", 
                        show_weekly=F, subtitle=F)
+  })
+  
+  # DOC: Medical Parole -------------------------------------------------------
+  
+  med_par_df <- sjc_df %>%
+    mutate(Date = as.Date(Date, origin=lubridate::origin)) %>%
+    mutate(value = as.numeric(`N Approved Medical Parole`)) %>%
+    filter(County == "DOC",
+           !is.na(value)) %>%
+    mutate(cumul = cumsum(value)) %>%
+    dplyr::select(Date, cumul, value)
+  
+  # Calculate totals
+  n_med_par <- sum(med_par_df$value)
+  output$n_med_par_str <- renderText({format(n_med_par, big.mark=",")})
+  
+  # Plot hospitalizations v. time
+  output$med_par_plot <- renderPlotly({
+  
+    y_label <- "Medical Parole Approvals"
+
+    g <- med_par_df %>%
+      ggplot(aes(x=Date, y = cumul)) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
+      labs(x = "", y = y_label, color="",
+           title="placeholder") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off')
+    
+    lines_plotly_style(g, y_label, "County", 
+                       show_weekly=F, subtitle=T)
   })
   
   # Counties: Total Tests -------------------------------------------------------

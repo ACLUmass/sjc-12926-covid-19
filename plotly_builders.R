@@ -315,14 +315,14 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
       # If the data is from after 7/14, show date range
       tooltip_text <- g$x$data[[i]]$text
       
-      if (!str_detect(y_label, "Active") & pop == F) {
+      if (!str_detect(y_label, "Active")) {
         for (t in tooltip_text) {
           
           data_date <- t %>%
             str_extract("(?<=Date: ).*?(?=<br \\/>c)") %>%
             ymd()
           
-          is_DOC <- location_to_plot == "Facility" | str_detect(t, "DOC|All$")
+          is_DOC <- location_to_plot == "Facility" | str_detect(t, "DOC|All$") | str_detect(y_label, "Medical")
           
           weekly <- !is.na(data_date) & 
             ((is_DOC & data_date >= ymd(20200707) & data_date < ymd(20201111)) |
