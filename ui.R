@@ -339,6 +339,20 @@ fluidPage(theme = "sjc_12926_app.css",
                           h3("Multi-Facility Counties", style= "color: rgba(0, 85, 170, .5);"),
                           withSpinner(plotlyOutput("par_rels_countyfacs_plot"), 
                                       type=4, color="#b5b5b5", size=0.5)
+                 ),
+                 
+                 tabPanel("Releases on Parole Over Time", 
+                          wellPanel(id="internal_well",
+                                    p("Select up to three locations to plot versus time."),
+                                    splitLayout(
+                                      selectInput("select_parole1_pop", label = NULL, choices = pop_choices,
+                                                  selected = "All", multiple=FALSE),
+                                      selectInput("select_parole2_pop", label = NULL, choices = pop_choices,
+                                                  selected = "--", multiple=FALSE),
+                                      selectInput("select_parole3_pop", label = NULL, choices = pop_choices,
+                                                  selected = "--", multiple=FALSE)
+                                    )),
+                          withSpinner(plotlyOutput("par_rels_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
                  )
       ),
       

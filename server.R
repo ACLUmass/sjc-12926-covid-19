@@ -46,14 +46,6 @@ fac_staff <- c('Boston Pre', 'BSH',
                'MCI-Shirley', 'MTC', "NECC", 'NCCI-Gardn', 'OCCC', 'Pondville', 
                'SBCC', 'SMCC', "Non-Facility")
 
-pop_choices <- c("--", 'All', 'All Counties', "DOC Aggregate", 'DOC: Boston Pre', 'DOC: BSH', 
-                 'DOC: LSH', 'DOC: MASAC', 'DOC: MCI-C', 'DOC: MCI-CJ', 'DOC: MCI-F', 
-                 'DOC: MCI-Norfolk', 'DOC: MCI-Shirley', 'DOC: MTC', 
-                 'DOC: NCCI-Gardn', 'DOC: NECC', 'DOC: OCCC', 'DOC: Pondville', 
-                 'DOC: SBCC', 'DOC: SMCC', 'Barnstable', 'Berkshire', 'Bristol',
-                 'Dukes', 'Essex', 'Franklin', 'Hampden', 'Hampshire', 'Middlesex', 
-                 'Norfolk', 'Plymouth', 'Suffolk', 'Worcester')
-
 cty_facs <- c('Bristol - Ash Street Jail', 'Bristol - DHOC', 'Essex - Middleton', 
               'Essex - Prerelease', 'Essex - Women in Transition', 'Hampden - Ludlow', 
                'Hampden - Mill Street', "Hampden - Women's Facility", "Hampden - Section 35", 
@@ -110,7 +102,7 @@ function(input, output, session) {
 
   # Download excel spreadsheet from URL and read as DF
   GET(sjc_googledrive_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
-  
+
   sjc_df <- read_excel(tf) %>%
     # Turn string "NA" to real NA
     mutate_if(is.character, ~na_if(., 'NA')) %>%
@@ -244,8 +236,7 @@ function(input, output, session) {
   
   facs_df <- read.csv("parole_locs.csv")
   
-  # parole_df <- read_excel(tf, sheet=4) %>%
-  parole_df <- read_excel('../data/PAROLE_prison_data_SJC12926.xlsx', sheet=4) %>%
+  parole_df <- read_excel(tf, sheet=4) %>%
     rename(date = `Date (Friday)`, value = `N Released Parole`) %>%
     mutate(Date = as.Date(date),
            value = as.numeric(value)) %>%
@@ -650,6 +641,111 @@ function(input, output, session) {
       single_bar_plot("Total", 
                       "Total Released on Parole",
                       "Facility")
+  })
+  
+  # Parole Releases v. Time -------------------------------------------------------
+  
+  # Determine which counties to plot
+  fac_to_plot_parole <- reactive({
+    c(input$select_parole1_pop,
+      input$select_parole2_pop,
+      input$select_parole3_pop)
+  })
+  
+  # Pull out all parole data
+  all_parole_df <- parole_df %>%
+    group_by(Date) %>%
+    summarize(value = sum(value)) %>%
+    arrange(Date) %>%
+    mutate(Facility = "All",
+           cumul = cumsum(value))
+  
+  all_counties_parole_df <- parole_df %>%
+    filter(County != "DOC") %>%
+    group_by(Date) %>%
+    summarize(value = sum(value)) %>%
+    arrange(Date) %>%
+    mutate(Facility = "All Counties",
+           cumul = cumsum(value))
+  
+  counties_parole_df <- parole_df %>%
+    group_by(County, Date) %>%
+    summarize(value = sum(value)) %>%
+    arrange(Date) %>%
+    mutate(Facility = County,
+           Facility = ifelse(Facility == "DOC", "DOC Aggregate", Facility),
+           cumul = cumsum(value)) %>%
+    ungroup() %>%
+    select(-County)
+  
+  parole_v_time_df <- parole_df %>%
+    filter(County %in% c("DOC", "Bristol", "Essex", "Hampden", "Suffolk")) %>%
+    mutate(Facility = ifelse(County == "DOC", paste0("DOC: ", facility_match), as.character(facility_match))) %>%
+    select(-County, -date, -facility_match) %>%
+    group_by(Facility) %>%
+    arrange(Date) %>%
+    mutate(cumul = cumsum(value)) %>%
+    bind_rows(all_parole_df) %>%
+    bind_rows(all_counties_parole_df) %>%
+    bind_rows(counties_parole_df)
+  
+  # Plot
+  output$par_rels_v_time_plot <- renderPlotly({
+    
+    y_label <- "Total Released on Parole"
+    
+    # Determine if there simply isn't data for the given thing
+    no_data <- parole_v_time_df %>%
+      filter(Facility %in% fac_to_plot_parole()) %>%
+      filter(value != 0) %>%
+      nrow() == 0
+    
+    if (no_data) {
+      
+      g <- data.frame(Date="", active="", County="") %>%
+        ggplot(aes(x=Date, y = active, color=County)) +
+        annotate("text", x=.5, y=.5, 
+                 label='No parole releases at selected location(s)',
+                 fontface="italic") +
+        labs(x = "", y = y_label, color="",
+             title="placeholder") +
+        theme(plot.title= element_text(family="gtam", face='bold'),
+              text = element_text(family="gtam", size = 16),
+              plot.margin = unit(c(1,1,4,1), "lines"),
+              axis.text = element_blank()) +
+        coord_cartesian(clip = 'off')
+      
+      lines_plotly_style(g, y_label, "County", 
+                         show_weekly=F, pop=T)
+    } else {
+      
+      g <- parole_v_time_df %>%
+        filter(Date >= ymd(20200405),
+               Facility %in% fac_to_plot_parole()) %>%
+        rename(Location = Facility) %>%
+        ggplot(aes(x=Date, y = cumul, color=Location,
+                   text = paste0("Date: ", Date, "\n",
+                                 y_label, ": ", number(cumul, big.mark=","), "\n",
+                                 "Location: ", Location))) +
+        geom_path(size=1.3, show.legend = T, alpha=0.8, group=1) +
+        labs(x = "", y = y_label, color="",
+             title = paste(y_label, "over Time")) +
+        theme(plot.title= element_text(family="gtam", face='bold'),
+              text = element_text(family="gtam", size = 16),
+              plot.margin = unit(c(1,1,4,1), "lines"),
+              legend.position = c(.5, -.22),
+              legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+              legend.key.width = unit(1, "cm"),
+              legend.text = element_text(size=16)) +
+        scale_x_date(date_labels = "%b %e ", limits=c(ymd(20200405), NA)) +
+        scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+        coord_cartesian(clip = 'off') 
+      
+      lines_plotly_style(g, y_label, "County",
+                         subtitle=T, show_weekly = F,
+                         pop=T)
+    }
+    
   })
   
   # Total Releases -------------------------------------------------------
