@@ -112,7 +112,7 @@ function(input, output, session) {
   GET(sjc_googledrive_url, write_disk(tf <- tempfile(fileext = ".xlsx")))
   
   sjc_df <- read_excel(tf) %>%
-    select(-matches(".*Hospitalizations|.*Medical Parole")) %>%
+    select(-matches(".*Medical Parole")) %>%
     # Turn string "NA" to real NA
     mutate_if(is.character, ~na_if(., 'NA')) %>%
     # Make all count columns numeric
@@ -1574,6 +1574,44 @@ function(input, output, session) {
     apply(death_dates_df %>% filter(DOC==T), MARGIN = 1, get_death_li_DOC) %>%
       tagList()
     
+  })
+  
+  # DOC: Hospitalizations -------------------------------------------------------
+  
+  hosps_df <- sjc_df %>%
+    mutate(Date = as.Date(Date, origin=lubridate::origin)) %>%
+    mutate(value = as.numeric(`Active Hospitalizations`)) %>%
+    filter(County == "DOC",
+           !is.na(value)) %>%
+    dplyr::select(Date, value)
+  
+  # Calculate totals
+  output$n_hosps_str <- renderText({
+    hosps_df %>%
+      filter(Date == max(Date)) %>%
+      pull(value) %>%
+      format(big.mark=",")
+    })
+  
+  # Plot hospitalizations v. time
+  output$hosp_plot <- renderPlotly({
+  
+    y_label <- "Active DOC Hospitalizations"
+
+    g <- hosps_df %>%
+      ggplot(aes(x=Date, y = value)) +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
+      geom_point(size=1.5) +
+      labs(x = "", y = y_label, color="",
+           title="placeholder") +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16)) +
+      scale_x_date(date_labels = "%b %e ") +
+      scale_color_manual(values=c("black", "#0055aa", "#fbb416")) +
+      coord_cartesian(clip = 'off')
+    
+    lines_plotly_style(g, y_label, "County", 
+                       show_weekly=F, subtitle=F)
   })
   
   # Counties: Total Tests -------------------------------------------------------

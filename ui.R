@@ -287,7 +287,7 @@ fluidPage(theme = "sjc_12926_app.css",
                  "----",
 
                  tabPanel("DOC Hospitalizations", 
-                          h2(textOutput("n_hospitalizations_str"), align="center"),
+                          h2(textOutput("n_hosps_str"), align="center"),
                           p("Reports of DOC prisoners currently hospitalized with COVID-19", align="center"),
                           withSpinner(plotlyOutput("hosp_plot"), type=4, color="#b5b5b5", size=0.5)
                  ),
