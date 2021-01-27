@@ -359,7 +359,7 @@ fluidPage(theme = "sjc_12926_app.css",
     # UI: DOC + County Aggregates ---------------------------------------------
     navbarMenu("Counties + DOC Aggregates",
       
-        tabPanel("Total Releases", 
+        tabPanel("Total Sentenced/Pretrial Releases", 
                  wellPanel(id="internal_well",
                    p("Select kind of prisoner:"),
                    selectInput("select_release", label = NULL, 
@@ -373,7 +373,7 @@ fluidPage(theme = "sjc_12926_app.css",
                  withSpinner(plotlyOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5),
                  em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
         
-        tabPanel("Releases Over Time",
+        tabPanel("Sentenced/Pretrial Releases Over Time",
                  wellPanel(id="internal_well",
                    p("Select up to three locations to plot versus time."),
                    splitLayout(
@@ -524,7 +524,7 @@ fluidPage(theme = "sjc_12926_app.css",
     # UI: DOC Facilities ------------------------------------------------------
      navbarMenu("DOC Facilities",
      
-       tabPanel("Total Releases", 
+       tabPanel("Total Sentenced/Pretrial Releases", 
                 div(align="center",
                     h2(textOutput("n_releases_DOC_str")),
                     p("Reports of prisoners released at individual DOC facilities pursuant to SJC 12926", align="center"),
@@ -534,7 +534,7 @@ fluidPage(theme = "sjc_12926_app.css",
                 withSpinner(plotlyOutput("all_releases_DOC_plot"), type=4, color="#b5b5b5", size=0.5),
                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
        
-       tabPanel("Releases Over Time",
+       tabPanel("Sentenced/Pretrial Releases Over Time",
                 wellPanel(id="internal_well",
                           p("Select up to three facilities to plot versus time.*"),
                           splitLayout(
