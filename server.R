@@ -2213,6 +2213,19 @@ function(input, output, session) {
     filter = 'top'
   )
   
+  output$parole_df_table <- DT::renderDataTable(
+    {read_excel(tf, sheet=4) %>%
+        mutate(Date = as.Date(`Date (Friday)`),
+               `N Released Parole` = as.numeric(`N Released Parole`)) %>%
+        merge(facs_df, by.x=c("Facility", "County"), 
+              by.y=c("facility_raw", "County"), all.x=T) %>%
+        select(-`Date (Friday)`, -Facility) %>%
+        select(Date, County, Facility=facility_match, `N Released Parole`) %>%
+        arrange(Date, County, Facility)},
+    options = list(scrollX = TRUE), 
+    filter = 'top'
+  )
+  
   # Download Data -----------------------------------------------------
   observeEvent(input$link_to_external, {
     updateTabsetPanel(session, "panels", "External Resources")

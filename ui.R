@@ -891,7 +891,9 @@ fluidPage(theme = "sjc_12926_app.css",
                            tabPanel("DOC Facilities", 
                                     withSpinner(DT::dataTableOutput("DOC_df_table"), type=4, color="#b5b5b5", size=0.5)),
                            tabPanel("County Facilities", 
-                                    withSpinner(DT::dataTableOutput("cty_df_table"), type=4, color="#b5b5b5", size=0.5))
+                                    withSpinner(DT::dataTableOutput("cty_df_table"), type=4, color="#b5b5b5", size=0.5)),
+                           tabPanel("Parole", 
+                                    withSpinner(DT::dataTableOutput("parole_df_table"), type=4, color="#b5b5b5", size=0.5))
                            )
       ),
       
