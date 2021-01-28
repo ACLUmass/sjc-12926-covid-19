@@ -902,6 +902,8 @@ fluidPage(theme = "sjc_12926_app.css",
                  "reports recieved from the counties and DOC into a single",
                  "spreadsheet. This spreadsheet is what we source for all",
                  "visualizations on this site."),
+               p("Please note that we frequently receive corrections on previous reports,",
+                 "which starting in January 2021 we denote in", span("red.", style="color:red;")),
                p(strong("Current file size: "), textOutput("n_rows", inline=T), "entries"),
                p("The accumulated database is available for download here:"),
                downloadButton("downloadData", "Download XLSX"))

@@ -115,7 +115,10 @@ function(input, output, session) {
     # Protect against empty cells messing things up
     filter(Date >= ymd(20200327))
   
-  output$n_rows <- renderText({nrow(sjc_df)})
+  output$n_rows <- renderText({
+    nrow(sjc_df) %>%
+      number(big.mark=",")
+    })
   
   # Determine last update time (not sure how accurate this is, but it might make 
   # users feel better)
