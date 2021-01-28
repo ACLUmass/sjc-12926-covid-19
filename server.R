@@ -242,6 +242,12 @@ function(input, output, session) {
     
   })
   
+  # Load Vaccination Data -----------------------------------------------------------
+  
+  # vax_df <- read_excel(tf, sheet=5) %>%
+  vax_df <- read_excel("../data/vaccines/vaccines.xlsx") %>%
+    mutate_at(vars(-Date, -County, -Notes), as.numeric)
+  
   # Population v. Time -------------------------------------------------------
   
   # Determine which counties to plot
@@ -590,6 +596,63 @@ function(input, output, session) {
   
     lines_plotly_style(g, y_label, "Location", pos_and_test=T, 
                        show_weekly=input$checkbox_both)
+    
+  })
+  
+  # Total Vaccinations -------------------------------------------------------
+  vax_num_df <- vax_df %>%
+    mutate(`N 1st Dose - Unspecified` = ifelse(County=="Worcester", `Total 1st Dose`, NA),
+           `N 2nd Dose - Unspecified` = ifelse(County=="Worcester", `Total 2nd Dose`, NA)) %>%
+    select(-contains("Total"), -Notes) %>%
+    pivot_longer(cols=starts_with("N"), names_to = c("dose", "pop"), 
+                 names_pattern="N (.*) - (.*)") %>%
+    mutate(dose_pop = paste0(dose, " - ", pop))
+  
+  n_vax <- vax_num_df %>%
+    pull(value) %>%
+    sum(na.rm=T)
+  
+  # Determine which variable to plot
+  select_vax <- reactive({ input$select_vax })
+  
+  output$all_vax_plot <- renderPlotly({
+    
+    if (select_vax() == "All") {
+      
+      output$n_vax_str <- renderText({format(n_vax, big.mark=",")})
+      output$type_vax <- renderText({"prisoners and staff"})
+      
+      vax_num_df %>%
+        mutate(type = factor(dose_pop, levels = vax_levels)) %>%
+        stacked_bar_plot("Vaccines",
+                         "County",
+                         vax=T)
+      
+    } else if (select_vax() %in% c("Prisoners", "Staff")) {
+      
+      output$n_vax_str <- renderText({
+        vax_num_df %>%
+          filter(str_detect(dose_pop, select_vax())) %>%
+          pull(value) %>%
+          sum(na.rm=T) %>%
+          format(big.mark=",")
+      })
+      output$type_vax <- renderText({select_vax() %>% tolower()})
+      
+      vax_num_df %>%
+        filter(str_detect(dose_pop, select_vax())) %>%
+        rename(type = dose) %>%
+        stacked_bar_plot(paste(select_vax(), "Vaccines"),
+                         "County")
+      
+    } else if (select_vax() == "Total") {
+      
+      output$n_vax_str <- renderText({format(n_vax, big.mark=",")})
+      output$type_vax <- renderText({"prisoners and staff"})
+      
+      single_bar_plot(vax_num_df, select_vax(), "Vaccines", "County")
+      
+    }
     
   })
   

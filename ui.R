@@ -304,6 +304,30 @@ fluidPage(theme = "sjc_12926_app.css",
                  
       ),
       
+      # UI: Vaccinations ---------------------------------------------
+      navbarMenu("Vaccinations",
+                 
+                 tabPanel("Total Vaccinations", 
+                          wellPanel(id="internal_well",
+                                    p("Select population:"),
+                                    selectInput("select_vax", label = NULL, 
+                                                choices = c("All", "Prisoners", "Staff", "Total"),
+                                                selected = "All", multiple=FALSE)
+                                    # em('Exact number of vaccinations per county annotated in',
+                                    #    '"Prisoners", "Staff", and "Total" plots.')
+                          ),
+                          h2(textOutput("n_vax_str"), align="center"),
+                          p("COVID-19 vaccines administered to", 
+                            textOutput("type_vax", inline=T), align="center"),
+                          withSpinner(plotlyOutput("all_vax_plot"), type=4, color="#b5b5b5", size=0.5)
+                          
+                 )#,
+                 
+                 # tabPanel("Vaccinations Over Time", 
+                 #          
+                 # )
+      ),
+      
       
     # UI: DOC + County Aggregates ---------------------------------------------
     navbarMenu("Counties + DOC Aggregates",

@@ -43,6 +43,11 @@ legend_layout_bottom <- list(orientation = "h",
                           x = 0.5, y=-.2,
                           xanchor="center",
                           bgcolor = alpha('lightgray', 0.4))
+legend_layout_vax <- list(orientation = "h", 
+                          x = .5, y=-.4,
+                          xanchor="center", yanchor="top",
+                          bgcolor = alpha('lightgray', 0.4),
+                          font = list(size=14))
 
 # Define x axes
 counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex", 
@@ -107,13 +112,13 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
   } else {
     label_threshold <- data %>%
       group_by(loc) %>%
-      summarize(sum_value = sum(value)) %>%
+      summarize(sum_value = sum(value, na.rm=T)) %>%
       pull(sum_value) %>%
       max() * .07
     
     g <- data%>%
       group_by(loc) %>%
-      summarize(sum_value = sum(value)) %>%
+      summarize(sum_value = sum(value, na.rm=T)) %>%
       ungroup() %>%
       mutate(label_vjust = ifelse(sum_value < label_threshold | sum_value > 1000, 
                                   sum_value + max(sum_value) * .025, 
@@ -172,7 +177,7 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
 }
 
 # Function for plots with multiple bars stacked
-stacked_bar_plot <- function(data, y_label, location_to_plot) {
+stacked_bar_plot <- function(data, y_label, location_to_plot, vax=F) {
   
   doc_releases <- y_label == "Prisoners Released" & location_to_plot == "County"
 
@@ -185,46 +190,63 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
     location_to_plot <- "Facility"
   }
   
+  traces_to_hide <- 0
+  
   if (doc_releases) {
-    traces_to_hide <- 0
+    
     traces_lightback <- 2:3
     traces_darkback <- 1
     
     data <- data %>%
       mutate(type=factor(type, levels=c("Pre-Trial", "Sentenced", "Home Confinements")))
     
+  } else if (vax) {
+    traces_lightback <- c(3, 5)
+    traces_darkback <- c(1:2, 4, 6)
   } else {
-    
-    traces_to_hide <- 0
     traces_lightback <- 2
     traces_darkback <- 1
-    
   }
 
   g <- data%>%
       rename(loc = location_to_plot) %>%
       group_by(loc, type) %>%
-      summarize(sum_value = sum(value)) %>%
+      summarize(sum_value = sum(value, na.rm=T)) %>%
     ggplot(aes(x=loc,
                y=sum_value,
                fill = type,
                text = paste0(location_to_plot, ": ", loc, "\n",
                             paste(type, y_label), ": ", number(sum_value, big.mark=",")))) +
       geom_col(position = "stack") + 
-      labs(y = y_label, x="") +
+      labs(y = y_label, x="", fill="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3")) +
       scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
                          limits= c(0, NA))
+  
+  if (vax) {
+    g <- g +
+      scale_fill_manual(values = c("#0055aa", "#002a55", "#fbb416", "#bc8710", "#a3dbe3", "#7aa4aa")) 
+  } else {
+    g <- g +
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
+  }
     
     g <- ggplotly(g, tooltip=c("text"),
                   dynamicTicks = T) %>%
       plotly::config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
-      style(hoverinfo = "none", traces = traces_to_hide) %>%
-      layout(legend = legend_layout_top,
-             yaxis = list(tickformat=",.0f"))  
+      style(hoverinfo = "none", traces = traces_to_hide) 
+    
+    if (vax) {
+      g <- g %>%
+        layout(legend = legend_layout_vax,
+               yaxis = list(tickformat=",.0f"))  
+    } else {
+      g <- g %>%
+        layout(legend = legend_layout_top,
+               yaxis = list(tickformat=",.0f"))  
+    }
     
     g %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
