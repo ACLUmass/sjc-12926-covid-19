@@ -314,11 +314,14 @@ fluidPage(theme = "sjc_12926_app.css",
                                                  selected = "Prisoners" , inline = T, 
                                                  choiceNames = c("Prisoners", "Staff", "Total"),
                                                  choiceValues = c("Prisoners", "Staff", "Total")),
-                                    em('Worcester County reports only total vaccination numbers, not breakdowns by prisoner/staff populations. As such, vaccines from Worcester are labeled "Unknown."')
+                                    em('Please note that the DOC and the HOCs currently report only the weekly and cumulative vaccinations they themselves administer. As a result, these numbers will not capture any staff who have been vaccinated elsewhere.'),
+                                    em('Furthermore, due to prisoner turnover, these data may not reflect the number of currently incarcerated individuals who have been vaccinated.')
                           ),
+                          checkboxInput("checkbox_hideDOC_vax", label = "Hide DOC column", value = F),
                           h2(textOutput("n_vax_str"), align="center"),
                           p("COVID-19 vaccines administered to", 
-                            textOutput("type_vax", inline=T), align="center"),
+                            textOutput("type_vax", inline=T),
+                            "since January 20", align="center"),
                           withSpinner(plotlyOutput("all_vax_plot"), type=4, color="#b5b5b5", size=0.5)
                           
                  )#,

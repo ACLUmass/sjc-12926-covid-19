@@ -601,12 +601,11 @@ function(input, output, session) {
   
   # Total Vaccinations -------------------------------------------------------
   vax_num_df <- vax_df %>%
-    mutate(`N 1st Dose - Unspecified` = ifelse(County=="Worcester", `Total 1st Dose`, NA),
-           `N 2nd Dose - Unspecified` = ifelse(County=="Worcester", `Total 2nd Dose`, NA)) %>%
     select(-contains("Total"), -Notes) %>%
     pivot_longer(cols=starts_with("N"), names_to = c("dose", "pop"), 
                  names_pattern="N (.*) - (.*)") %>%
-    mutate(dose_pop = paste0(dose, " - ", pop))
+    mutate(dose_pop = paste0(dose, " - ", pop),
+           County = factor(County, levels=counties))
   
   n_vax <- vax_num_df %>%
     pull(value) %>%
@@ -617,6 +616,11 @@ function(input, output, session) {
   
   output$all_vax_plot <- renderPlotly({
     
+    if (input$checkbox_hideDOC_vax) {
+      vax_num_df <- vax_num_df %>%
+        filter(County != "DOC")
+    }
+    
     if (select_vax() %in% c("Prisoners", "Staff")) {
       
       output$n_vax_str <- renderText({
@@ -626,29 +630,27 @@ function(input, output, session) {
           sum(na.rm=T) %>%
           format(big.mark=",")
       })
-      output$type_vax <- renderText({select_vax() %>% tolower()})
+      output$type_vax <- renderText({
+        ifelse(input$checkbox_hideDOC_vax, 
+               paste("county", select_vax() %>% tolower()),
+               select_vax() %>% tolower())
+      })
       
       vax_num_df %>%
         filter(str_detect(dose_pop, paste0(select_vax(), "|Unspecified"))) %>%
         rename(type = dose) %>%
-        mutate(type = factor(ifelse(County != "Worcester", 
-                                    ifelse(type == "1st Dose", 
-                                           paste0("1st Dose - ", select_vax()),
-                                           paste0("2nd Dose - ", select_vax())), 
-                                    ifelse(type == "1st Dose", 
-                                           "1st Dose - Unknown", 
-                                           "2nd Dose - Unknown")),
-                             levels = c(paste0("1st Dose - ", select_vax()), paste0("2nd Dose - ", select_vax()), 
-                                        "1st Dose - Unknown", "2nd Dose - Unknown"))) %>%
         stacked_bar_plot(paste(select_vax(), "Vaccines"),
                          "County", vax=T)
       
     } else if (select_vax() == "Total") {
       
       output$n_vax_str <- renderText({format(n_vax, big.mark=",")})
-      output$type_vax <- renderText({"prisoners and staff"})
+      output$type_vax <- renderText({
+        ifelse(input$checkbox_hideDOC_vax, 
+               "county prisoners and staff",
+               "prisoners and staff")
+        })
       
-      # single_bar_plot(vax_num_df, select_vax(), "Vaccines", "County")
       vax_num_df %>%
         rename(type = dose) %>%
         stacked_bar_plot("Vaccines",

@@ -43,11 +43,6 @@ legend_layout_bottom <- list(orientation = "h",
                           x = 0.5, y=-.2,
                           xanchor="center",
                           bgcolor = alpha('lightgray', 0.4))
-legend_layout_vax <- list(orientation = "h", 
-                          x = .5, y=-.4,
-                          xanchor="center", yanchor="top",
-                          bgcolor = alpha('lightgray', 0.4),
-                          font = list(size=14))
 
 # Define x axes
 counties <- c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex", 
@@ -199,10 +194,6 @@ stacked_bar_plot <- function(data, y_label, location_to_plot, vax=F) {
     
     data <- data %>%
       mutate(type=factor(type, levels=c("Pre-Trial", "Sentenced", "Home Confinements")))
-    
-  } else if (vax) {
-    traces_lightback <- 2:3
-    traces_darkback <- c(1, 4)
   } else {
     traces_lightback <- 2
     traces_darkback <- 1
@@ -215,42 +206,22 @@ stacked_bar_plot <- function(data, y_label, location_to_plot, vax=F) {
     ggplot(aes(x=loc, y=sum_value, 
                fill=type,
                text = paste0(location_to_plot, ": ", loc, "\n",
-                             paste(type, y_label), ": ", number(sum_value, big.mark=",")))) 
-
-  if (vax) {
-    g <- g +
-      geom_col(position="dodge") +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "grey", "black")) 
-  } else {
-  g <- g +
-      geom_col(position = "stack")  +
-    scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
-  }
-  
-  g <- g + 
+                             paste(type, y_label), ": ", number(sum_value, big.mark=","))))  +
+      geom_col(position=ifelse(vax, "dodge", "stack")) + 
       labs(y = y_label, x="", fill="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
       scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
-                         limits= c(0, NA))
+                         limits= c(0, NA))  +
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
     g <- ggplotly(g, tooltip=c("text"),
                   dynamicTicks = T) %>%
       plotly::config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
-      style(hoverinfo = "none", traces = traces_to_hide) 
-    
-    if (vax) {
-      g <- g %>%
-        layout(legend = legend_layout_vax,
-               yaxis = list(tickformat=",.0f"))  
-    } else {
-      g <- g %>%
-        layout(legend = legend_layout_top,
-               yaxis = list(tickformat=",.0f"))  
-    }
-    
-    g %>%
+      style(hoverinfo = "none", traces = traces_to_hide)  %>%
+      layout(legend = legend_layout_top,
+             yaxis = list(tickformat=",.0f")) %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
 }
