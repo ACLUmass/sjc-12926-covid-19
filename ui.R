@@ -495,122 +495,6 @@ fluidPage(theme = "sjc_12926_app.css",
                  )
       ),
       
-      # UI: Releases ---------------------------------------------
-      
-      navbarMenu("Releases", 
-                 "Releases of sentenced and pretrial prisoners pursuant to SJC-12926",
-                 "----",
-                 
-                 tabPanel("County + DOC: Releases", 
-                          wellPanel(id="internal_well",
-                                    p("Select kind of prisoner:", id="radio_prompt"),
-                                    radioButtons("select_release", label = NULL, 
-                                                 selected = "All" , inline = T, 
-                                                 choiceNames = c("All", "Pre-Trial", "Sentenced","Home Confinements", "Total"),
-                                                 choiceValues = c("All", "Pre-Trial", "Sentenced","Home Confinements", "Total")),
-                                    em('Exact number of releases per county annotated in',
-                                       '"Pre-Trial", "Sentenced", "Home Confinements", and "Total" plots.')
-                          ),
-                          h2(textOutput("n_releases_str"), align="center"),
-                          p("Prisoners released pursuant to SJC 12926", align="center"),
-                          withSpinner(plotlyOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5),
-                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
-                 
-                 tabPanel("County + DOC: Releases Over Time",
-                          wellPanel(id="internal_well",
-                                    p("Select up to three locations to plot versus time."),
-                                    splitLayout(
-                                      selectInput("select_county1_rel", label = NULL, choices = county_choices,
-                                                  selected = "All", multiple=FALSE),
-                                      selectInput("select_county2_rel", label = NULL, choices = county_choices,
-                                                  selected = "All Counties", multiple=FALSE),
-                                      selectInput("select_county3_rel", label = NULL, choices = county_choices,
-                                                  selected = "DOC", multiple=FALSE)
-                                    )),
-                          checkboxInput("checkbox_rel", label = "Show transition to weekly reporting", value = TRUE),
-                          withSpinner(plotlyOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-                 ),
-                 
-                 "----",
-                 
-                 tabPanel("DOC Facilities: Releases", 
-                          div(align="center",
-                              h2(textOutput("n_releases_DOC_str")),
-                              p("Reports of prisoners released at individual DOC facilities pursuant to SJC 12926", align="center"),
-                              em("*The DOC only began reporting facility-level releases on April 29.",
-                                 "See the Counties + DOC: Total Releases page for longer-term totals.")
-                          ),
-                          withSpinner(plotlyOutput("all_releases_DOC_plot"), type=4, color="#b5b5b5", size=0.5),
-                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
-                 
-                 tabPanel("DOC Facilities: Releases Over Time",
-                          wellPanel(id="internal_well",
-                                    p("Select up to three facilities to plot versus time.*"),
-                                    splitLayout(
-                                      selectInput("select_fac1_rel", label = NULL, choices = fac_choices,
-                                                  selected = "All DOC Facilities", multiple=FALSE),
-                                      selectInput("select_fac2_rel", label = NULL, choices = fac_choices,
-                                                  selected = "DOC Total**", multiple=FALSE),
-                                      selectInput("select_fac3_rel", label = NULL, choices = fac_choices,
-                                                  selected = "MCI-Norfolk", multiple=FALSE)
-                                    ),
-                                    em("*The DOC only began reporting facility-level releases on April 29.",
-                                       "See the Counties + DOC: Releases Over Time page for longer-term totals."),
-                                    em('**DOC Total reflects the cumulative count of prisoner releases submitted in DOC-wide',
-                                       "reports going back to March 27.")
-                          ),
-                          checkboxInput("checkbox_fac_rel", label = "Show transition to weekly reporting", value = TRUE),
-                          withSpinner(plotlyOutput("DOC_releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-                 )
-       ),
-      
-      # UI: Parole ---------------------------------------------
-      navbarMenu("Parole",
-                 
-                 tabPanel("Medical Parole", 
-                          h2(textOutput("n_med_par_str"), align="center"),
-                          p("Reports of DOC prisoners approved for medical parole", align="center"),
-                          withSpinner(plotlyOutput("med_par_plot"), 
-                                      type=4, color="#b5b5b5", size=0.5)
-                 ),
-      
-                  "----",
-                 
-                 tabPanel("County + DOC: Releases on Parole",
-                          h2(textOutput("n_par_rels_str"), align="center"),
-                          p("Reports of prisoners released on parole", align="center"),
-                          withSpinner(plotlyOutput("par_rels_counties_plot"), 
-                                      type=4, color="#b5b5b5", size=0.5)
-                 ),
-                 tabPanel("DOC Facilities: Releases on Parole",
-                          h2(textOutput("n_par_rels_DOC_str"), align="center"),
-                          p("Reports of prisoners released on parole at individual DOC facilities", align="center"),
-                          withSpinner(plotlyOutput("par_rels_DOC_plot"), 
-                                      type=4, color="#b5b5b5", size=0.5)
-                 ),
-                 tabPanel("Multi-Facility Counties: Releases on Parole",
-                          withSpinner(plotlyOutput("par_rels_countyfacs_plot"), 
-                                      type=4, color="#b5b5b5", size=0.5)
-                 ),
-                 "----",
-                 
-                 tabPanel("Releases on Parole Over Time", 
-                          wellPanel(id="internal_well",
-                                    p("Select up to three locations to plot versus time."),
-                                    splitLayout(
-                                      selectInput("select_parole1_pop", label = NULL, choices = pop_choices,
-                                                  selected = "All", multiple=FALSE),
-                                      selectInput("select_parole2_pop", label = NULL, choices = pop_choices,
-                                                  selected = "--", multiple=FALSE),
-                                      selectInput("select_parole3_pop", label = NULL, choices = pop_choices,
-                                                  selected = "--", multiple=FALSE)
-                                    )),
-                          withSpinner(plotlyOutput("par_rels_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
-                 )
-      ),
-      
       # UI: Positive Cases ---------------------------------------------
       
       navbarMenu("Positive Tests",
@@ -893,8 +777,125 @@ fluidPage(theme = "sjc_12926_app.css",
                           ),
                           withSpinner(plotlyOutput("active_cty_fac_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
                  )
+                
+      ),
+      
+      # UI: Releases ---------------------------------------------
+      
+      navbarMenu("Releases", 
+                 "Releases of sentenced and pretrial prisoners pursuant to SJC-12926",
+                 "----",
                  
+                 tabPanel("County + DOC: Releases", 
+                          wellPanel(id="internal_well",
+                                    p("Select kind of prisoner:", id="radio_prompt"),
+                                    radioButtons("select_release", label = NULL, 
+                                                 selected = "All" , inline = T, 
+                                                 choiceNames = c("All", "Pre-Trial", "Sentenced","Home Confinements", "Total"),
+                                                 choiceValues = c("All", "Pre-Trial", "Sentenced","Home Confinements", "Total")),
+                                    em('Exact number of releases per county annotated in',
+                                       '"Pre-Trial", "Sentenced", "Home Confinements", and "Total" plots.')
+                          ),
+                          h2(textOutput("n_releases_str"), align="center"),
+                          p("Prisoners released pursuant to SJC 12926", align="center"),
+                          withSpinner(plotlyOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
                  
+                 tabPanel("County + DOC: Releases Over Time",
+                          wellPanel(id="internal_well",
+                                    p("Select up to three locations to plot versus time."),
+                                    splitLayout(
+                                      selectInput("select_county1_rel", label = NULL, choices = county_choices,
+                                                  selected = "All", multiple=FALSE),
+                                      selectInput("select_county2_rel", label = NULL, choices = county_choices,
+                                                  selected = "All Counties", multiple=FALSE),
+                                      selectInput("select_county3_rel", label = NULL, choices = county_choices,
+                                                  selected = "DOC", multiple=FALSE)
+                                    )),
+                          checkboxInput("checkbox_rel", label = "Show transition to weekly reporting", value = TRUE),
+                          withSpinner(plotlyOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+                 ),
+                 
+                 "----",
+                 
+                 tabPanel("DOC Facilities: Releases", 
+                          div(align="center",
+                              h2(textOutput("n_releases_DOC_str")),
+                              p("Reports of prisoners released at individual DOC facilities pursuant to SJC 12926", align="center"),
+                              em("*The DOC only began reporting facility-level releases on April 29.",
+                                 "See the Counties + DOC: Total Releases page for longer-term totals.")
+                          ),
+                          withSpinner(plotlyOutput("all_releases_DOC_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+                 
+                 tabPanel("DOC Facilities: Releases Over Time",
+                          wellPanel(id="internal_well",
+                                    p("Select up to three facilities to plot versus time.*"),
+                                    splitLayout(
+                                      selectInput("select_fac1_rel", label = NULL, choices = fac_choices,
+                                                  selected = "All DOC Facilities", multiple=FALSE),
+                                      selectInput("select_fac2_rel", label = NULL, choices = fac_choices,
+                                                  selected = "DOC Total**", multiple=FALSE),
+                                      selectInput("select_fac3_rel", label = NULL, choices = fac_choices,
+                                                  selected = "MCI-Norfolk", multiple=FALSE)
+                                    ),
+                                    em("*The DOC only began reporting facility-level releases on April 29.",
+                                       "See the Counties + DOC: Releases Over Time page for longer-term totals."),
+                                    em('**DOC Total reflects the cumulative count of prisoner releases submitted in DOC-wide',
+                                       "reports going back to March 27.")
+                          ),
+                          checkboxInput("checkbox_fac_rel", label = "Show transition to weekly reporting", value = TRUE),
+                          withSpinner(plotlyOutput("DOC_releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+                 )
+       ),
+      
+      # UI: Parole ---------------------------------------------
+      navbarMenu("Parole",
+                 
+                 tabPanel("DOC: Medical Parole", 
+                          h2(textOutput("n_med_par_str"), align="center"),
+                          p("Reports of DOC prisoners approved for medical parole", align="center"),
+                          withSpinner(plotlyOutput("med_par_plot"), 
+                                      type=4, color="#b5b5b5", size=0.5)
+                 ),
+                 
+                 tabPanel("County + DOC: Releases on Parole",
+                          h2(textOutput("n_par_rels_str"), align="center"),
+                          p("Reports of prisoners released on parole", align="center"),
+                          withSpinner(plotlyOutput("par_rels_counties_plot"), 
+                                      type=4, color="#b5b5b5", size=0.5)
+                 ),
+                 "----",
+                 
+                 tabPanel("DOC Facilities: Releases on Parole",
+                          h2(textOutput("n_par_rels_DOC_str"), align="center"),
+                          p("Reports of prisoners released on parole at individual DOC facilities", align="center"),
+                          withSpinner(plotlyOutput("par_rels_DOC_plot"), 
+                                      type=4, color="#b5b5b5", size=0.5)
+                 ),
+                 "----",
+                 "Bristol, Essex, Hampden, & Suffolk",
+                 tabPanel("Multi-Facility Counties: Releases on Parole",
+                          withSpinner(plotlyOutput("par_rels_countyfacs_plot"), 
+                                      type=4, color="#b5b5b5", size=0.5)
+                 ),
+                 "----",
+                 
+                 tabPanel("Releases on Parole Over Time", 
+                          wellPanel(id="internal_well",
+                                    p("Select up to three locations to plot versus time."),
+                                    splitLayout(
+                                      selectInput("select_parole1_pop", label = NULL, choices = pop_choices,
+                                                  selected = "All", multiple=FALSE),
+                                      selectInput("select_parole2_pop", label = NULL, choices = pop_choices,
+                                                  selected = "--", multiple=FALSE),
+                                      selectInput("select_parole3_pop", label = NULL, choices = pop_choices,
+                                                  selected = "--", multiple=FALSE)
+                                    )),
+                          withSpinner(plotlyOutput("par_rels_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+                 )
       ),
       
       tabPanel("Mapping County Trends", 
