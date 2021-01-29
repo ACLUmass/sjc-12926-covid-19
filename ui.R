@@ -267,7 +267,7 @@ fluidPage(theme = "sjc_12926_app.css",
       # UI: Deaths ---------------------------------------------
       navbarMenu("Deaths & Hospitalizations",
                  
-                 tabPanel("County + DOC Deaths", 
+                 tabPanel("County + DOC: Deaths", 
                           h2(textOutput("n_deaths_str"), align="center"),
                           p("Reports of COVID-19 prisoner deaths pursuant to SJC 12926", align="center"),
                           withSpinner(plotlyOutput("all_deaths_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -291,13 +291,13 @@ fluidPage(theme = "sjc_12926_app.css",
 
                  "----",
 
-                 tabPanel("DOC Hospitalizations", 
+                 tabPanel("DOC: Hospitalizations", 
                           h2(textOutput("n_hosps_str"), align="center"),
                           p("Reports of DOC prisoners currently hospitalized with COVID-19", align="center"),
                           withSpinner(plotlyOutput("hosp_plot"), type=4, color="#b5b5b5", size=0.5)
                  ),
                  
-                 tabPanel("DOC Facility Deaths", 
+                 tabPanel("DOC Facilities: Deaths", 
                           h2(textOutput("n_deaths_fac_str"), align="center"),
                           p("Reports of COVID-19 prisoner deaths in DOC facilities pursuant to SJC 12926", align="center"),
                           withSpinner(plotlyOutput("all_deaths_fac_plot"), type=4, color="#b5b5b5", size=0.5),
@@ -319,31 +319,248 @@ fluidPage(theme = "sjc_12926_app.css",
       ),
       
       # UI: Vaccinations ---------------------------------------------
-      navbarMenu("Vaccinations",
+      tabPanel("Vaccinations",
                  
-                 tabPanel("Total Vaccinations", 
-                          wellPanel(id="internal_well",
-                                    p("Select population:", id="radio_prompt"),
-                                    radioButtons("select_vax", label = NULL, 
-                                                 selected = "Prisoners" , inline = T, 
-                                                 choiceNames = c("Prisoners", "Staff", "Total"),
-                                                 choiceValues = c("Prisoners", "Staff", "Total")),
-                                    em('Please note that the DOC and the HOCs currently report only the weekly and cumulative vaccinations they themselves administer. As a result, these numbers will not capture any staff or incarcerated individuals who have been vaccinated elsewhere.'),
-                                    em('Furthermore, due to prisoner turnover, these data may not reflect the number of currently incarcerated individuals who have been vaccinated.')
-                          ),
-                          checkboxInput("checkbox_hideDOC_vax", label = "Hide DOC column", value = F),
-                          h2(textOutput("n_vax_str"), align="center"),
-                          p("Cumulative COVID-19 vaccines administered to", 
-                            textOutput("type_vax", inline=T), align="center"),
-                          withSpinner(plotlyOutput("all_vax_plot"), type=4, color="#b5b5b5", size=0.5),
-                          em("*As of January 27, Essex, Middlesex, and Norfolk counties have not yet reported vaccination data.")
-                          
-                 )#,
+                 
+                  wellPanel(id="internal_well",
+                            p("Select population:", id="radio_prompt"),
+                            radioButtons("select_vax", label = NULL, 
+                                         selected = "Prisoners" , inline = T, 
+                                         choiceNames = c("Prisoners", "Staff", "Total"),
+                                         choiceValues = c("Prisoners", "Staff", "Total")),
+                            em('Please note that the DOC and the HOCs currently report only the weekly and cumulative vaccinations they themselves administer. As a result, these numbers will not capture any staff or incarcerated individuals who have been vaccinated elsewhere.'),
+                            em('Furthermore, due to prisoner turnover, these data may not reflect the number of currently incarcerated individuals who have been vaccinated.')
+                  ),
+                  checkboxInput("checkbox_hideDOC_vax", label = "Hide DOC column", value = F),
+                  h2(textOutput("n_vax_str"), align="center"),
+                  p("Cumulative COVID-19 vaccines administered to", 
+                    textOutput("type_vax", inline=T), align="center"),
+                  withSpinner(plotlyOutput("all_vax_plot"), type=4, color="#b5b5b5", size=0.5),
+                  em("*As of January 27, Essex, Middlesex, and Norfolk counties have not yet reported vaccination data.")
                  
                  # tabPanel("Vaccinations Over Time", 
                  #          
                  # )
       ),
+      
+      # UI: Testing ---------------------------------------------
+      navbarMenu("Testing",
+                 
+                 tabPanel("County + DOC: Tests", 
+                          wellPanel(id="internal_well",
+                                    p("Select kind of individual:"),
+                                    selectInput("select_tested", label = NULL, 
+                                                choices = c("All", "Prisoners", "Staff", "Total"),
+                                                selected = "All", multiple=FALSE),
+                                    em('Exact number of tests per county annotated in "Prisoners",',
+                                       '"Staff", and "Total" plots.'),
+                                    em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')
+                          ),
+                          checkboxInput("checkbox_hideDOC_tests", label = "Hide DOC column", value = F),
+                          h2(textOutput("n_tests_str"), align="center"),
+                          p("Reports of",
+                            textOutput("type_tested", inline=T),
+                            "tested for COVID-19  pursuant to SJC 12926", 
+                            align="center"),
+                          withSpinner(plotlyOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+                 
+                 tabPanel("County + DOC: Tests Over Time",
+                          wellPanel(id="internal_well",
+                                    p("Select population to plot.", id="radio_prompt"),
+                                    radioButtons("test_radio", label = NULL, 
+                                                 selected = "ps" , inline = T, 
+                                                 choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                                 choiceValues = c("p", "s", "ps")),
+                                    p("Select up to three locations to plot versus time."),
+                                    splitLayout(
+                                      selectInput("select_county1_test", label = NULL, choices = county_choices,
+                                                  selected = "All", multiple=FALSE),
+                                      selectInput("select_county2_test", label = NULL, choices = county_choices,
+                                                  selected = "All Counties", multiple=FALSE),
+                                      selectInput("select_county3_test", label = NULL, choices = county_choices,
+                                                  selected = "DOC", multiple=FALSE)
+                                    ),
+                                    em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')),
+                          checkboxInput("checkbox_test", label = "Show transition to weekly reporting", value = TRUE),
+                          withSpinner(plotlyOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+                 ),
+                 
+                 "----",
+                 
+                 tabPanel("DOC Facilities: Tests", 
+                          wellPanel(id="internal_well",
+                                    p("Select kind of individual:"),
+                                    selectInput("select_tests_fac", label = NULL, 
+                                                choices = c("All", "Prisoners", "Staff", "Total"),
+                                                selected = "All", multiple=FALSE),
+                                    em('Exact number of tests per facility annotated in',
+                                       '"Prisoners", "Staff", and "Total" plots.'),
+                                    em('DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')
+                          ),
+                          div(align="center",
+                              h2(textOutput("n_tests_DOC_str")),
+                              p("Reports of",
+                                textOutput("type_tests_fac", inline=T),
+                                "tested for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
+                              em("*The DOC only began reporting facility-level testing data for prisoners and 
+                             DOC staff on April 25. Reports include only tests of DOC correctional officers, not for other staff.",
+                                 "See the Total Tests page for longer-term totals.")
+                          ),
+                          withSpinner(plotlyOutput("DOC_tests_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+                 
+                 tabPanel("DOC Facilities: Tests Over Time",
+                          wellPanel(id="internal_well",
+                                    p("Select population to plot.", id="radio_prompt"),
+                                    radioButtons("doc_test_radio", label = NULL, 
+                                                 selected = "ps" , inline = T, 
+                                                 choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                                 choiceValues = c("p", "s", "ps")),
+                                    p("Select up to three facilities to plot versus time.*"),
+                                    splitLayout(
+                                      selectInput("select_fac1_test", label = NULL, choices = fac_choices,
+                                                  selected = "All DOC Facilities", multiple=FALSE),
+                                      selectInput("select_fac2_test", label = NULL, choices = fac_choices,
+                                                  selected = "DOC Total**", multiple=FALSE),
+                                      selectInput("select_fac3_test", label = NULL, choices = fac_choices,
+                                                  selected = "MCI-Shirley", multiple=FALSE)
+                                    ),
+                                    em("*The DOC only began reporting facility-level testing data for prisoners and 
+                             DOC staff on April 25. Reports include only tests of DOC
+                             correctional officers, not for other staff.",
+                                       "See the Counties + DOC Tests Over Time page for longer-term DOC tracking"),
+                                    em('**DOC Total reflects DOC-wide reports, and might undercount',
+                                       "cases as compared to the facility total due to the DOC-wide data reporting",
+                                       "active, rather than total, cases."),
+                                    em('DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')
+                          ),
+                          checkboxInput("checkbox_fac_test", label = "Show transition to weekly reporting", value = TRUE),
+                          withSpinner(plotlyOutput("doc_tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+                 ),
+                 
+                 "----",
+                 "Bristol, Essex, Hampden, & Suffolk",
+                 
+                 tabPanel("Multi-Facility Counties: Tests", 
+                          wellPanel(id="internal_well",
+                                    p("Select kind of individual:"),
+                                    selectInput("select_tests_cty", label = NULL,
+                                                choices = c("All", "Prisoners", "Staff", "Total"),
+                                                selected = "All", multiple=FALSE),
+                                    em('Exact number of tests per facility annotated in',
+                                       '"Prisoners", "Staff", and "Total" plots.'),
+                                    em('County "staff" includes correctional officers, contractors, and other staff.')
+                          ),
+                          div(align="center",
+                              h2(textOutput("n_tests_cty_str")),
+                              p("Reports of",
+                                textOutput("type_tests_cty", inline=T),
+                                "tested for COVID-19 at individual county facilities pursuant to SJC 12926", align="center"),
+                              em("*Only some counties began reporting facility-level testing data on May 8.",
+                                 "See the Counties + DOC Aggregates: Total Tests page for longer-term totals.")
+                          ),
+                          withSpinner(plotlyOutput("cty_tests_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+                 ),
+                 
+                 tabPanel("Multi-Facility Counties: Tests Over Time",
+                          wellPanel(id="internal_well",
+                                    p("Select population to plot.", id="radio_prompt"),
+                                    radioButtons("cty_tests_radio", label = NULL,
+                                                 selected = "ps" , inline = T,
+                                                 choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                                 choiceValues = c("p", "s", "ps")),
+                                    p("Select up to three facilities to plot versus time.*"),
+                                    splitLayout(
+                                      selectInput("select_ctyfac_test1", label = NULL, choices = ctyfac_choices,
+                                                  multiple=FALSE),
+                                      selectInput("select_ctyfac_test2", label = NULL, choices = ctyfac_choices,
+                                                  multiple=FALSE),
+                                      selectInput("select_ctyfac_test3", label = NULL, choices = ctyfac_choices,
+                                                  multiple=FALSE)
+                                    ),
+                                    em("*Only some counties began reporting facility-level testing data on May 8.",
+                                       "See the Counties + DOC Aggregates: Total Tests page for longer-term totals."),
+                                    em('County "staff" includes correctional officers, contractors, and other staff.')
+                          ),
+                          checkboxInput("checkbox_ctyfac_test", label = "Show transition to weekly reporting", value = TRUE),
+                          withSpinner(plotlyOutput("cty_tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+                 )
+      ),
+      
+      # UI: Releases ---------------------------------------------
+      
+      navbarMenu("Releases", 
+                 "Releases of sentenced and pretrial prisoners pursuant to SJC-12926",
+                 "----",
+                 
+                 tabPanel("County + DOC: Releases", 
+                          wellPanel(id="internal_well",
+                                    p("Select kind of prisoner:"),
+                                    selectInput("select_release", label = NULL, 
+                                                choices = c("All", "Pre-Trial", "Sentenced","Home Confinements", "Total"),
+                                                selected = "All", multiple=FALSE),
+                                    em('Exact number of releases per county annotated in',
+                                       '"Pre-Trial", "Sentenced", "Home Confinements", and "Total" plots.')
+                          ),
+                          h2(textOutput("n_releases_str"), align="center"),
+                          p("Prisoners released pursuant to SJC 12926", align="center"),
+                          withSpinner(plotlyOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+                 
+                 tabPanel("County + DOC: Releases Over Time",
+                          wellPanel(id="internal_well",
+                                    p("Select up to three locations to plot versus time."),
+                                    splitLayout(
+                                      selectInput("select_county1_rel", label = NULL, choices = county_choices,
+                                                  selected = "All", multiple=FALSE),
+                                      selectInput("select_county2_rel", label = NULL, choices = county_choices,
+                                                  selected = "All Counties", multiple=FALSE),
+                                      selectInput("select_county3_rel", label = NULL, choices = county_choices,
+                                                  selected = "DOC", multiple=FALSE)
+                                    )),
+                          checkboxInput("checkbox_rel", label = "Show transition to weekly reporting", value = TRUE),
+                          withSpinner(plotlyOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+                 ),
+                 
+                 "----",
+                 
+                 tabPanel("DOC Facilities: Releases", 
+                          div(align="center",
+                              h2(textOutput("n_releases_DOC_str")),
+                              p("Reports of prisoners released at individual DOC facilities pursuant to SJC 12926", align="center"),
+                              em("*The DOC only began reporting facility-level releases on April 29.",
+                                 "See the Counties + DOC: Total Releases page for longer-term totals.")
+                          ),
+                          withSpinner(plotlyOutput("all_releases_DOC_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+                 
+                 tabPanel("DOC Facilities: Releases Over Time",
+                          wellPanel(id="internal_well",
+                                    p("Select up to three facilities to plot versus time.*"),
+                                    splitLayout(
+                                      selectInput("select_fac1_rel", label = NULL, choices = fac_choices,
+                                                  selected = "All DOC Facilities", multiple=FALSE),
+                                      selectInput("select_fac2_rel", label = NULL, choices = fac_choices,
+                                                  selected = "DOC Total**", multiple=FALSE),
+                                      selectInput("select_fac3_rel", label = NULL, choices = fac_choices,
+                                                  selected = "MCI-Norfolk", multiple=FALSE)
+                                    ),
+                                    em("*The DOC only began reporting facility-level releases on April 29.",
+                                       "See the Counties + DOC: Releases Over Time page for longer-term totals."),
+                                    em('**DOC Total reflects the cumulative count of prisoner releases submitted in DOC-wide',
+                                       "reports going back to March 27.")
+                          ),
+                          checkboxInput("checkbox_fac_rel", label = "Show transition to weekly reporting", value = TRUE),
+                          withSpinner(plotlyOutput("DOC_releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+                 )
+       ),
       
       # UI: Parole ---------------------------------------------
       navbarMenu("Parole",
@@ -386,511 +603,304 @@ fluidPage(theme = "sjc_12926_app.css",
                  )
       ),
       
-    # UI: DOC + County Aggregates ---------------------------------------------
-    navbarMenu("Counties + DOC Aggregates",
+      # UI: Positive Cases ---------------------------------------------
       
-        tabPanel("Total Sentenced/Pretrial Releases", 
-                 wellPanel(id="internal_well",
-                   p("Select kind of prisoner:"),
-                   selectInput("select_release", label = NULL, 
-                             choices = c("All", "Pre-Trial", "Sentenced","Home Confinements", "Total"),
-                             selected = "All", multiple=FALSE),
-                   em('Exact number of releases per county annotated in',
-                      '"Pre-Trial", "Sentenced", "Home Confinements", and "Total" plots.')
-                   ),
-                 h2(textOutput("n_releases_str"), align="center"),
-                 p("Prisoners released pursuant to SJC 12926", align="center"),
-                 withSpinner(plotlyOutput("all_releases_plot"), type=4, color="#b5b5b5", size=0.5),
-                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
-        
-        tabPanel("Sentenced/Pretrial Releases Over Time",
-                 wellPanel(id="internal_well",
-                   p("Select up to three locations to plot versus time."),
-                   splitLayout(
-                     selectInput("select_county1_rel", label = NULL, choices = county_choices,
-                                 selected = "All", multiple=FALSE),
-                     selectInput("select_county2_rel", label = NULL, choices = county_choices,
-                                 selected = "All Counties", multiple=FALSE),
-                     selectInput("select_county3_rel", label = NULL, choices = county_choices,
-                                 selected = "DOC", multiple=FALSE)
-                   )),
-                 checkboxInput("checkbox_rel", label = "Show transition to weekly reporting", value = TRUE),
-                 withSpinner(plotlyOutput("releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-        ),
-        
-        "----",
-        
-        tabPanel("Total Tests", 
-                 wellPanel(id="internal_well",
-                   p("Select kind of individual:"),
-                   selectInput("select_tested", label = NULL, 
-                               choices = c("All", "Prisoners", "Staff", "Total"),
-                               selected = "All", multiple=FALSE),
-                   em('Exact number of tests per county annotated in "Prisoners",',
-                      '"Staff", and "Total" plots.'),
-                   em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')
+      navbarMenu("Positive Tests",
+                 
+                 tabPanel("County + DOC: Positive Tests", 
+                          wellPanel(id="internal_well",
+                                    p("Select kind of individual:"),
+                                    selectInput("select_positive", label = NULL, 
+                                                choices = c("All", "Prisoners", "Staff", "Total"),
+                                                selected = "All", multiple=FALSE),
+                                    em('Exact number of positive tests per county annotated in',
+                                       '"Prisoners", "Staff", and "Total" plots.'),
+                                    em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" includes both DOC correctional officers and other non-DOC staff.')
+                          ),
+                          checkboxInput("checkbox_hideDOC_pos", label = "Hide DOC column", value = F),
+                          h2(textOutput("n_positive_str"), align="center"),
+                          p("Reports of",
+                            textOutput("type_positive", inline=T),
+                            "tested", strong("positive"),
+                            "for COVID-19 pursuant to SJC 12926", align="center"),
+                          withSpinner(plotlyOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+                 
+                 tabPanel("County + DOC: Positive Tests Over Time",
+                          wellPanel(id="internal_well",
+                                    p("Select population to plot.", id="radio_prompt"),
+                                    radioButtons("positive_radio", label = NULL, 
+                                                 selected = "ps" , inline = T, 
+                                                 choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                                 choiceValues = c("p", "s", "ps")),
+                                    p("Select up to three locations to plot versus time."),
+                                    splitLayout(
+                                      selectInput("select_county1_pos", label = NULL, choices = county_choices,
+                                                  selected = "All", multiple=FALSE),
+                                      selectInput("select_county2_pos", label = NULL, choices = county_choices,
+                                                  selected = "All Counties", multiple=FALSE),
+                                      selectInput("select_county3_pos", label = NULL, choices = county_choices,
+                                                  selected = "DOC", multiple=FALSE)
+                                    ),
+                                    em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" includes both DOC correctional officers and other non-DOC staff.')),
+                          checkboxInput("checkbox_pos", label = "Show transition to weekly reporting", value = TRUE),
+                          withSpinner(plotlyOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
                  ),
-                 checkboxInput("checkbox_hideDOC_tests", label = "Hide DOC column", value = F),
-                 h2(textOutput("n_tests_str"), align="center"),
-                 p("Reports of",
-                   textOutput("type_tested", inline=T),
-                   "tested for COVID-19  pursuant to SJC 12926", 
-                   align="center"),
-                 withSpinner(plotlyOutput("all_tests_plot"), type=4, color="#b5b5b5", size=0.5),
-                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
-        
-        tabPanel("Tests Over Time",
-                 wellPanel(id="internal_well",
-                   p("Select population to plot.", id="radio_prompt"),
-                   radioButtons("test_radio", label = NULL, 
-                                selected = "ps" , inline = T, 
-                                choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
-                                choiceValues = c("p", "s", "ps")),
-                   p("Select up to three locations to plot versus time."),
-                   splitLayout(
-                     selectInput("select_county1_test", label = NULL, choices = county_choices,
-                                 selected = "All", multiple=FALSE),
-                     selectInput("select_county2_test", label = NULL, choices = county_choices,
-                                 selected = "All Counties", multiple=FALSE),
-                     selectInput("select_county3_test", label = NULL, choices = county_choices,
-                                 selected = "DOC", multiple=FALSE)
-                   ),
-                   em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')),
-                 checkboxInput("checkbox_test", label = "Show transition to weekly reporting", value = TRUE),
-                 withSpinner(plotlyOutput("tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-        ),
-        
-        "----",
-        
-        tabPanel("Total Positive Tests", 
-                 wellPanel(id="internal_well",
-                           p("Select kind of individual:"),
-                           selectInput("select_positive", label = NULL, 
-                                       choices = c("All", "Prisoners", "Staff", "Total"),
-                                       selected = "All", multiple=FALSE),
-                           em('Exact number of positive tests per county annotated in',
-                              '"Prisoners", "Staff", and "Total" plots.'),
-                           em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" includes both DOC correctional officers and other non-DOC staff.')
+                 
+                 "----",
+                 
+                 
+                 tabPanel("DOC Facilities: Positive Tests", 
+                          wellPanel(id="internal_well",
+                                    p("Select kind of individual:"),
+                                    selectInput("select_positive_fac", label = NULL, 
+                                                choices = c("All", "Prisoners", "Staff", "Total"),
+                                                selected = "All", multiple=FALSE),
+                                    em('Exact number of positive tests per facility annotated in',
+                                       '"Prisoners", "Staff", and "Total" plots.'),
+                                    em('DOC "staff" includes both DOC correctional officers and other non-DOC staff.')
+                          ),
+                          div(align="center",
+                              h2(textOutput("n_positive_DOC_str")),
+                              p("Reports of",
+                                textOutput("type_positive_fac", inline=T),
+                                "tested", strong("positive"),
+                                "for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
+                              em("*The DOC only began reporting facility-level prisoner data on April 13,",
+                                 'facility-level DOC staff data on April 15, and facility-level 
+                      non-DOC "other" staff data on November 11.',
+                                 "See the Total Positive Tests page for longer-term totals.")
+                          ),
+                          withSpinner(plotlyOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
+                 
+                 tabPanel("DOC Facilities: Positive Tests Over Time", 
+                          wellPanel(id="internal_well",
+                                    p("Select population to plot.", id="radio_prompt"),
+                                    radioButtons("doc_positive_radio", label = NULL, 
+                                                 selected = "ps" , inline = T, 
+                                                 choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                                 choiceValues = c("p", "s", "ps")),
+                                    p("Select up to three facilities to plot versus time.*"),
+                                    splitLayout(
+                                      selectInput("select_fac1", label = NULL, choices = fac_choices,
+                                                  selected = "DOC Total**", multiple=FALSE),
+                                      selectInput("select_fac2", label = NULL, choices = fac_choices,
+                                                  selected = "All DOC Facilities", multiple=FALSE),
+                                      selectInput("select_fac3", label = NULL, choices = fac_choices,
+                                                  selected = "MTC", multiple=FALSE) 
+                                    ),
+                                    em("*The DOC only began reporting facility-level prisoner data on April 13,",
+                                       "facility-level DOC staff data on April 15, and facility-level non-DOC staff data on November 11.",
+                                       "See the Counties + DOC Positive Tests Over Time page for longer-term DOC tracking"),
+                                    em('**DOC Total reflects DOC-wide reports, and might undercount',
+                                       "cases as compared to the facility total due to the DOC-wide data reporting",
+                                       "active, rather than total, cases."),
+                                    em('DOC "staff" includes both DOC correctional officers and other non-DOC staff.')
+                          ),
+                          checkboxInput("checkbox_fac_pos", label = "Show transition to weekly reporting", value = TRUE),
+                          withSpinner(plotlyOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
                  ),
-                 checkboxInput("checkbox_hideDOC_pos", label = "Hide DOC column", value = F),
-                 h2(textOutput("n_positive_str"), align="center"),
-                 p("Reports of",
-                   textOutput("type_positive", inline=T),
-                   "tested", strong("positive"),
-                   "for COVID-19 pursuant to SJC 12926", align="center"),
-                 withSpinner(plotlyOutput("all_positives_plot"), type=4, color="#b5b5b5", size=0.5),
-                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
-        
-        tabPanel("Positive Tests Over Time",
-                 wellPanel(id="internal_well",
-                   p("Select population to plot.", id="radio_prompt"),
-                   radioButtons("positive_radio", label = NULL, 
-                                selected = "ps" , inline = T, 
-                                choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
-                                choiceValues = c("p", "s", "ps")),
-                   p("Select up to three locations to plot versus time."),
-                   splitLayout(
-                     selectInput("select_county1_pos", label = NULL, choices = county_choices,
-                                 selected = "All", multiple=FALSE),
-                     selectInput("select_county2_pos", label = NULL, choices = county_choices,
-                                 selected = "All Counties", multiple=FALSE),
-                     selectInput("select_county3_pos", label = NULL, choices = county_choices,
-                                 selected = "DOC", multiple=FALSE)
-                   ),
-                   em('County "staff" includes correctional officers, contractors, and other staff. DOC "staff" includes both DOC correctional officers and other non-DOC staff.')),
-                 checkboxInput("checkbox_pos", label = "Show transition to weekly reporting", value = TRUE),
-                 withSpinner(plotlyOutput("positives_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-        ),
-        
-        "----",
-        
-        tabPanel("Active Positive Cases", 
-                 wellPanel(id="internal_well",
-                           p("Select kind of individual:"),
-                           selectInput("select_active", label = NULL, 
-                                       choices = c("All", "Prisoner", "Staff", "Total"),
-                                       selected = "All", multiple=FALSE),
-                           em('Exact number of tests per county annotated in "Prisoners",',
-                              '"Staff", and "Total" plots. Note that the DOC is not 
-                              reporting active staff cases. County "staff" includes correctional officers, contractors, and other staff.')
+                 
+                 "----",
+                 "Bristol, Essex, Hampden, & Suffolk",
+                 
+                 tabPanel("Multi-Facility Counties: Positive Tests", 
+                          wellPanel(id="internal_well",
+                                    p("Select kind of individual:"),
+                                    selectInput("select_positive_cty", label = NULL,
+                                                choices = c("All", "Prisoners", "Staff", "Total"),
+                                                selected = "All", multiple=FALSE),
+                                    em('Exact number of positive tests per facility annotated in',
+                                       '"Prisoners", "Staff", and "Total" plots.'),
+                                    em('County "staff" includes correctional officers, contractors, and other staff.')
+                          ),
+                          div(align="center",
+                              h2(textOutput("n_positive_cty_str")),
+                              p("Reports of",
+                                textOutput("type_positive_cty", inline=T),
+                                "tested", strong("positive"),
+                                "for COVID-19 at individual county facilities pursuant to SJC 12926", align="center"),
+                              em("*Only some counties began reporting facility-level positive data on May 8.",
+                                 "See the Counties + DOC Aggregates: Total Positive Tests page for longer-term totals.")
+                          ),
+                          withSpinner(plotlyOutput("cty_positives_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
                  ),
-                 h2(textOutput("n_active_str"), align="center"),
-                 p("Reports of",
-                   textOutput("type_active", inline=T),
-                   "currently infected with COVID-19, pursuant to SJC 12926",
-                   br(),
-                   em("Showing active cases as reported on", 
-                      textOutput("last_date_str_DOC", inline=T), "(DOC),",
-                      textOutput("last_date_str_counties", inline=T), "(counties)",
-                      align="center"),
-                   align="center"),
-                 withSpinner(plotlyOutput("all_active_plot"), type=4, color="#b5b5b5", size=0.5)
-                 ),
-        
-        tabPanel("Active Positive Cases Over Time",
-                 wellPanel(id="internal_well",
-                           p("Select population to plot.", id="radio_prompt"),
-                           radioButtons("active_radio", label = NULL, 
-                                        selected = "ps" , inline = T, 
-                                        choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
-                                        choiceValues = c("p", "s", "ps")),
-                           p("Select up to three locations to plot versus time."),
-                           splitLayout(
-                             selectInput("select_active1", label = NULL, choices = county_choices,
-                                         selected = "All", multiple=FALSE),
-                             selectInput("select_active2", label = NULL, choices = county_choices,
-                                         selected = "All Counties", multiple=FALSE),
-                             selectInput("select_active3", label = NULL, choices = county_choices,
-                                         selected = "DOC", multiple=FALSE)
-                           ),
-                           em('Note that the DOC is not reporting active staff cases. County "staff" includes correctional officers, contractors, and other staff.')),
-                 withSpinner(plotlyOutput("active_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
-        )
+                 
+                 tabPanel("Multi-Facility Counties: Positive Tests Over Time", 
+                          wellPanel(id="internal_well",
+                                    p("Select population to plot.", id="radio_prompt"),
+                                    radioButtons("cty_positive_radio", label = NULL,
+                                                 selected = "ps" , inline = T,
+                                                 choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                                 choiceValues = c("p", "s", "ps")),
+                                    p("Select up to three facilities to plot versus time.*"),
+                                    splitLayout(
+                                      selectInput("select_ctyfac_pos1", label = NULL, choices = ctyfac_choices,
+                                                  multiple=FALSE),
+                                      selectInput("select_ctyfac_pos2", label = NULL, choices = ctyfac_choices,
+                                                  multiple=FALSE),
+                                      selectInput("select_ctyfac_pos3", label = NULL, choices = ctyfac_choices,
+                                                  multiple=FALSE)
+                                    ),
+                                    em("*Only some counties began reporting facility-level positive data on May 8.",
+                                       "See the Counties + DOC Aggregates: Total Positive Tests page for longer-term totals."),
+                                    em('County "staff" includes correctional officers, contractors, and other staff.')
+                          ),
+                          checkboxInput("checkbox_ctyfac_pos", label = "Show transition to weekly reporting", value = TRUE),
+                          withSpinner(plotlyOutput("ctyfac_pos_time_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
+                 )
+                 
+                 
       ),
       
-    # UI: DOC Facilities ------------------------------------------------------
-     navbarMenu("DOC Facilities",
-     
-       tabPanel("Total Sentenced/Pretrial Releases", 
-                div(align="center",
-                    h2(textOutput("n_releases_DOC_str")),
-                    p("Reports of prisoners released at individual DOC facilities pursuant to SJC 12926", align="center"),
-                    em("*The DOC only began reporting facility-level releases on April 29.",
-                       "See the Counties + DOC: Total Releases page for longer-term totals.")
-                ),
-                withSpinner(plotlyOutput("all_releases_DOC_plot"), type=4, color="#b5b5b5", size=0.5),
-                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
-       
-       tabPanel("Sentenced/Pretrial Releases Over Time",
-                wellPanel(id="internal_well",
-                          p("Select up to three facilities to plot versus time.*"),
-                          splitLayout(
-                            selectInput("select_fac1_rel", label = NULL, choices = fac_choices,
-                                        selected = "All DOC Facilities", multiple=FALSE),
-                            selectInput("select_fac2_rel", label = NULL, choices = fac_choices,
-                                        selected = "DOC Total**", multiple=FALSE),
-                            selectInput("select_fac3_rel", label = NULL, choices = fac_choices,
-                                        selected = "MCI-Norfolk", multiple=FALSE)
-                          ),
-                          em("*The DOC only began reporting facility-level releases on April 29.",
-                             "See the Counties + DOC: Releases Over Time page for longer-term totals."),
-                          em('**DOC Total reflects the cumulative count of prisoner releases submitted in DOC-wide',
-                             "reports going back to March 27.")
-                      ),
-                checkboxInput("checkbox_fac_rel", label = "Show transition to weekly reporting", value = TRUE),
-                withSpinner(plotlyOutput("DOC_releases_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-       ),
-       
-       "----",
+      # UI: Active Cases ---------------------------------------------
       
-        tabPanel("Total Tests", 
-                 wellPanel(id="internal_well",
-                           p("Select kind of individual:"),
-                           selectInput("select_tests_fac", label = NULL, 
-                                       choices = c("All", "Prisoners", "Staff", "Total"),
-                                       selected = "All", multiple=FALSE),
-                           em('Exact number of tests per facility annotated in',
-                              '"Prisoners", "Staff", and "Total" plots.'),
-                           em('DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')
-                 ),
-                 div(align="center",
-                     h2(textOutput("n_tests_DOC_str")),
-                     p("Reports of",
-                       textOutput("type_tests_fac", inline=T),
-                       "tested for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
-                     em("*The DOC only began reporting facility-level testing data for prisoners and 
-                             DOC staff on April 25. Reports include only tests of DOC correctional officers, not for other staff.",
-                        "See the Total Tests page for longer-term totals.")
-                 ),
-                 withSpinner(plotlyOutput("DOC_tests_plot"), type=4, color="#b5b5b5", size=0.5),
-                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
-       
-       tabPanel("Tests Over Time",
-                wellPanel(id="internal_well",
-                          p("Select population to plot.", id="radio_prompt"),
-                          radioButtons("doc_test_radio", label = NULL, 
-                                       selected = "ps" , inline = T, 
-                                       choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
-                                       choiceValues = c("p", "s", "ps")),
-                          p("Select up to three facilities to plot versus time.*"),
-                          splitLayout(
-                            selectInput("select_fac1_test", label = NULL, choices = fac_choices,
-                                        selected = "All DOC Facilities", multiple=FALSE),
-                            selectInput("select_fac2_test", label = NULL, choices = fac_choices,
-                                        selected = "DOC Total**", multiple=FALSE),
-                            selectInput("select_fac3_test", label = NULL, choices = fac_choices,
-                                        selected = "MCI-Shirley", multiple=FALSE)
+      navbarMenu("Active Cases",
+                 
+                 tabPanel("County + DOC: Active Positive Cases", 
+                          wellPanel(id="internal_well",
+                                    p("Select kind of individual:"),
+                                    selectInput("select_active", label = NULL, 
+                                                choices = c("All", "Prisoner", "Staff", "Total"),
+                                                selected = "All", multiple=FALSE),
+                                    em('Exact number of tests per county annotated in "Prisoners",',
+                                       '"Staff", and "Total" plots. Note that the DOC is not 
+                              reporting active staff cases. County "staff" includes correctional officers, contractors, and other staff.')
                           ),
-                          em("*The DOC only began reporting facility-level testing data for prisoners and 
-                             DOC staff on April 25. Reports include only tests of DOC
-                             correctional officers, not for other staff.",
-                             "See the Counties + DOC Tests Over Time page for longer-term DOC tracking"),
-                          em('**DOC Total reflects DOC-wide reports, and might undercount',
-                             "cases as compared to the facility total due to the DOC-wide data reporting",
-                             "active, rather than total, cases."),
-                          em('DOC "staff" testing data includes only DOC correctional officers, not other non-DOC staff.')
-                          ),
-                checkboxInput("checkbox_fac_test", label = "Show transition to weekly reporting", value = TRUE),
-                withSpinner(plotlyOutput("doc_tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-       ),
-       
-       "----",
-        
-        tabPanel("Total Positive Tests", 
-                 wellPanel(id="internal_well",
-                           p("Select kind of individual:"),
-                           selectInput("select_positive_fac", label = NULL, 
-                                       choices = c("All", "Prisoners", "Staff", "Total"),
-                                       selected = "All", multiple=FALSE),
-                           em('Exact number of positive tests per facility annotated in',
-                              '"Prisoners", "Staff", and "Total" plots.'),
-                           em('DOC "staff" includes both DOC correctional officers and other non-DOC staff.')
+                          h2(textOutput("n_active_str"), align="center"),
+                          p("Reports of",
+                            textOutput("type_active", inline=T),
+                            "currently infected with COVID-19, pursuant to SJC 12926",
+                            br(),
+                            em("Showing active cases as reported on", 
+                               textOutput("last_date_str_DOC", inline=T), "(DOC),",
+                               textOutput("last_date_str_counties", inline=T), "(counties)",
+                               align="center"),
+                            align="center"),
+                          withSpinner(plotlyOutput("all_active_plot"), type=4, color="#b5b5b5", size=0.5)
                  ),
-                 div(align="center",
-                   h2(textOutput("n_positive_DOC_str")),
-                   p("Reports of",
-                     textOutput("type_positive_fac", inline=T),
-                     "tested", strong("positive"),
-                     "for COVID-19 at individual DOC facilities pursuant to SJC 12926", align="center"),
-                   em("*The DOC only began reporting facility-level prisoner data on April 13,",
-                      'facility-level DOC staff data on April 15, and facility-level 
-                      non-DOC "other" staff data on November 11.',
-                      "See the Total Positive Tests page for longer-term totals.")
-                   ),
-                 withSpinner(plotlyOutput("DOC_positives_plot"), type=4, color="#b5b5b5", size=0.5),
-                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")),
-        
-        tabPanel("Positive Tests Over Time", 
-                 wellPanel(id="internal_well",
-                   p("Select population to plot.", id="radio_prompt"),
-                   radioButtons("doc_positive_radio", label = NULL, 
-                                selected = "ps" , inline = T, 
-                                choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
-                                choiceValues = c("p", "s", "ps")),
-                   p("Select up to three facilities to plot versus time.*"),
-                   splitLayout(
-                     selectInput("select_fac1", label = NULL, choices = fac_choices,
-                                 selected = "DOC Total**", multiple=FALSE),
-                     selectInput("select_fac2", label = NULL, choices = fac_choices,
-                                 selected = "All DOC Facilities", multiple=FALSE),
-                     selectInput("select_fac3", label = NULL, choices = fac_choices,
-                                 selected = "MTC", multiple=FALSE) 
-                   ),
-                   em("*The DOC only began reporting facility-level prisoner data on April 13,",
-                      "facility-level DOC staff data on April 15, and facility-level non-DOC staff data on November 11.",
-                      "See the Counties + DOC Positive Tests Over Time page for longer-term DOC tracking"),
-                   em('**DOC Total reflects DOC-wide reports, and might undercount',
-                      "cases as compared to the facility total due to the DOC-wide data reporting",
-                      "active, rather than total, cases."),
-                   em('DOC "staff" includes both DOC correctional officers and other non-DOC staff.')
-                   ),
-                 checkboxInput("checkbox_fac_pos", label = "Show transition to weekly reporting", value = TRUE),
-                 withSpinner(plotlyOutput("DOC_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                 em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-             ),
-       
-       "----",
-       
-       tabPanel("Active Positive Cases", 
-                h2(textOutput("n_active_fac_str"), align="center"),
-                p("Reports of DOC prisoners currently infected with COVID-19, pursuant to SJC 12926",
-                  br(),
-                  em("Showing active DOC cases as reported on", 
-                     textOutput("last_date_DOC_str", inline=T)),
-                  align="center"),
-                withSpinner(plotlyOutput("all_active_fac_plot"), type=4, color="#b5b5b5", size=0.5),
-                em("The DOC does not report active staff cases.")
-       ),
-       
-       tabPanel("Active Positive Cases Over Time",
-                wellPanel(id="internal_well",
-                          p("Select up to three locations to plot versus time."),
-                          splitLayout(
-                            selectInput("select_active_fac1", label = NULL, 
-                                        choices = fac_choices[fac_choices != "DOC Total**"],
-                                        selected = "All DOC Facilities", multiple=FALSE),
-                            selectInput("select_active_fac2", label = NULL, 
-                                        choices = fac_choices[fac_choices != "DOC Total**"],
-                                        selected = "MCI-Norfolk", multiple=FALSE),
-                            selectInput("select_active_fac3", label = NULL, 
-                                        choices = fac_choices[fac_choices != "DOC Total**"],
-                                        selected = "MCI-F", multiple=FALSE)
-                          ),
-                          em("The DOC does not report active staff cases.")),
-                withSpinner(plotlyOutput("active_v_time_fac_plot"), type=4, color="#b5b5b5", size=0.5)
-       )
-     ),
-    
-    # UI: County Facilities --------------------------------------------------
-    navbarMenu("Multi-Facility Counties",
-               "Bristol, Essex, Hampden, & Suffolk",
-               "----",
-               
-               tabPanel("Total Tests", 
-                        wellPanel(id="internal_well",
-                                  p("Select kind of individual:"),
-                                  selectInput("select_tests_cty", label = NULL,
-                                              choices = c("All", "Prisoners", "Staff", "Total"),
-                                              selected = "All", multiple=FALSE),
-                                  em('Exact number of tests per facility annotated in',
-                                     '"Prisoners", "Staff", and "Total" plots.'),
-                                  em('County "staff" includes correctional officers, contractors, and other staff.')
-                        ),
-                        div(align="center",
-                            h2(textOutput("n_tests_cty_str")),
-                            p("Reports of",
-                              textOutput("type_tests_cty", inline=T),
-                              "tested for COVID-19 at individual county facilities pursuant to SJC 12926", align="center"),
-                            em("*Only some counties began reporting facility-level testing data on May 8.",
-                               "See the Counties + DOC Aggregates: Total Tests page for longer-term totals.")
-                        ),
-                        withSpinner(plotlyOutput("cty_tests_plot"), type=4, color="#b5b5b5", size=0.5),
-                        em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-                  ),
-               
-               tabPanel("Tests Over Time",
-                        wellPanel(id="internal_well",
-                                  p("Select population to plot.", id="radio_prompt"),
-                                  radioButtons("cty_tests_radio", label = NULL,
-                                               selected = "ps" , inline = T,
-                                               choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
-                                               choiceValues = c("p", "s", "ps")),
-                                  p("Select up to three facilities to plot versus time.*"),
-                                  splitLayout(
-                                    selectInput("select_ctyfac_test1", label = NULL, choices = ctyfac_choices,
-                                                multiple=FALSE),
-                                    selectInput("select_ctyfac_test2", label = NULL, choices = ctyfac_choices,
-                                                multiple=FALSE),
-                                    selectInput("select_ctyfac_test3", label = NULL, choices = ctyfac_choices,
-                                                multiple=FALSE)
-                                  ),
-                                  em("*Only some counties began reporting facility-level testing data on May 8.",
-                                     "See the Counties + DOC Aggregates: Total Tests page for longer-term totals."),
-                                  em('County "staff" includes correctional officers, contractors, and other staff.')
-                        ),
-                        checkboxInput("checkbox_ctyfac_test", label = "Show transition to weekly reporting", value = TRUE),
-                        withSpinner(plotlyOutput("cty_tests_v_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                        em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-               ),
-               
-               "----",
-               
-               tabPanel("Total Positive Tests", 
-                        wellPanel(id="internal_well",
-                                  p("Select kind of individual:"),
-                                  selectInput("select_positive_cty", label = NULL,
-                                              choices = c("All", "Prisoners", "Staff", "Total"),
-                                              selected = "All", multiple=FALSE),
-                                  em('Exact number of positive tests per facility annotated in',
-                                     '"Prisoners", "Staff", and "Total" plots.'),
-                                  em('County "staff" includes correctional officers, contractors, and other staff.')
-                        ),
-                        div(align="center",
-                            h2(textOutput("n_positive_cty_str")),
-                            p("Reports of",
-                              textOutput("type_positive_cty", inline=T),
-                              "tested", strong("positive"),
-                              "for COVID-19 at individual county facilities pursuant to SJC 12926", align="center"),
-                            em("*Only some counties began reporting facility-level positive data on May 8.",
-                               "See the Counties + DOC Aggregates: Total Positive Tests page for longer-term totals.")
-                        ),
-                        withSpinner(plotlyOutput("cty_positives_plot"), type=4, color="#b5b5b5", size=0.5),
-                        em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-                  ),
-               
-               tabPanel("Positive Tests Over Time", 
-                        wellPanel(id="internal_well",
-                                  p("Select population to plot.", id="radio_prompt"),
-                                  radioButtons("cty_positive_radio", label = NULL,
-                                               selected = "ps" , inline = T,
-                                               choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
-                                               choiceValues = c("p", "s", "ps")),
-                                  p("Select up to three facilities to plot versus time.*"),
-                                  splitLayout(
-                                    selectInput("select_ctyfac_pos1", label = NULL, choices = ctyfac_choices,
-                                                multiple=FALSE),
-                                    selectInput("select_ctyfac_pos2", label = NULL, choices = ctyfac_choices,
-                                                multiple=FALSE),
-                                    selectInput("select_ctyfac_pos3", label = NULL, choices = ctyfac_choices,
-                                                multiple=FALSE)
-                                  ),
-                                  em("*Only some counties began reporting facility-level positive data on May 8.",
-                                     "See the Counties + DOC Aggregates: Total Positive Tests page for longer-term totals."),
-                                  em('County "staff" includes correctional officers, contractors, and other staff.')
-                        ),
-                        checkboxInput("checkbox_ctyfac_pos", label = "Show transition to weekly reporting", value = TRUE),
-                        withSpinner(plotlyOutput("ctyfac_pos_time_plot"), type=4, color="#b5b5b5", size=0.5),
-                        em("Please note that prisoner deaths due to COVID-19 are not included in these data.")
-                ),
-               
-               "----",
-
-               tabPanel("Active Positive Cases",
-                        wellPanel(id="internal_well",
-                                  p("Select kind of individual:"),
-                                  selectInput("select_active_cty", label = NULL,
-                                              choices = c("All", "Prisoner", "Staff", "Total"),
-                                              selected = "All", multiple=FALSE),
-                                  em('Exact number of tests per facility annotated in',
-                                     '"Prisoner", "Staff", and "Total" plots. Essex County
+                 
+                 tabPanel("County + DOC: Active Positive Cases Over Time",
+                          wellPanel(id="internal_well",
+                                    p("Select population to plot.", id="radio_prompt"),
+                                    radioButtons("active_radio", label = NULL, 
+                                                 selected = "ps" , inline = T, 
+                                                 choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                                 choiceValues = c("p", "s", "ps")),
+                                    p("Select up to three locations to plot versus time."),
+                                    splitLayout(
+                                      selectInput("select_active1", label = NULL, choices = county_choices,
+                                                  selected = "All", multiple=FALSE),
+                                      selectInput("select_active2", label = NULL, choices = county_choices,
+                                                  selected = "All Counties", multiple=FALSE),
+                                      selectInput("select_active3", label = NULL, choices = county_choices,
+                                                  selected = "DOC", multiple=FALSE)
+                                    ),
+                                    em('Note that the DOC is not reporting active staff cases. County "staff" includes correctional officers, contractors, and other staff.')),
+                          withSpinner(plotlyOutput("active_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+                 ),
+                 
+                 "----",
+                 
+                 tabPanel("DOC Facilities: Active Positive Cases", 
+                          h2(textOutput("n_active_fac_str"), align="center"),
+                          p("Reports of DOC prisoners currently infected with COVID-19, pursuant to SJC 12926",
+                            br(),
+                            em("Showing active DOC cases as reported on", 
+                               textOutput("last_date_DOC_str", inline=T)),
+                            align="center"),
+                          withSpinner(plotlyOutput("all_active_fac_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("The DOC does not report active staff cases.")
+                 ),
+                 
+                 tabPanel("DOC Facilities: Active Positive Cases Over Time",
+                          wellPanel(id="internal_well",
+                                    p("Select up to three locations to plot versus time."),
+                                    splitLayout(
+                                      selectInput("select_active_fac1", label = NULL, 
+                                                  choices = fac_choices[fac_choices != "DOC Total**"],
+                                                  selected = "All DOC Facilities", multiple=FALSE),
+                                      selectInput("select_active_fac2", label = NULL, 
+                                                  choices = fac_choices[fac_choices != "DOC Total**"],
+                                                  selected = "MCI-Norfolk", multiple=FALSE),
+                                      selectInput("select_active_fac3", label = NULL, 
+                                                  choices = fac_choices[fac_choices != "DOC Total**"],
+                                                  selected = "MCI-F", multiple=FALSE)
+                                    ),
+                                    em("The DOC does not report active staff cases.")),
+                          withSpinner(plotlyOutput("active_v_time_fac_plot"), type=4, color="#b5b5b5", size=0.5)
+                 ),
+                 
+                 "----",
+                 
+                 "Bristol, Essex, Hampden, & Suffolk",
+                 
+                 tabPanel("Multi-County Facilities: Active Positive Cases",
+                          wellPanel(id="internal_well",
+                                    p("Select kind of individual:"),
+                                    selectInput("select_active_cty", label = NULL,
+                                                choices = c("All", "Prisoner", "Staff", "Total"),
+                                                selected = "All", multiple=FALSE),
+                                    em('Exact number of tests per facility annotated in',
+                                       '"Prisoner", "Staff", and "Total" plots. Essex County
                                      does not report staff positives by facility.'),
-                                  em('County "staff" includes correctional officers, contractors, and other staff.')
-                        ),
-                        p(em("Showing active cases as reported on",
-                          textOutput("last_date_str2_counties", inline=T)),   
-                           align="center"
+                                    em('County "staff" includes correctional officers, contractors, and other staff.')
                           ),
-                        withSpinner(plotlyOutput("all_active_cty_plot"), type=4, color="#b5b5b5", size=0.5)
+                          p(em("Showing active cases as reported on",
+                               textOutput("last_date_str2_counties", inline=T)),   
+                            align="center"
+                          ),
+                          withSpinner(plotlyOutput("all_active_cty_plot"), type=4, color="#b5b5b5", size=0.5)
+                 ),
+                 
+                 tabPanel("Multi-County Facilities: Active Positive Cases Over Time",
+                          
+                          wellPanel(id="internal_well",
+                                    p("Select population to plot.", id="radio_prompt"),
+                                    radioButtons("cty_active_radio", label = NULL,
+                                                 selected = "ps" , inline = T,
+                                                 choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
+                                                 choiceValues = c("p", "s", "ps")),
+                                    p("Select up to three locations to plot versus time."),
+                                    splitLayout(
+                                      selectInput("select_active_cty1", label = NULL, choices = ctyfac_choices,
+                                                  selected = "All Counties", multiple=FALSE),
+                                      selectInput("select_active_cty2", label = NULL, choices = ctyfac_choices,
+                                                  selected = "Bristol - DHOC", multiple=FALSE),
+                                      selectInput("select_active_cty3", label = NULL, choices = ctyfac_choices,
+                                                  selected = "Essex - Middleton", multiple=FALSE)
+                                    ),
+                                    em("Essex County does not report staff positives by facility."),
+                                    em('County "staff" includes correctional officers, contractors, and other staff.')
+                          ),
+                          withSpinner(plotlyOutput("active_cty_fac_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+                 )
+                 
+                 
+      ),
+      
+      tabPanel("Mapping County Trends", 
+               wellPanel(id="internal_well",
+                         p("Select value to plot."),
+                         selectInput("select_y_plot", label = NULL,
+                                     choices = c("Releases", "Tests", "Positive Cases"),
+                                     selected = "Releases", multiple=FALSE)
                ),
-
-               tabPanel("Active Positive Cases Over Time",
-                        
-                        wellPanel(id="internal_well",
-                                  p("Select population to plot.", id="radio_prompt"),
-                                  radioButtons("cty_active_radio", label = NULL,
-                                               selected = "ps" , inline = T,
-                                               choiceNames = c("Prisoners", "Staff", "Prisoners & Staff"),
-                                               choiceValues = c("p", "s", "ps")),
-                                  p("Select up to three locations to plot versus time."),
-                                  splitLayout(
-                                    selectInput("select_active_cty1", label = NULL, choices = ctyfac_choices,
-                                                selected = "All Counties", multiple=FALSE),
-                                    selectInput("select_active_cty2", label = NULL, choices = ctyfac_choices,
-                                                selected = "Bristol - DHOC", multiple=FALSE),
-                                    selectInput("select_active_cty3", label = NULL, choices = ctyfac_choices,
-                                                selected = "Essex - Middleton", multiple=FALSE)
-                                  ),
-                                  em("Essex County does not report staff positives by facility."),
-                                  em('County "staff" includes correctional officers, contractors, and other staff.')
-                                  ),
-                        withSpinner(plotlyOutput("active_cty_fac_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
-               ),
-               
-               "----",
-               # UI: Extras --------------------------------------------------
-               
-               tabPanel("Mapping County Trends", 
-                        wellPanel(id="internal_well",
-                                  p("Select value to plot."),
-                                  selectInput("select_y_plot", label = NULL,
-                                              choices = c("Releases", "Tests", "Positive Cases"),
-                                              selected = "Releases", multiple=FALSE)
-                        ),
-                        em("All maps reflect data from county jails and HOCs alone,",
-                           "as the Massachusutts DOC has only been reporting",
-                           "facility-level data since April 25th."),
-                        em("Maps of tests and positive cases include both prisoner and staff data."),
-                        em("Please note that prisoner deaths due to COVID-19 are not included in these data."),
-                        withSpinner(leafletOutput("county_maps"),
-                                    type=4, color="#b5b5b5", size=0.5)
-               )
-    ),
-    
+               em("All maps reflect data from county jails and HOCs alone,",
+                  "as the Massachusutts DOC has only been reporting",
+                  "facility-level data since April 25th."),
+               em("Maps of tests and positive cases include both prisoner and staff data."),
+               em("Please note that prisoner deaths due to COVID-19 are not included in these data."),
+               withSpinner(leafletOutput("county_maps"),
+                           type=4, color="#b5b5b5", size=0.5)
+      ),
+      
+    # Data Sources ------------------------------------------------------------
     
     "Data Source",
       
