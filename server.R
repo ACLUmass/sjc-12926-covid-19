@@ -244,9 +244,9 @@ function(input, output, session) {
   
   # Load Vaccination Data -----------------------------------------------------------
   
-  # vax_df <- read_excel(tf, sheet=5) %>%
-  vax_df <- read_excel("../data/vaccines/vaccines.xlsx") %>%
-    mutate_at(vars(-Date, -County, -Notes), as.numeric)
+  vax_df <- read_excel(tf, sheet=5) %>%
+    mutate_at(vars(-Date, -County, -Notes), as.numeric) %>%
+    mutate(Date = as.Date(Date))
   
   # Population v. Time -------------------------------------------------------
   
@@ -2048,6 +2048,12 @@ function(input, output, session) {
   
   output$cty_df_table <- DT::renderDataTable(
     {sjc_county_df},
+    options = list(scrollX = TRUE), 
+    filter = 'top'
+  )
+  
+  output$vax_df_table <- DT::renderDataTable(
+    {vax_df},
     options = list(scrollX = TRUE), 
     filter = 'top'
   )
