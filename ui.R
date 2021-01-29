@@ -272,7 +272,7 @@ fluidPage(theme = "sjc_12926_app.css",
                           p("Reports of COVID-19 prisoner deaths pursuant to SJC 12926", align="center"),
                           withSpinner(plotlyOutput("all_deaths_plot"), type=4, color="#b5b5b5", size=0.5),
                           h3("Dates & Locations of COVID-19 Deaths"),
-                          em("Please note that neither the above count nor the below list include the two known deaths that occured after prisoners were released on medical parole in November, as", a("reported by WBUR.", href="https://www.wbur.org/news/2020/11/30/massachusetts-prisoners-coronavirus-medical-parole-deaths"), style=" display: block; padding-bottom: 1rem;"), 
+                          em("Please note that neither the count above nor the list below include the two known deaths that occured after prisoners were released on medical parole in November, as", a("reported by WBUR.", href="https://www.wbur.org/news/2020/11/30/massachusetts-prisoners-coronavirus-medical-parole-deaths"), style=" display: block; padding-bottom: 1rem;"), 
                           tags$ul(
                             htmlOutput("deaths_list"),
                             tags$li("Before June 23: 10 deaths:"),
@@ -333,10 +333,10 @@ fluidPage(theme = "sjc_12926_app.css",
                           ),
                           checkboxInput("checkbox_hideDOC_vax", label = "Hide DOC column", value = F),
                           h2(textOutput("n_vax_str"), align="center"),
-                          p("COVID-19 vaccines administered to", 
-                            textOutput("type_vax", inline=T),
-                            "since January 20", align="center"),
-                          withSpinner(plotlyOutput("all_vax_plot"), type=4, color="#b5b5b5", size=0.5)
+                          p("Cumulative COVID-19 vaccines administered to", 
+                            textOutput("type_vax", inline=T), align="center"),
+                          withSpinner(plotlyOutput("all_vax_plot"), type=4, color="#b5b5b5", size=0.5),
+                          em("*As of January 27, Essex, Middlesex, and Norfolk counties have not yet reported vaccination data.")
                           
                  )#,
                  
