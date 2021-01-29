@@ -616,6 +616,15 @@ function(input, output, session) {
   
   # Plot DOC Facilities
   output$par_rels_DOC_plot <- renderPlotly({
+    
+    output$n_par_rels_DOC_str <- renderText({
+      parole_df %>%
+        filter(County == "DOC") %>%
+        pull(value) %>%
+        sum() %>%
+        number(big.mark=",")
+    })
+    
     parole_df %>%
       filter(County == "DOC") %>%
       select(Date, Facility = facility_match, value) %>%

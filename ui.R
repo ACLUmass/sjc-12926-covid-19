@@ -574,19 +574,23 @@ fluidPage(theme = "sjc_12926_app.css",
       
                   "----",
                  
-                 tabPanel("Total Releases on Parole",
-                          h3("Counties + DOC Aggregate", style= "color: rgba(0, 85, 170, .5);"),
+                 tabPanel("County + DOC: Releases on Parole",
                           h2(textOutput("n_par_rels_str"), align="center"),
                           p("Reports of prisoners released on parole", align="center"),
                           withSpinner(plotlyOutput("par_rels_counties_plot"), 
-                                      type=4, color="#b5b5b5", size=0.5),
-                          h3("DOC Facilities", style= "color: rgba(0, 85, 170, .5);"),
+                                      type=4, color="#b5b5b5", size=0.5)
+                 ),
+                 tabPanel("DOC Facilities: Releases on Parole",
+                          h2(textOutput("n_par_rels_DOC_str"), align="center"),
+                          p("Reports of prisoners released on parole at individual DOC facilities", align="center"),
                           withSpinner(plotlyOutput("par_rels_DOC_plot"), 
-                                      type=4, color="#b5b5b5", size=0.5),
-                          h3("Multi-Facility Counties", style= "color: rgba(0, 85, 170, .5);"),
+                                      type=4, color="#b5b5b5", size=0.5)
+                 ),
+                 tabPanel("Multi-Facility Counties: Releases on Parole",
                           withSpinner(plotlyOutput("par_rels_countyfacs_plot"), 
                                       type=4, color="#b5b5b5", size=0.5)
                  ),
+                 "----",
                  
                  tabPanel("Releases on Parole Over Time", 
                           wellPanel(id="internal_well",
