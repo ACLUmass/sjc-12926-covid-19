@@ -617,18 +617,7 @@ function(input, output, session) {
   
   output$all_vax_plot <- renderPlotly({
     
-    if (select_vax() == "All") {
-      
-      output$n_vax_str <- renderText({format(n_vax, big.mark=",")})
-      output$type_vax <- renderText({"prisoners and staff"})
-      
-      vax_num_df %>%
-        mutate(type = factor(dose_pop, levels = vax_levels)) %>%
-        stacked_bar_plot("Vaccines",
-                         "County",
-                         vax=T)
-      
-    } else if (select_vax() %in% c("Prisoners", "Staff")) {
+    if (select_vax() %in% c("Prisoners", "Staff")) {
       
       output$n_vax_str <- renderText({
         vax_num_df %>%
@@ -640,18 +629,30 @@ function(input, output, session) {
       output$type_vax <- renderText({select_vax() %>% tolower()})
       
       vax_num_df %>%
-        filter(str_detect(dose_pop, select_vax())) %>%
+        filter(str_detect(dose_pop, paste0(select_vax(), "|Unspecified"))) %>%
         rename(type = dose) %>%
+        mutate(type = factor(ifelse(County != "Worcester", 
+                                    ifelse(type == "1st Dose", 
+                                           paste0("1st Dose - ", select_vax()),
+                                           paste0("2nd Dose - ", select_vax())), 
+                                    ifelse(type == "1st Dose", 
+                                           "1st Dose - Unknown", 
+                                           "2nd Dose - Unknown")),
+                             levels = c(paste0("1st Dose - ", select_vax()), paste0("2nd Dose - ", select_vax()), 
+                                        "1st Dose - Unknown", "2nd Dose - Unknown"))) %>%
         stacked_bar_plot(paste(select_vax(), "Vaccines"),
-                         "County")
+                         "County", vax=T)
       
     } else if (select_vax() == "Total") {
       
       output$n_vax_str <- renderText({format(n_vax, big.mark=",")})
       output$type_vax <- renderText({"prisoners and staff"})
       
-      single_bar_plot(vax_num_df, select_vax(), "Vaccines", "County")
-      
+      # single_bar_plot(vax_num_df, select_vax(), "Vaccines", "County")
+      vax_num_df %>%
+        rename(type = dose) %>%
+        stacked_bar_plot("Vaccines",
+                         "County", vax=T)
     }
     
   })

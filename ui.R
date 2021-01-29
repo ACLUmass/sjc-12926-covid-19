@@ -309,12 +309,12 @@ fluidPage(theme = "sjc_12926_app.css",
                  
                  tabPanel("Total Vaccinations", 
                           wellPanel(id="internal_well",
-                                    p("Select population:"),
-                                    selectInput("select_vax", label = NULL, 
-                                                choices = c("All", "Prisoners", "Staff", "Total"),
-                                                selected = "All", multiple=FALSE)
-                                    # em('Exact number of vaccinations per county annotated in',
-                                    #    '"Prisoners", "Staff", and "Total" plots.')
+                                    p("Select population:", id="radio_prompt"),
+                                    radioButtons("select_vax", label = NULL, 
+                                                 selected = "Prisoners" , inline = T, 
+                                                 choiceNames = c("Prisoners", "Staff", "Total"),
+                                                 choiceValues = c("Prisoners", "Staff", "Total")),
+                                    em('Worcester County reports only total vaccination numbers, not breakdowns by prisoner/staff populations. As such, vaccines from Worcester are labeled "Unknown."')
                           ),
                           h2(textOutput("n_vax_str"), align="center"),
                           p("COVID-19 vaccines administered to", 
