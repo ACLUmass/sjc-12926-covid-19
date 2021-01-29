@@ -317,6 +317,33 @@ fluidPage(theme = "sjc_12926_app.css",
                  
       ),
       
+      # UI: Vaccinations ---------------------------------------------
+      navbarMenu("Vaccinations",
+                 
+                 tabPanel("Total Vaccinations", 
+                          wellPanel(id="internal_well",
+                                    p("Select population:", id="radio_prompt"),
+                                    radioButtons("select_vax", label = NULL, 
+                                                 selected = "Prisoners" , inline = T, 
+                                                 choiceNames = c("Prisoners", "Staff", "Total"),
+                                                 choiceValues = c("Prisoners", "Staff", "Total")),
+                                    em('Please note that the DOC and the HOCs currently report only the weekly and cumulative vaccinations they themselves administer. As a result, these numbers will not capture any staff who have been vaccinated elsewhere.'),
+                                    em('Furthermore, due to prisoner turnover, these data may not reflect the number of currently incarcerated individuals who have been vaccinated.')
+                          ),
+                          checkboxInput("checkbox_hideDOC_vax", label = "Hide DOC column", value = F),
+                          h2(textOutput("n_vax_str"), align="center"),
+                          p("COVID-19 vaccines administered to", 
+                            textOutput("type_vax", inline=T),
+                            "since January 20", align="center"),
+                          withSpinner(plotlyOutput("all_vax_plot"), type=4, color="#b5b5b5", size=0.5)
+                          
+                 )#,
+                 
+                 # tabPanel("Vaccinations Over Time", 
+                 #          
+                 # )
+      ),
+      
       # UI: Parole ---------------------------------------------
       navbarMenu("Parole",
                  
@@ -887,13 +914,20 @@ fluidPage(theme = "sjc_12926_app.css",
                br(), br(),
                tabsetPanel(type = "tabs",
                            tabPanel("Counties and DOC", 
-                                    withSpinner(DT::dataTableOutput("df_table"), type=4, color="#b5b5b5", size=0.5)),
+                                    withSpinner(DT::dataTableOutput("df_table"), 
+                                                type=4, color="#b5b5b5", size=0.5)),
                            tabPanel("DOC Facilities", 
-                                    withSpinner(DT::dataTableOutput("DOC_df_table"), type=4, color="#b5b5b5", size=0.5)),
+                                    withSpinner(DT::dataTableOutput("DOC_df_table"), 
+                                                type=4, color="#b5b5b5", size=0.5)),
                            tabPanel("County Facilities", 
-                                    withSpinner(DT::dataTableOutput("cty_df_table"), type=4, color="#b5b5b5", size=0.5)),
+                                    withSpinner(DT::dataTableOutput("cty_df_table"), 
+                                                type=4, color="#b5b5b5", size=0.5)),
                            tabPanel("Parole", 
-                                    withSpinner(DT::dataTableOutput("parole_df_table"), type=4, color="#b5b5b5", size=0.5))
+                                    withSpinner(DT::dataTableOutput("parole_df_table"), 
+                                                type=4, color="#b5b5b5", size=0.5)),
+                           tabPanel("Vaccines", 
+                                    withSpinner(DT::dataTableOutput("vax_df_table"), 
+                                                type=4, color="#b5b5b5", size=0.5))
                            )
       ),
       

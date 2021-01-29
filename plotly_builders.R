@@ -107,13 +107,13 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
   } else {
     label_threshold <- data %>%
       group_by(loc) %>%
-      summarize(sum_value = sum(value)) %>%
+      summarize(sum_value = sum(value, na.rm=T)) %>%
       pull(sum_value) %>%
       max() * .07
     
     g <- data%>%
       group_by(loc) %>%
-      summarize(sum_value = sum(value)) %>%
+      summarize(sum_value = sum(value, na.rm=T)) %>%
       ungroup() %>%
       mutate(label_vjust = ifelse(sum_value < label_threshold | sum_value > 1000, 
                                   sum_value + max(sum_value) * .025, 
@@ -172,7 +172,7 @@ single_bar_plot <- function(data, filter_value, y_label, location_to_plot) {
 }
 
 # Function for plots with multiple bars stacked
-stacked_bar_plot <- function(data, y_label, location_to_plot) {
+stacked_bar_plot <- function(data, y_label, location_to_plot, vax=F) {
   
   doc_releases <- y_label == "Prisoners Released" & location_to_plot == "County"
 
@@ -185,48 +185,43 @@ stacked_bar_plot <- function(data, y_label, location_to_plot) {
     location_to_plot <- "Facility"
   }
   
+  traces_to_hide <- 0
+  
   if (doc_releases) {
-    traces_to_hide <- 0
+    
     traces_lightback <- 2:3
     traces_darkback <- 1
     
     data <- data %>%
       mutate(type=factor(type, levels=c("Pre-Trial", "Sentenced", "Home Confinements")))
-    
   } else {
-    
-    traces_to_hide <- 0
     traces_lightback <- 2
     traces_darkback <- 1
-    
   }
-
-  g <- data%>%
-      rename(loc = location_to_plot) %>%
-      group_by(loc, type) %>%
-      summarize(sum_value = sum(value)) %>%
-    ggplot(aes(x=loc,
-               y=sum_value,
-               fill = type,
+  
+  g <- data %>%
+    rename(loc = location_to_plot) %>%
+    group_by(loc, type) %>%
+    summarize(sum_value = sum(value, na.rm=T))%>%
+    ggplot(aes(x=loc, y=sum_value, 
+               fill=type,
                text = paste0(location_to_plot, ": ", loc, "\n",
-                            paste(type, y_label), ": ", number(sum_value, big.mark=",")))) +
-      geom_col(position = "stack") + 
-      labs(y = y_label, x="") +
+                             paste(type, y_label), ": ", number(sum_value, big.mark=","))))  +
+      geom_col(position=ifelse(vax, "dodge", "stack")) + 
+      labs(y = y_label, x="", fill="") +
       theme(axis.text.x = element_text(angle=45, hjust=1),
             plot.title= element_text(family="gtam", face='bold'),
             text = element_text(family="gtam", size=14)) +
-      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3")) +
       scale_y_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))),
-                         limits= c(0, NA))
+                         limits= c(0, NA))  +
+      scale_fill_manual(values = c("#0055aa", "#fbb416", "#a3dbe3"))
     
     g <- ggplotly(g, tooltip=c("text"),
                   dynamicTicks = T) %>%
       plotly::config(modeBarButtonsToRemove = modeBarButtonsToRemove) %>%
-      style(hoverinfo = "none", traces = traces_to_hide) %>%
+      style(hoverinfo = "none", traces = traces_to_hide)  %>%
       layout(legend = legend_layout_top,
-             yaxis = list(tickformat=",.0f"))  
-    
-    g %>%
+             yaxis = list(tickformat=",.0f")) %>%
       style(hoverlabel = label_lightback, traces = traces_lightback) %>%
       style(hoverlabel = label_darkback, traces = traces_darkback)
 }

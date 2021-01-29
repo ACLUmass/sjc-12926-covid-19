@@ -247,6 +247,12 @@ function(input, output, session) {
     merge(facs_df, by.x=c("Facility", "County"), 
           by.y=c("facility_raw", "County"), all.x=T)
   
+  # Load Vaccination Data -----------------------------------------------------------
+  
+  vax_df <- read_excel(tf, sheet=5) %>%
+    mutate_at(vars(-Date, -County, -Notes), as.numeric) %>%
+    mutate(Date = as.Date(Date))
+  
   # Population v. Time -------------------------------------------------------
   
   # Determine which counties to plot
@@ -605,7 +611,7 @@ function(input, output, session) {
                        show_weekly=input$checkbox_both)
     
   })
-  
+
   # Parole Releases -----------------------------------------------------------
   
   # Plot DOC Facilities
@@ -748,7 +754,66 @@ function(input, output, session) {
                          subtitle=T, show_weekly = F,
                          pop=T)
     }
+      
+    })
+
+  # Total Vaccinations -------------------------------------------------------
+  vax_num_df <- vax_df %>%
+    select(-contains("Total"), -Notes) %>%
+    pivot_longer(cols=starts_with("N"), names_to = c("dose", "pop"), 
+                 names_pattern="N (.*) - (.*)") %>%
+    mutate(dose_pop = paste0(dose, " - ", pop),
+           County = factor(County, levels=counties))
+  
+  n_vax <- vax_num_df %>%
+    pull(value) %>%
+    sum(na.rm=T)
+  
+  # Determine which variable to plot
+  select_vax <- reactive({ input$select_vax })
+  
+  output$all_vax_plot <- renderPlotly({
     
+    if (input$checkbox_hideDOC_vax) {
+      vax_num_df <- vax_num_df %>%
+        filter(County != "DOC")
+    }
+    
+    if (select_vax() %in% c("Prisoners", "Staff")) {
+      
+      output$n_vax_str <- renderText({
+        vax_num_df %>%
+          filter(str_detect(dose_pop, select_vax())) %>%
+          pull(value) %>%
+          sum(na.rm=T) %>%
+          format(big.mark=",")
+      })
+      output$type_vax <- renderText({
+        ifelse(input$checkbox_hideDOC_vax, 
+               paste("county", select_vax() %>% tolower()),
+               select_vax() %>% tolower())
+      })
+      
+      vax_num_df %>%
+        filter(str_detect(dose_pop, paste0(select_vax(), "|Unspecified"))) %>%
+        rename(type = dose) %>%
+        stacked_bar_plot(paste(select_vax(), "Vaccines"),
+                         "County", vax=T)
+      
+    } else if (select_vax() == "Total") {
+      
+      output$n_vax_str <- renderText({format(n_vax, big.mark=",")})
+      output$type_vax <- renderText({
+        ifelse(input$checkbox_hideDOC_vax, 
+               "county prisoners and staff",
+               "prisoners and staff")
+        })
+      
+      vax_num_df %>%
+        rename(type = dose) %>%
+        stacked_bar_plot("Vaccines",
+                         "County", vax=T)
+    }
   })
   
   # Total Releases -------------------------------------------------------
@@ -2225,6 +2290,12 @@ function(input, output, session) {
         select(-`Date (Friday)`, -Facility) %>%
         select(Date, County, Facility=facility_match, `N Released Parole`) %>%
         arrange(Date, County, Facility)},
+    options = list(scrollX = TRUE), 
+    filter = 'top'
+  )
+
+  output$vax_df_table <- DT::renderDataTable(
+    {vax_df},
     options = list(scrollX = TRUE), 
     filter = 'top'
   )
