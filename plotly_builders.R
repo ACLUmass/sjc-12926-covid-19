@@ -229,7 +229,7 @@ stacked_bar_plot <- function(data, y_label, location_to_plot, vax=F) {
 # Convert lines to ggplotly
 lines_plotly_style <- function(gg_plot, y_label, location_to_plot, 
   annotation=FALSE, subtitle=TRUE, pos_and_test=FALSE, active_and_recent=FALSE,
-  show_weekly=TRUE, pop=FALSE) {
+  show_weekly=TRUE, pop=FALSE, vax=FALSE) {
   
   if (show_weekly) {
     gg_plot <- gg_plot +
@@ -344,6 +344,16 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
 
       g <- g %>%
         style(text = text_rep, traces=i)
+      
+    }
+  } else if (vax) {
+    for (i in 1:length(g$x$data)) {
+      name <- g$x$data[[i]]$name
+      name <- name %>%
+        str_replace_all("\\(|\\)", "") %>%
+        str_replace(",", ": ")
+      g$x$data[[i]]$name <- name
+      print(g$x$data[[i]]$name)
     }
   }
     

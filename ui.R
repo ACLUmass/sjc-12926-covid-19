@@ -319,9 +319,9 @@ fluidPage(theme = "sjc_12926_app.css",
       ),
       
       # UI: Vaccinations ---------------------------------------------
-      tabPanel("Vaccinations",
+      navbarMenu("Vaccinations",
                  
-                 
+               tabPanel("Total Vaccinations",
                   wellPanel(id="internal_well",
                             p("Select population:", id="radio_prompt"),
                             radioButtons("select_vax", label = NULL, 
@@ -336,10 +336,29 @@ fluidPage(theme = "sjc_12926_app.css",
                   p("Cumulative COVID-19 vaccines administered to", 
                     textOutput("type_vax", inline=T), align="center"),
                   withSpinner(plotlyOutput("all_vax_plot"), type=4, color="#b5b5b5", size=0.5)
+                  ),
                  
-                 # tabPanel("Vaccinations Over Time", 
-                 #          
-                 # )
+                 tabPanel("Vaccinations Over Time",
+
+                          wellPanel(id="internal_well",
+                                    p("Select population:", id="radio_prompt"),
+                                    radioButtons("vax_radio", label = NULL, 
+                                                 selected = "Prisoners" , inline = T, 
+                                                 choiceNames = c("Prisoners", "Staff", "Total"),
+                                                 choiceValues = c("Prisoners", "Staff", "Total")),
+                                    p("Select up to two locations to plot versus time."),
+                                    splitLayout(
+                                      selectInput("select_county1_vax", label = NULL, 
+                                                  choices = county_choices,
+                                                  selected = "All Counties", multiple=FALSE),
+                                      selectInput("select_county2_vax", label = NULL, 
+                                                  choices = county_choices,
+                                                  selected = "DOC", multiple=FALSE)
+                                    ),
+                                    em('Please note that the DOC and the HOCs currently report only the weekly and cumulative vaccinations they themselves administer. As a result, these numbers will not capture any staff or incarcerated individuals who have been vaccinated elsewhere.'),
+                                    em('Furthermore, due to prisoner turnover, these data likely do not reflect the number of currently incarcerated individuals who have been vaccinated.')),
+                          withSpinner(plotlyOutput("vax_v_time_plot"), type=4, color="#b5b5b5", size=0.5)
+                 )
       ),
       
       # UI: Testing ---------------------------------------------

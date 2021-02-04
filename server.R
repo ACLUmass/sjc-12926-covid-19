@@ -832,6 +832,95 @@ function(input, output, session) {
     }
   })
   
+  # Vaccinations v. Time ------------------------------------------------------
+  
+  all_vax_df <- vax_num_df %>%
+    group_by(Date, dose, pop) %>%
+    summarize(value = sum(value, na.rm=T)) %>%
+    mutate(County = "All")
+  
+  all_counties_vax_df <- vax_num_df %>%
+    filter(County != "DOC") %>%
+    group_by(Date, dose, pop) %>%
+    summarize(value = sum(value, na.rm=T)) %>%
+    mutate(County = "All Counties")
+  
+  vax_time_df <-vax_num_df %>%
+    select(-dose_pop) %>%
+    filter(!is.na(value)) %>%
+    bind_rows(all_vax_df) %>%
+    bind_rows(all_counties_vax_df) %>%
+    group_by(dose, pop, County) %>%
+    mutate(cumsum = cumsum(value)) %>%
+    ungroup()
+  
+  # Determine which location to plot
+  cnty_to_plot_vax <- reactive({
+    c(input$select_county1_vax,
+      input$select_county2_vax)
+    })
+  
+  # Determine which population to plot
+  pop_to_plot_vax <- reactive({input$vax_radio})
+  
+  # Plot
+  output$vax_v_time_plot <- renderPlotly({
+    
+    # Determine what label is
+    if (pop_to_plot_vax() == "Total") {
+      y_label = "Prisoners & Staff Vaccines"
+      
+      vax_time_df <- vax_time_df %>%
+        group_by(Date, County, dose) %>%
+        summarize(cumsum = sum(cumsum, na.rm=T))
+      
+    } else {
+      y_label = paste(
+        ifelse(pop_to_plot_vax() == "Prisoners", "Prisoner", "Staff"), 
+        "Vaccines")
+      
+      vax_time_df <- vax_time_df %>%
+        filter(pop == pop_to_plot_vax())
+    
+    }
+    
+    validate(
+      need(input$select_county1_vax != "--" | input$select_county2_vax != "--", 
+           'Please select at least one location')
+    )
+    
+    g <- vax_time_df %>%
+      filter(County %in% cnty_to_plot_vax()) %>%
+      rename(Location = County) %>%
+      ggplot(aes(x=Date, y = cumsum, color=Location,
+                 linetype=dose, group=interaction(dose, Location),
+                 text = paste0("Date: ", Date, "\n",
+                               y_label, ": ", number(cumsum, big.mark=","), "\n",
+                               "Location: ", Location, "\n",
+                               "Dose: ", dose))) +
+      geom_point() +
+      geom_path(size=1.3, show.legend = T, alpha=0.8) +
+      labs(x = "", y = y_label, color="",
+           title = paste(y_label, "over Time")) +
+      theme(plot.title= element_text(family="gtam", face='bold'),
+            text = element_text(family="gtam", size = 16),
+            plot.margin = unit(c(1,1,4,1), "lines"),
+            legend.position = c(.5, -.22),
+            legend.background = element_rect(fill=alpha('lightgray', 0.4), color=NA),
+            legend.key.width = unit(1, "cm"),
+            legend.text = element_text(size=12),
+            legend.title = element_blank()) +
+      scale_x_date(date_labels = "%b %e ", limits=c(ymd(20210127), NA)) +
+      scale_color_manual(values=c("black", "#a3dbe3")) +
+      scale_linetype_manual(values=c("solid", "dotted")) +
+      coord_cartesian(clip = 'off')
+    
+    lines_plotly_style(g, y_label, "County",
+                       show_weekly = F,
+                       pop=T, vax=T)
+    
+  })
+  
   # Total Releases -------------------------------------------------------
   released_df <- sjc_num_df %>%
     pivot_longer(cols=matches("Released", ignore.case=F),
