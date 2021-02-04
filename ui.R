@@ -335,8 +335,7 @@ fluidPage(theme = "sjc_12926_app.css",
                   h2(textOutput("n_vax_str"), align="center"),
                   p("Cumulative COVID-19 vaccines administered to", 
                     textOutput("type_vax", inline=T), align="center"),
-                  withSpinner(plotlyOutput("all_vax_plot"), type=4, color="#b5b5b5", size=0.5),
-                  em("*As of January 27, Essex, Middlesex, and Norfolk counties have not yet reported vaccination data.")
+                  withSpinner(plotlyOutput("all_vax_plot"), type=4, color="#b5b5b5", size=0.5)
                  
                  # tabPanel("Vaccinations Over Time", 
                  #          

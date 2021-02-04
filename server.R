@@ -772,7 +772,6 @@ function(input, output, session) {
     pivot_longer(cols=starts_with("N"), names_to = c("dose", "pop"), 
                  names_pattern="N (.*) - (.*)") %>%
     mutate(dose_pop = paste0(dose, " - ", pop),
-           County = str_replace(County, "(Essex|Middlesex|Norfolk)", "\\1*"),
            County = factor(County,
                            levels = c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex*", 
                                       "Franklin", "Hampden", "Hampshire", "Middlesex*", "Norfolk*", 
