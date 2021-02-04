@@ -773,9 +773,7 @@ function(input, output, session) {
                  names_pattern="N (.*) - (.*)") %>%
     mutate(dose_pop = paste0(dose, " - ", pop),
            County = factor(County,
-                           levels = c("DOC", "Barnstable", "Berkshire", "Bristol", "Dukes", "Essex*", 
-                                      "Franklin", "Hampden", "Hampshire", "Middlesex*", "Norfolk*", 
-                                      "Plymouth", "Suffolk", "Worcester")))
+                           levels = counties))
   
   n_vax <- vax_num_df %>%
     pull(value) %>%
@@ -814,7 +812,13 @@ function(input, output, session) {
       
     } else if (select_vax() == "Total") {
       
-      output$n_vax_str <- renderText({format(n_vax, big.mark=",")})
+      output$n_vax_str <- renderText({
+        vax_num_df %>%
+          pull(value) %>%
+          sum(na.rm=T) %>%
+          format(big.mark=",")
+      })
+      
       output$type_vax <- renderText({
         ifelse(input$checkbox_hideDOC_vax, 
                "county prisoners and staff",
