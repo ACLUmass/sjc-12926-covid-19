@@ -329,7 +329,7 @@ fluidPage(theme = "sjc_12926_app.css",
                                          choiceNames = c("Prisoners", "Staff", "Total"),
                                          choiceValues = c("Prisoners", "Staff", "Total")),
                             em('Please note that the DOC and the HOCs currently report only the weekly and cumulative vaccinations they themselves administer. As a result, these numbers will not capture any staff or incarcerated individuals who have been vaccinated elsewhere.'),
-                            em('Furthermore, due to prisoner turnover, these data may not reflect the number of currently incarcerated individuals who have been vaccinated.')
+                            em('Furthermore, due to prisoner turnover, these data likely do not reflect the number of currently incarcerated individuals who have been vaccinated.')
                   ),
                   checkboxInput("checkbox_hideDOC_vax", label = "Hide DOC column", value = F),
                   h2(textOutput("n_vax_str"), align="center"),
