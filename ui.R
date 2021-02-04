@@ -79,7 +79,7 @@ fluidPage(theme = "sjc_12926_app.css",
                      h4("Winter 2021 Updates"),
                      em("In response to continuing changes in county and state reporting, please note that multiple new metrics have been added to this site as of [January 29, 2021], including:",
                         tags$ul(
-                          tags$li("Total vaccinations"),
+                          tags$li("Vaccinations"),
                           tags$li("[DOC only] Hospitalizations of prisoners, retroactive to December"),
                           tags$li("[DOC only] Medical parole approval for prisoners, retroactive to April"),
                           tags$li("Weekly parole releases, retroactive to April"),
@@ -350,10 +350,10 @@ fluidPage(theme = "sjc_12926_app.css",
                                     splitLayout(
                                       selectInput("select_county1_vax", label = NULL, 
                                                   choices = county_choices,
-                                                  selected = "All Counties", multiple=FALSE),
+                                                  selected = "All", multiple=FALSE),
                                       selectInput("select_county2_vax", label = NULL, 
                                                   choices = county_choices,
-                                                  selected = "DOC", multiple=FALSE)
+                                                  selected = "--", multiple=FALSE)
                                     ),
                                     em('Please note that the DOC and the HOCs currently report only the weekly and cumulative vaccinations they themselves administer. As a result, these numbers will not capture any staff or incarcerated individuals who have been vaccinated elsewhere.'),
                                     em('Furthermore, due to prisoner turnover, these data likely do not reflect the number of currently incarcerated individuals who have been vaccinated.')),
