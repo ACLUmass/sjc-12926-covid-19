@@ -1300,7 +1300,6 @@ function(input, output, session) {
         filter(County %in% cnty_to_plot_active()) %>%
       ggplot(aes(x=Date, y = active, color=County)) +
         geom_path(size=1.3, show.legend = T, alpha=0.8) +
-        geom_point(size=1.5) +
         labs(x = "", y = y_label, color="",
              title="placeholder") +
         theme(plot.title= element_text(family="gtam", face='bold'),
@@ -1848,7 +1847,6 @@ function(input, output, session) {
       filter(fac %in% fac_to_plot_active()) %>%
     ggplot(aes(x=Date, y = active, color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8) +
-      geom_point(size=1.5) +
       labs(x = "", y = "Active Positive DOC Prisoners", color="",
            title="placeholder") +
       theme(plot.title= element_text(family="gtam", face='bold'),
@@ -1929,7 +1927,6 @@ function(input, output, session) {
     g <- hosps_df %>%
       ggplot(aes(x=Date, y = value)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8) +
-      geom_point(size=1.5) +
       labs(x = "", y = y_label, color="",
            title="placeholder") +
       theme(plot.title= element_text(family="gtam", face='bold'),
@@ -2297,7 +2294,6 @@ function(input, output, session) {
       filter(fac %in% cty_fac_to_plot_active()) %>%
     ggplot(aes(x=Date, y = active, color=fac)) +
       geom_path(size=1.3, show.legend = T, alpha=0.8) +
-      geom_point(size=1.5) +
       labs(x = "", y = y_label, color="",
            title="placeholder") +
       theme(plot.title= element_text(family="gtam", face='bold'),
