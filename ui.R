@@ -73,20 +73,14 @@ fluidPage(theme = "sjc_12926_app.css",
                  
       tabPanel("About", 
                
-               div(id="dev-info",
+               div(id="dev-info2",
                    wellPanel(
                      icon('info-circle'),
-                     h4("Winter 2021 Updates"),
-                     em("In response to continuing changes in county and state reporting, please note that multiple new metrics have been added to this site as of [January 29, 2021], including:",
-                        tags$ul(
-                          tags$li("Vaccinations"),
-                          tags$li("[DOC only] Hospitalizations of prisoners, retroactive to December"),
-                          tags$li("[DOC only] Medical parole approval for prisoners, retroactive to April"),
-                          tags$li("Weekly parole releases, retroactive to April"),
-                          tags$li("Jail populations at the facility level (applies for counties with multiple facilities: Bristol, Essex, Hampden, Suffolk), retroactive to September")
-                        ))
-                   )
-               ),
+                     h4("End of reporting"),
+                     em("Governor Baker terminated the state of emergency in Massachusetts on June 15, 2021, at which point the weekly data reporting requirements also concluded. See CPCS v. Chief Justice of the Trial Court, 484 Mass. 431, 456 (2020).", br(), br(), "As stated in this June 21, 2021",
+                        a("order", href="https://data.aclum.org/wp-content/uploads/2021/06/2021-06-21-SJC-12926-Order-Report.pdf"),
+                        ", both the DOC and the counties will file snapshot reports on July 15 and August 15, 2021. The DOC will  document the custody population and the number of people in DOC custody that are actively COVID-19 positive in each facility on the day immediately preceding the reports, while the HOC will file reports consistent with the information provided to the special master during the state of emergency.", br(), br(), "As a result, this webpage will no longer have weekly updates, and after the July 15 and August 15 reports, this webpage will no longer be updated.")
+               )),
                
                h3("Explore Massachusetts Prisons and Jails' Response to COVID-19"),
                p("View plots in the different tabs to track testing, positive",
