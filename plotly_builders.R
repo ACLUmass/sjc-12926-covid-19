@@ -320,7 +320,9 @@ lines_plotly_style <- function(gg_plot, y_label, location_to_plot,
           is_DOC <- location_to_plot == "Facility" | str_detect(t, "DOC|All$") | str_detect(y_label, "Medical")
           
           weekly <- !is.na(data_date) & 
-            ((is_DOC & data_date >= ymd(20200707) & data_date < ymd(20201111)) |
+            ((is_DOC & 
+                ((data_date >= ymd(20200707) & data_date < ymd(20201111)) | 
+                   data_date > ymd(20210405))) |
             (!is_DOC & data_date >= ymd(20200707)))
           
           if (weekly) {
