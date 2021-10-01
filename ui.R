@@ -210,9 +210,9 @@ fluidPage(theme = "sjc_12926_app.css",
                            selectInput("select_county1_pop", label = NULL, choices = pop_choices,
                                        selected = "All", multiple=FALSE),
                            selectInput("select_county2_pop", label = NULL, choices = pop_choices,
-                                       selected = "--", multiple=FALSE),
+                                       selected = "All Counties", multiple=FALSE),
                            selectInput("select_county3_pop", label = NULL, choices = pop_choices,
-                                       selected = "--", multiple=FALSE)
+                                       selected = "DOC Aggregate", multiple=FALSE)
                          ),
                          em('Only the following entities report "other" populations:'),
                          tags$ul(
