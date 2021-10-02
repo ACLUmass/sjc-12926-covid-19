@@ -674,8 +674,8 @@ fluidPage(theme = "sjc_12926_app.css",
                                     p("Select kind of individual:", id="radio_prompt"),
                                     radioButtons("select_active", label = NULL, 
                                                  selected = "All" , inline = T, 
-                                                 choiceNames = c("All", "Prisoner", "Staff", "Total"),
-                                                 choiceValues = c("All", "Prisoner", "Staff", "Total")),
+                                                 choiceNames = c("All", "Prisoners", "Staff", "Total"),
+                                                 choiceValues = c("All", "Prisoners", "Staff", "Total")),
                                     em('Exact number of tests per county annotated in "Prisoners",',
                                        '"Staff", and "Total" plots. Note that the DOC is not 
                               reporting active staff cases. County "staff" includes correctional officers, contractors, and other staff.')
