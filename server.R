@@ -1137,7 +1137,7 @@ function(input, output, session) {
     group_by(fac) %>%
     filter(Date == max(Date)) %>%
     mutate(value = as.numeric(`Active Prisoner Cases`),
-           type = "Prisoners",
+           type = "Prisoner",
            County = factor("DOC", levels=counties),
            value = replace_na(value, 0))
   
@@ -1170,7 +1170,7 @@ function(input, output, session) {
                        "Active Cases",
                        "County")
       
-    } else if (select_active() %in% c("Prisoners", "Staff")) {
+    } else if (select_active() %in% c("Prisoner", "Staff")) {
       output$n_active_str <- renderText({
         active_df %>%
           filter(type == select_active()) %>%
